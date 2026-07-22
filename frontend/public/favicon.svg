@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Dark rounded square background -->
+  <rect width="64" height="64" rx="14" fill="#0c1428"/>
+
+  <!-- Subtle inner glow border -->
+  <rect width="64" height="64" rx="14" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.25"/>
+
+  <!-- PackageOpen icon (lucide), centered, scaled to fit, color #38bdf8 (sky-400) -->
+  <!-- Original lucide viewBox is 0 0 24 24, we scale to ~36x36 and center in 64x64 -->
+  <g transform="translate(14, 14) scale(1.5)" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Box bottom -->
+    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+    <!-- Open flap -->
+    <path d="m3.3 7 8.7 5 8.7-5"/>
+    <!-- Vertical center line -->
+    <path d="M12 22V12"/>
+    <!-- Open lid left flap -->
+    <path d="m7.5 4.27 9 5.15"/>
+  </g>
+</svg>

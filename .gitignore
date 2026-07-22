@@ -1,0 +1,30 @@
+# ─── Java / Maven ─────────────────────────────────────────────────────────────
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# ─── Spring Boot ──────────────────────────────────────────────────────────────
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-secret.properties
+
+# ─── Node / npm ───────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+*.iml
+.DS_Store
+Thumbs.db

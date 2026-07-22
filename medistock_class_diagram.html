@@ -1,0 +1,154 @@
+<style>
+#cd svg .divider path { stroke-opacity: 0.5; }
+#cd svg .row-rect-odd path, #cd svg .row-rect-odd rect,
+#cd svg .row-rect-even path, #cd svg .row-rect-even rect { stroke: none !important; }
+</style>
+<div id="cd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const { svg } = await mermaid.render('cd-svg', `classDiagram
+  class User {
+    -int id
+    -String name
+    -String email
+    -String passwordHash
+    -Role role
+    +login()
+    +resetPassword()
+    +updateProfile()
+  }
+  class Role {
+    -int id
+    -String name
+  }
+  class Medicine {
+    -int id
+    -String name
+    -String batchNumber
+    -Category category
+    -Supplier supplier
+    -int quantity
+    -Date manufacturingDate
+    -Date expiryDate
+    -BigDecimal price
+    +addStock()
+    +updateStock()
+    +isLowStock()
+    +isNearExpiry()
+  }
+  class Category {
+    -int id
+    -String name
+  }
+  class Supplier {
+    -int id
+    -String name
+    -String contactNumber
+    -String email
+    -String address
+    +getPurchaseHistory()
+  }
+  class PurchaseOrder {
+    -int id
+    -Medicine medicine
+    -Supplier supplier
+    -int quantity
+    -Date orderDate
+    -String status
+    +createOrder()
+    +receiveStock()
+    +cancelOrder()
+  }
+  class StockLog {
+    -int id
+    -Medicine medicine
+    -User user
+    -String changeType
+    -int quantity
+    -Timestamp createdAt
+  }
+  class Notification {
+    -int id
+    -User user
+    -Medicine medicine
+    -String type
+    -String message
+    -boolean isRead
+    +send()
+    +markAsRead()
+  }
+  class InventoryService {
+    +addMedicine()
+    +updateMedicine()
+    +deleteMedicine()
+    +searchMedicines()
+  }
+  class StockMonitoringService {
+    +checkLowStock()
+    +trackMovement()
+  }
+  class ExpiryTrackingService {
+    +checkExpiringMedicines()
+    +generateExpiryReport()
+  }
+  class NotificationService {
+    +sendEmail()
+    +sendPush()
+    +sendSMS()
+  }
+  class ReportService {
+    +generatePDF()
+    +generateExcel()
+    +exportData()
+  }
+
+  Role "1" --> "*" User
+  User "1" --> "*" StockLog
+  User "1" --> "*" Notification
+  Category "1" --> "*" Medicine
+  Supplier "1" --> "*" Medicine
+  Supplier "1" --> "*" PurchaseOrder
+  Medicine "1" --> "*" PurchaseOrder
+  Medicine "1" --> "*" StockLog
+  Medicine "1" --> "*" Notification
+  InventoryService ..> Medicine
+  StockMonitoringService ..> Medicine
+  ExpiryTrackingService ..> Medicine
+  NotificationService ..> Notification
+  ReportService ..> Medicine`);
+document.getElementById('cd').innerHTML = svg;
+
+document.querySelectorAll('#cd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+</script>
