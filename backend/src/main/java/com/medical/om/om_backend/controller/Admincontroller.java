@@ -62,6 +62,11 @@ public class Admincontroller {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    @GetMapping("/users/search")
+    public ResponseEntity<List<Users>> searchUsers(@RequestParam("q") String q) {
+        return ResponseEntity.ok(userRepository.search(q));
+    }
+
     @PostMapping("/users")
     public ResponseEntity<?> createUser(@RequestBody UserDto request) {
         Users user = new Users();
@@ -94,6 +99,11 @@ public class Admincontroller {
     @GetMapping("/medicines")
     public ResponseEntity<List<Medicine>> getMedicines() {
         return ResponseEntity.ok(medicineRepository.findAll());
+    }
+
+    @GetMapping("/medicines/search")
+    public ResponseEntity<List<Medicine>> searchMedicines(@RequestParam("q") String q) {
+        return ResponseEntity.ok(medicineRepository.search(q));
     }
 
     @PostMapping("/medicines")
@@ -130,6 +140,11 @@ public class Admincontroller {
     @GetMapping("/inventory")
     public ResponseEntity<List<Inventory>> getInventory() {
         return ResponseEntity.ok(inventoryRepository.findAll());
+    }
+
+    @GetMapping("/inventory/search")
+    public ResponseEntity<List<Inventory>> searchInventory(@RequestParam("q") String q) {
+        return ResponseEntity.ok(inventoryRepository.search(q));
     }
 
     @PostMapping("/inventory")
@@ -171,6 +186,11 @@ public class Admincontroller {
     @GetMapping("/suppliers")
     public ResponseEntity<List<Suppliers>> getSuppliers() {
         return ResponseEntity.ok(supplierRepository.findAll());
+    }
+
+    @GetMapping("/suppliers/search")
+    public ResponseEntity<List<Suppliers>> searchSuppliers(@RequestParam("q") String q) {
+        return ResponseEntity.ok(supplierRepository.search(q));
     }
 
     @PostMapping("/suppliers")
@@ -229,6 +249,11 @@ public class Admincontroller {
     @GetMapping("/sales")
     public ResponseEntity<List<SalesPurchase>> getSalesPurchases() {
         return ResponseEntity.ok(salesPurchaseRepository.findAll());
+    }
+
+    @GetMapping("/sales/search")
+    public ResponseEntity<List<SalesPurchase>> searchSales(@RequestParam("q") String q) {
+        return ResponseEntity.ok(salesPurchaseRepository.search(q));
     }
 
     @PostMapping("/sales")

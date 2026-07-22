@@ -4,97 +4,110 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="753e892f-f5c4-4a17-97fd-cee39ac77334" name="Changes" comment="" />
+    <list default="true" id="08e27dff-8c51-43f0-867d-c80cb5afad8f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Admincontroller.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Admincontroller.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Pharmacycontroller.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Pharmacycontroller.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/MedicineRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/MedicineRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SalesPurchaseRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SalesPurchaseRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SupplierRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SupplierRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/AuthReq.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/AuthReq.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/LoginReq.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/LoginReq.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/RegisterReq.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/RegisterReq.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/SupplierDto.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/SupplierDto.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/UserDto.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/UserDto.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/OmBackendApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/OmBackendApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/controller/Auth.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/controller/Auth.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/controller/GlobalExceptionHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/controller/GlobalExceptionHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Catagories.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Catagories.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Role.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Role.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Suppliers.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Suppliers.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Users.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Users.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/MedicineRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/MedicineRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SalesPurchaseRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SalesPurchaseRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SupplierRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SupplierRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/UserRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/JwtAuthenticationFilter.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/JwtAuthenticationFilter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/JwtUtil.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/JwtUtil.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/UserDetailsServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/security/UserDetailsServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/AuthService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/AuthService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="sudipto_karmakar" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 7
+  &quot;associatedIndex&quot;: 8
 }</component>
-  <component name="ProjectId" id="3GMU9YBY4bs9GRaMRcRQu6Nl0z2" />
+  <component name="ProjectId" id="3GrnfuxjlPIX2j5dVVa4UYAvcUb" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.OmBackendApplication.executor": "Run",
-    "Application.Unnamed.executor": "Run",
-    "Maven.om-backend [clean].executor": "Run",
-    "Maven.om-backend [compile].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "settings.editor.selected.configurable": "reference.projectsettings.compiler.annotationProcessors"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;sudipto__karmakar&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mesud/Desktop/om_medical&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="Application.OmBackendApplication">
-    <configuration name="OmBackendApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.medical.om.om_backend.OmBackendApplication" />
-      <module name="om-backend" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.medical.om.om_backend.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+}</component>
+  <component name="RunManager">
     <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="26" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-      <option name="MAIN_CLASS_NAME" value="com.medical.om.om_backend.OmBackendApplication" />
       <module name="om_medical" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="JetRunConfigurationType">
-      <module name="om_medical" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="om_medical" />
       <option name="filePath" />
       <method v="2" />
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Application.OmBackendApplication" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="753e892f-f5c4-4a17-97fd-cee39ac77334" name="Changes" comment="" />
-      <created>1783780783329</created>
+      <changelist id="08e27dff-8c51-43f0-867d-c80cb5afad8f" name="Changes" comment="" />
+      <created>1784738668620</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1783780783329</updated>
+      <updated>1784738668620</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

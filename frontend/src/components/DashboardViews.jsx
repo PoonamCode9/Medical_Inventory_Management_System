@@ -107,6 +107,23 @@ function ActionBtn({ onClick, color = 'slate', children }) {
   );
 }
 
+function SearchInput({ value, onChange, placeholder = 'Search...' }) {
+  return (
+    <div className="relative">
+      <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition"
+      />
+    </div>
+  );
+}
+
 /* ───────────────────────────── USERS ───────────────────────────── */
 
 export function UsersView() {
@@ -114,18 +131,23 @@ export function UsersView() {
   const [form, setForm] = useState({ name: '', username: '', password: '', role: 'STAFF' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadUsers = () => {
+  const loadUsers = (q) => {
     if (!token()) return;
     setLoading(true);
-    fetch(`${API}/api/admin/users`, { headers: auth() })
+    const url = q ? `${API}/api/admin/users/search?q=${encodeURIComponent(q)}` : `${API}/api/admin/users`;
+    fetch(url, { headers: auth() })
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setUsers)
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadUsers, []);
+  useEffect(() => {
+    const timer = setTimeout(() => loadUsers(searchQuery.trim() || null), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -134,14 +156,14 @@ export function UsersView() {
     const payload = { ...form };
     if (editingId && !payload.password.trim()) delete payload.password;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
-    if (res.ok) { setForm({ name: '', username: '', password: '', role: 'STAFF' }); setEditingId(null); loadUsers(); }
+    if (res.ok) { setForm({ name: '', username: '', password: '', role: 'STAFF' }); setEditingId(null); loadUsers(searchQuery.trim() || null); }
   };
 
   const handleEdit = (u) => { setEditingId(u.id); setForm({ name: u.name, username: u.username, password: '', role: u.role }); };
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', username: '', password: '', role: 'STAFF' }); };
   const handleDelete = async (id) => {
     if (!token() || !window.confirm('Delete this user?')) return;
-    if ((await fetch(`${API}/api/admin/users/${id}`, { method: 'DELETE', headers: auth() })).ok) loadUsers();
+    if ((await fetch(`${API}/api/admin/users/${id}`, { method: 'DELETE', headers: auth() })).ok) loadUsers(searchQuery.trim() || null);
   };
 
   return (
@@ -174,6 +196,8 @@ export function UsersView() {
         </div>
       </form>
 
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or username..." />
+
       {loading ? <Spinner /> : (
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <table className="min-w-full text-sm">
@@ -187,7 +211,7 @@ export function UsersView() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {users.length === 0 ? (
-                <tr><td colSpan="4"><EmptyState icon="👤" title="No users yet" subtitle="Add your first user above." /></td></tr>
+                <tr><td colSpan="4"><EmptyState icon="👤" title={searchQuery ? 'No matching users' : 'No users yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first user above.'} /></td></tr>
               ) : users.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50/50 transition">
                   <td className="px-5 py-3.5 font-semibold text-slate-900">{u.name}</td>
@@ -217,19 +241,24 @@ export function MedicinesView({ role = 'ADMIN' }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadMedicines = () => {
+  const loadMedicines = (q) => {
     if (!token()) { setLoading(false); return; }
-    const ep = role === 'PHARMACIST' ? `${API}/api/pharmacy/medicines` : `${API}/api/admin/medicines`;
+    const base = role === 'PHARMACIST' ? `${API}/api/pharmacy` : `${API}/api/admin`;
+    const url = q ? `${base}/medicines/search?q=${encodeURIComponent(q)}` : `${base}/medicines`;
     setLoading(true);
-    fetch(ep, { headers: auth() })
+    fetch(url, { headers: auth() })
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setMedicines)
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadMedicines, [role]);
+  useEffect(() => {
+    const timer = setTimeout(() => loadMedicines(searchQuery.trim() || null), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, role]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -239,7 +268,7 @@ export function MedicinesView({ role = 'ADMIN' }) {
     if (!payload.category) payload.category = null;
     const url = editingId ? `${API}/api/admin/medicines/${editingId}` : `${API}/api/admin/medicines`;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
-    if (res.ok) { setForm({ name: '', description: '', category: '' }); setEditingId(null); loadMedicines(); }
+    if (res.ok) { setForm({ name: '', description: '', category: '' }); setEditingId(null); loadMedicines(searchQuery.trim() || null); }
     else { const txt = await res.text(); setErrorMsg(txt || 'Failed to save medicine.'); }
   };
 
@@ -247,7 +276,7 @@ export function MedicinesView({ role = 'ADMIN' }) {
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', description: '', category: '' }); };
   const handleDelete = async (id) => {
     if (!token() || !window.confirm('Delete this medicine?')) return;
-    if ((await fetch(`${API}/api/admin/medicines/${id}`, { method: 'DELETE', headers: auth() })).ok) loadMedicines();
+    if ((await fetch(`${API}/api/admin/medicines/${id}`, { method: 'DELETE', headers: auth() })).ok) loadMedicines(searchQuery.trim() || null);
   };
 
   return (
@@ -294,10 +323,12 @@ export function MedicinesView({ role = 'ADMIN' }) {
         </form>
       )}
 
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or description..." />
+
       {loading ? <Spinner color="border-emerald-300" /> : (
         <div className="grid gap-4 md:grid-cols-2">
           {medicines.length === 0 ? (
-            <div className="md:col-span-2"><EmptyState icon="💊" title="No medicines in catalog" subtitle="Define your first medicine formula above." /></div>
+            <div className="md:col-span-2"><EmptyState icon="💊" title={searchQuery ? 'No matching medicines' : 'No medicines in catalog'} subtitle={searchQuery ? 'Try a different search term.' : 'Define your first medicine formula above.'} /></div>
           ) : medicines.map((m) => (
             <div key={m.id} className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between hover:shadow-md transition group">
               <div>
@@ -332,15 +363,19 @@ export function InventoryView({ role = 'ADMIN' }) {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('stock');
+  const [stockSearch, setStockSearch] = useState('');
+  const [movementSearch, setMovementSearch] = useState('');
 
-  const loadData = async () => {
+  const loadData = async (stockQ, movQ) => {
     if (!token()) { setLoading(false); return; }
     setLoading(true);
     try {
-      const ep = role === 'PHARMACIST' ? `${API}/api/pharmacy/inventory` : `${API}/api/admin/inventory`;
+      const base = role === 'PHARMACIST' ? `${API}/api/pharmacy` : `${API}/api/admin`;
+      const invUrl = stockQ ? `${base}/inventory/search?q=${encodeURIComponent(stockQ)}` : `${base}/inventory`;
+      const movUrl = movQ ? `${API}/api/admin/sales/search?q=${encodeURIComponent(movQ)}` : `${API}/api/admin/sales`;
       const [invRes, movRes] = await Promise.all([
-        fetch(ep, { headers: auth() }),
-        fetch(`${API}/api/admin/sales`, { headers: auth() }),
+        fetch(invUrl, { headers: auth() }),
+        fetch(movUrl, { headers: auth() }),
       ]);
       if (invRes.ok) setItems(await invRes.json());
       if (movRes.ok) {
@@ -353,6 +388,11 @@ export function InventoryView({ role = 'ADMIN' }) {
   };
 
   useEffect(() => { loadData(); }, [role]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => loadData(stockSearch.trim() || null, movementSearch.trim() || null), 300);
+    return () => clearTimeout(timer);
+  }, [stockSearch, movementSearch, role]);
 
   const stockByMedicine = useMemo(() => {
     const map = {};
@@ -427,6 +467,8 @@ export function InventoryView({ role = 'ADMIN' }) {
                 <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 font-medium">Low Stock Items</p><p className="text-2xl font-black text-amber-600 mt-1">{items.filter(i => i.available_qty < 15).length}</p></div>
               </div>
 
+              <SearchInput value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} placeholder="Search stock by medicine, batch or supplier..." />
+
               {/* Charts row */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -497,7 +539,9 @@ export function InventoryView({ role = 'ADMIN' }) {
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="space-y-4">
+          <SearchInput value={movementSearch} onChange={(e) => setMovementSearch(e.target.value)} placeholder="Search movements by medicine, batch or type..." />
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm divide-y divide-slate-100">
               <thead>
@@ -509,7 +553,7 @@ export function InventoryView({ role = 'ADMIN' }) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {movements.length === 0 ? (
-                  <tr><td colSpan="7"><EmptyState icon="📋" title="No transactions yet" subtitle="Register your first purchase or sale above." /></td></tr>
+                  <tr><td colSpan="7"><EmptyState icon="📋" title={movementSearch ? 'No matching movements' : 'No transactions yet'} subtitle={movementSearch ? 'Try a different search term.' : 'Register your first purchase or sale above.'} /></td></tr>
                 ) : movements.map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50/50 transition">
                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.date || '—'}</td>
@@ -527,6 +571,7 @@ export function InventoryView({ role = 'ADMIN' }) {
             </table>
           </div>
         </div>
+        </div>
       )}
     </div>
   );
@@ -539,33 +584,38 @@ export function SuppliersView({ role = 'ADMIN' }) {
   const [form, setForm] = useState({ name: '', address: '', joinedfrom: '', contact: '', email: '' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadSuppliers = () => {
+  const loadSuppliers = (q) => {
     if (!token()) return;
     setLoading(true);
-    const ep = role === 'PHARMACIST' ? `${API}/api/pharmacy/suppliers` : `${API}/api/admin/suppliers`;
-    fetch(ep, { headers: auth() })
+    const base = role === 'PHARMACIST' ? `${API}/api/pharmacy` : `${API}/api/admin`;
+    const url = q ? `${base}/suppliers/search?q=${encodeURIComponent(q)}` : `${base}/suppliers`;
+    fetch(url, { headers: auth() })
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setSuppliers)
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadSuppliers, [role]);
+  useEffect(() => {
+    const timer = setTimeout(() => loadSuppliers(searchQuery.trim() || null), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, role]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     if (!token()) return;
     const url = editingId ? `${API}/api/admin/suppliers/${editingId}` : `${API}/api/admin/suppliers`;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify({ ...form, contact: Number(form.contact) }) });
-    if (res.ok) { setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); setEditingId(null); loadSuppliers(); }
+    if (res.ok) { setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); setEditingId(null); loadSuppliers(searchQuery.trim() || null); }
   };
 
   const handleEdit = (s) => { setEditingId(s.id); setForm({ name: s.name, address: s.address, joinedfrom: s.joinedfrom || '', contact: s.contact || '', email: s.email }); };
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); };
   const handleDelete = async (id) => {
     if (!token() || !window.confirm('Delete this supplier?')) return;
-    if ((await fetch(`${API}/api/admin/suppliers/${id}`, { method: 'DELETE', headers: auth() })).ok) loadSuppliers();
+    if ((await fetch(`${API}/api/admin/suppliers/${id}`, { method: 'DELETE', headers: auth() })).ok) loadSuppliers(searchQuery.trim() || null);
   };
 
   const canManage = role === 'ADMIN' || role === 'PHARMACIST';
@@ -599,10 +649,12 @@ export function SuppliersView({ role = 'ADMIN' }) {
         </form>
       )}
 
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, address or email..." />
+
       {loading ? <Spinner color="border-violet-300" /> : (
         <div className="grid gap-4 md:grid-cols-2">
           {suppliers.length === 0 ? (
-            <div className="md:col-span-2"><EmptyState icon="🏭" title="No suppliers yet" subtitle="Add your first vendor partner above." /></div>
+            <div className="md:col-span-2"><EmptyState icon="🏭" title={searchQuery ? 'No matching suppliers' : 'No suppliers yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first vendor partner above.'} /></div>
           ) : suppliers.map((s) => (
             <div key={s.id} className="rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-md transition group">
               <div className="flex items-start gap-3">
@@ -647,13 +699,15 @@ export function SalesView({ role = 'ADMIN' }) {
   const [editingId, setEditingId] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadData = async () => {
+  const loadData = async (q) => {
     if (!token()) { setLoading(false); return; }
     setLoading(true);
     try {
+      const salesUrl = q ? `${API}/api/admin/sales/search?q=${encodeURIComponent(q)}` : `${API}/api/admin/sales`;
       const [rSales, rMed, rSup, rInv] = await Promise.all([
-        fetch(`${API}/api/admin/sales`, { headers: auth() }),
+        fetch(salesUrl, { headers: auth() }),
         fetch(`${API}/api/admin/medicines`, { headers: auth() }),
         fetch(`${API}/api/admin/suppliers`, { headers: auth() }),
         fetch(`${API}/api/admin/inventory`, { headers: auth() }),
@@ -667,6 +721,11 @@ export function SalesView({ role = 'ADMIN' }) {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => loadData(searchQuery.trim() || null), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const resetForm = () => {
     setForm({
@@ -710,7 +769,7 @@ export function SalesView({ role = 'ADMIN' }) {
       const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
       if (res.ok) {
         setSuccessMessage(editingId ? 'Transaction updated.' : 'Transaction registered. Inventory updated.');
-        resetForm(); loadData();
+        resetForm(); loadData(searchQuery.trim() || null);
       } else {
         let err = await res.text();
         try { const j = JSON.parse(err); err = j.message || j.error || err; } catch {}
@@ -734,7 +793,7 @@ export function SalesView({ role = 'ADMIN' }) {
   const handleDelete = async (id) => {
     if (!token() || !window.confirm('Delete this transaction? Stock will be reverted.')) return;
     if ((await fetch(`${API}/api/admin/sales/${id}`, { method: 'DELETE', headers: auth() })).ok) {
-      setSuccessMessage('Transaction deleted. Inventory reverted.'); loadData();
+      setSuccessMessage('Transaction deleted. Inventory reverted.'); loadData(searchQuery.trim() || null);
     }
   };
 
@@ -866,11 +925,13 @@ export function SalesView({ role = 'ADMIN' }) {
       )}
 
       {/* Records */}
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by medicine, batch or type..." />
+
       {loading ? <Spinner color="border-violet-300" /> : (
         <div>
           <h4 className="text-sm font-bold text-slate-700 mb-3">Transaction History ({records.length})</h4>
           {records.length === 0 ? (
-            <EmptyState icon="🧾" title="No transactions yet" subtitle="Register your first purchase or sale above." />
+            <EmptyState icon="🧾" title={searchQuery ? 'No matching transactions' : 'No transactions yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Register your first purchase or sale above.'} />
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {records.map((r) => (

@@ -8,6 +8,7 @@ import com.medical.om.om_backend.service.DashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
@@ -35,14 +36,29 @@ public class Pharmacycontroller {
         return ResponseEntity.ok((medicineRepository.findAll()));
     }
 
+    @GetMapping("/medicines/search")
+    public ResponseEntity<List<?>> searchMedicines(@RequestParam("q") String q) {
+        return ResponseEntity.ok(medicineRepository.search(q));
+    }
+
     @GetMapping("/inventory")
     public ResponseEntity<List<?>> getInventory() {
         return ResponseEntity.ok((inventoryRepository.findAll()));
     }
 
+    @GetMapping("/inventory/search")
+    public ResponseEntity<List<?>> searchInventory(@RequestParam("q") String q) {
+        return ResponseEntity.ok(inventoryRepository.search(q));
+    }
+
     @GetMapping("/suppliers")
     public ResponseEntity<List<Suppliers>> getSuppliers() {
         return ResponseEntity.ok(supplierRepository.findAll());
+    }
+
+    @GetMapping("/suppliers/search")
+    public ResponseEntity<List<Suppliers>> searchSuppliers(@RequestParam("q") String q) {
+        return ResponseEntity.ok(supplierRepository.search(q));
     }
 
     @GetMapping("/dashboard/stats")
