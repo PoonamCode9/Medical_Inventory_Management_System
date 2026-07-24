@@ -1,5 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Tooltip } from 'react-tooltip';
+import Swal from 'sweetalert2';
 
 const API = 'http://localhost:8080';
 const token = () => localStorage.getItem('om_token');
@@ -56,24 +59,28 @@ function EmptyState({ icon, title, subtitle }) {
   );
 }
 
-function FormInput({ label, ...props }) {
+function FormInput({ label, tooltip, ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</label>}
       <input
         className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition"
+        data-tooltip-id="dash-tooltip"
+        data-tooltip-content={tooltip}
         {...props}
       />
     </div>
   );
 }
 
-function FormSelect({ label, children, ...props }) {
+function FormSelect({ label, tooltip, children, ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</label>}
       <select
         className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition"
+        data-tooltip-id="dash-tooltip"
+        data-tooltip-content={tooltip}
         {...props}
       >
         {children}
@@ -107,7 +114,7 @@ function ActionBtn({ onClick, color = 'slate', children }) {
   );
 }
 
-function SearchInput({ value, onChange, placeholder = 'Search...' }) {
+function SearchInput({ value, onChange, placeholder = 'Search...', tooltip = 'Search through records...' }) {
   return (
     <div className="relative">
       <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,6 +125,8 @@ function SearchInput({ value, onChange, placeholder = 'Search...' }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        data-tooltip-id="dash-tooltip"
+        data-tooltip-content={tooltip}
         className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition"
       />
     </div>
@@ -162,8 +171,12 @@ export function UsersView() {
   const handleEdit = (u) => { setEditingId(u.id); setForm({ name: u.name, username: u.username, password: '', role: u.role }); };
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', username: '', password: '', role: 'STAFF' }); };
   const handleDelete = async (id) => {
-    if (!token() || !window.confirm('Delete this user?')) return;
-    if ((await fetch(`${API}/api/admin/users/${id}`, { method: 'DELETE', headers: auth() })).ok) loadUsers(searchQuery.trim() || null);
+    const result = await Swal.fire({ title: 'Delete this user?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
+    if (!result.isConfirmed || !token()) return;
+    if ((await fetch(`${API}/api/admin/users/${id}`, { method: 'DELETE', headers: auth() })).ok) {
+      loadUsers(searchQuery.trim() || null);
+      Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+    }
   };
 
   return (
@@ -173,12 +186,12 @@ export function UsersView() {
         <p className="text-sm text-slate-500 mt-1">Create, update and manage user accounts and role assignments.</p>
       </div>
 
-      <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="grid gap-4 md:grid-cols-4">
-          <FormInput label="Full Name" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <FormInput label="Username" placeholder="johndoe" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
-          <FormInput label={editingId ? 'Password (blank = keep)' : 'Password'} type="password" placeholder="••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} />
-          <FormSelect label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+          <FormInput label="Full Name" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="User's full display name" />
+          <FormInput label="Username" placeholder="johndoe" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required tooltip="Unique login username" />
+          <FormInput label={editingId ? 'Password (blank = keep)' : 'Password'} type="password" placeholder="••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} tooltip="Set a secure password for the user" />
+          <FormSelect label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} tooltip="Assign a system role to define permissions">
             <option value="STAFF">Staff</option>
             <option value="PHARMACIST">Pharmacist</option>
             <option value="ADMIN">Admin</option>
@@ -194,12 +207,12 @@ export function UsersView() {
             </button>
           )}
         </div>
-      </form>
+      </motion.form>
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or username..." />
 
       {loading ? <Spinner /> : (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <motion.div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/80">
@@ -212,8 +225,8 @@ export function UsersView() {
             <tbody className="divide-y divide-slate-100">
               {users.length === 0 ? (
                 <tr><td colSpan="4"><EmptyState icon="👤" title={searchQuery ? 'No matching users' : 'No users yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first user above.'} /></td></tr>
-              ) : users.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-50/50 transition">
+              ) : users.map((u, i) => (
+                <motion.tr key={u.id} className="hover:bg-slate-50/50 transition" custom={i} variants={{hidden: {opacity:0}, visible:{opacity:1}}} initial="hidden" animate="visible" whileHover={{ scale: 1.01 }}>
                   <td className="px-5 py-3.5 font-semibold text-slate-900">{u.name}</td>
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{u.username}</td>
                   <td className="px-5 py-3.5"><Badge color={ROLE_COLORS[u.role] || ROLE_COLORS.STAFF}>{u.role}</Badge></td>
@@ -223,11 +236,11 @@ export function UsersView() {
                       <ActionBtn onClick={() => handleDelete(u.id)} color="rose">Delete</ActionBtn>
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -275,8 +288,12 @@ export function MedicinesView({ role = 'ADMIN' }) {
   const handleEdit = (m) => { setEditingId(m.id); setForm({ name: m.name, description: m.description || '', category: m.category || '' }); };
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', description: '', category: '' }); };
   const handleDelete = async (id) => {
-    if (!token() || !window.confirm('Delete this medicine?')) return;
-    if ((await fetch(`${API}/api/admin/medicines/${id}`, { method: 'DELETE', headers: auth() })).ok) loadMedicines(searchQuery.trim() || null);
+    const result = await Swal.fire({ title: 'Delete this medicine?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
+    if (!result.isConfirmed || !token()) return;
+    if ((await fetch(`${API}/api/admin/medicines/${id}`, { method: 'DELETE', headers: auth() })).ok) {
+      loadMedicines(searchQuery.trim() || null);
+      Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+    }
   };
 
   return (
@@ -289,10 +306,10 @@ export function MedicinesView({ role = 'ADMIN' }) {
       {errorMsg && <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-sm font-semibold text-rose-700">{errorMsg}</div>}
 
       {(role === 'ADMIN' || role === 'PHARMACIST') && (
-        <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="grid gap-4 md:grid-cols-2">
-            <FormInput label="Medicine Name" placeholder="e.g. Paracetamol 500mg" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <FormSelect label="Therapeutic Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
+            <FormInput label="Medicine Name" placeholder="e.g. Paracetamol 500mg" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="Official name of the medicine" />
+            <FormSelect label="Therapeutic Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required tooltip="Select the therapeutic classification">
               <option value="">Select category</option>
               {Object.entries(CAT_LABELS).map(([val, lbl]) => (
                 <option key={val} value={val}>{lbl}</option>
@@ -306,6 +323,8 @@ export function MedicinesView({ role = 'ADMIN' }) {
                   placeholder="Write usage, strength, or warnings here..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  data-tooltip-id="dash-tooltip"
+                  data-tooltip-content="Clinical description, formula details, or usage instructions"
                 />
               </div>
             </div>
@@ -320,17 +339,23 @@ export function MedicinesView({ role = 'ADMIN' }) {
               </button>
             )}
           </div>
-        </form>
+        </motion.form>
       )}
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or description..." />
 
       {loading ? <Spinner color="border-emerald-300" /> : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <motion.div className="grid gap-4 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
           {medicines.length === 0 ? (
             <div className="md:col-span-2"><EmptyState icon="💊" title={searchQuery ? 'No matching medicines' : 'No medicines in catalog'} subtitle={searchQuery ? 'Try a different search term.' : 'Define your first medicine formula above.'} /></div>
-          ) : medicines.map((m) => (
-            <div key={m.id} className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between hover:shadow-md transition group">
+          ) : medicines.map((m, i) => (
+            <motion.div
+              key={m.id}
+              className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between transition group"
+              variants={{ hidden: { opacity: 0, y: 20, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14 } } }}
+              whileHover={{ y: -4, boxShadow: '0 8px 25px -8px rgba(0,0,0,0.1)' }}
+              layout
+            >
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <h4 className="font-bold text-slate-900 text-lg leading-tight">{m.name}</h4>
@@ -341,14 +366,19 @@ export function MedicinesView({ role = 'ADMIN' }) {
                 )}
               </div>
               {(role === 'ADMIN' || role === 'PHARMACIST') && (
-                <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition">
+                <motion.div
+                  className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end"
+                  initial={{ opacity: 0, height: 0 }}
+                  whileInView={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.2 }}
+                >
                   <ActionBtn onClick={() => handleEdit(m)}>Edit</ActionBtn>
                   <ActionBtn onClick={() => handleDelete(m.id)} color="rose">Delete</ActionBtn>
-                </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -479,7 +509,7 @@ export function InventoryView({ role = 'ADMIN' }) {
                         <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
                           {pieData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                         </Pie>
-                        <Tooltip />
+                        <RechartsTooltip />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : <EmptyState icon="📊" title="No data" subtitle="" />}
@@ -491,7 +521,7 @@ export function InventoryView({ role = 'ADMIN' }) {
                       <BarChart data={barData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={50} />
                         <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip />
+                        <RechartsTooltip />
                         <Bar dataKey="quantity" radius={[4, 4, 0, 0]}>
                           {barData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                         </Bar>
@@ -539,7 +569,7 @@ export function InventoryView({ role = 'ADMIN' }) {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <motion.div className="space-y-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <SearchInput value={movementSearch} onChange={(e) => setMovementSearch(e.target.value)} placeholder="Search movements by medicine, batch or type..." />
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -554,8 +584,8 @@ export function InventoryView({ role = 'ADMIN' }) {
               <tbody className="divide-y divide-slate-100">
                 {movements.length === 0 ? (
                   <tr><td colSpan="7"><EmptyState icon="📋" title={movementSearch ? 'No matching movements' : 'No transactions yet'} subtitle={movementSearch ? 'Try a different search term.' : 'Register your first purchase or sale above.'} /></td></tr>
-                ) : movements.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/50 transition">
+                ) : movements.map((m, i) => (
+                  <motion.tr key={m.id} className="hover:bg-slate-50/50 transition" custom={i} variants={{hidden: {opacity:0}, visible:{opacity:1}}} initial="hidden" animate="visible" whileHover={{ scale: 1.01 }}>
                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.date || '—'}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       <Badge color={m.type === 'PURCHASE' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}>{m.type}</Badge>
@@ -565,13 +595,13 @@ export function InventoryView({ role = 'ADMIN' }) {
                     <td className="px-5 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{m.quantity}</td>
                     <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">${m.amount?.toFixed(2)}</td>
                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.supplier?.name || '—'}</td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -614,8 +644,12 @@ export function SuppliersView({ role = 'ADMIN' }) {
   const handleEdit = (s) => { setEditingId(s.id); setForm({ name: s.name, address: s.address, joinedfrom: s.joinedfrom || '', contact: s.contact || '', email: s.email }); };
   const cancelEdit = () => { setEditingId(null); setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); };
   const handleDelete = async (id) => {
-    if (!token() || !window.confirm('Delete this supplier?')) return;
-    if ((await fetch(`${API}/api/admin/suppliers/${id}`, { method: 'DELETE', headers: auth() })).ok) loadSuppliers(searchQuery.trim() || null);
+    const result = await Swal.fire({ title: 'Delete this supplier?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
+    if (!result.isConfirmed || !token()) return;
+    if ((await fetch(`${API}/api/admin/suppliers/${id}`, { method: 'DELETE', headers: auth() })).ok) {
+      loadSuppliers(searchQuery.trim() || null);
+      Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+    }
   };
 
   const canManage = role === 'ADMIN' || role === 'PHARMACIST';
@@ -628,13 +662,13 @@ export function SuppliersView({ role = 'ADMIN' }) {
       </div>
 
       {canManage && (
-        <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="grid gap-4 md:grid-cols-2">
-            <FormInput label="Company Name" placeholder="Acme Pharma Ltd." value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <FormInput label="Email" type="email" placeholder="vendor@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            <FormInput label="Address" placeholder="123 Medical District" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
-            <FormInput label="Partner Since" type="date" value={form.joinedfrom} onChange={(e) => setForm({ ...form, joinedfrom: e.target.value })} required />
-            <FormInput label="Phone / Contact" type="number" placeholder="+1 555 0123" value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} required />
+            <FormInput label="Company Name" placeholder="Acme Pharma Ltd." value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="Legal business name of the supplier" />
+            <FormInput label="Email" type="email" placeholder="vendor@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required tooltip="Supplier's primary email address" />
+            <FormInput label="Address" placeholder="123 Medical District" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required tooltip="Physical or mailing address" />
+            <FormInput label="Partner Since" type="date" value={form.joinedfrom} onChange={(e) => setForm({ ...form, joinedfrom: e.target.value })} required tooltip="Date when partnership began" />
+            <FormInput label="Phone / Contact" type="number" placeholder="+1 555 0123" value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} required tooltip="Primary contact phone number" />
           </div>
           <div className="mt-4 flex gap-2">
             <button type="submit" className="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-violet-700 active:bg-violet-800 transition shadow-sm">
@@ -646,21 +680,31 @@ export function SuppliersView({ role = 'ADMIN' }) {
               </button>
             )}
           </div>
-        </form>
+        </motion.form>
       )}
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, address or email..." />
 
       {loading ? <Spinner color="border-violet-300" /> : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <motion.div className="grid gap-4 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
           {suppliers.length === 0 ? (
             <div className="md:col-span-2"><EmptyState icon="🏭" title={searchQuery ? 'No matching suppliers' : 'No suppliers yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first vendor partner above.'} /></div>
-          ) : suppliers.map((s) => (
-            <div key={s.id} className="rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-md transition group">
+          ) : suppliers.map((s, i) => (
+            <motion.div
+              key={s.id}
+              className="rounded-2xl border border-slate-200 bg-white p-5 transition group"
+              variants={{ hidden: { opacity: 0, y: 20, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14 } } }}
+              whileHover={{ y: -4, boxShadow: '0 8px 25px -8px rgba(0,0,0,0.1)' }}
+              layout
+            >
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold text-sm">
+                <motion.div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold text-sm"
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  transition={{ type: 'spring', stiffness: 200 }}
+                >
                   {s.name?.charAt(0)?.toUpperCase()}
-                </div>
+                </motion.div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-slate-900 truncate">{s.name}</h4>
                   <p className="text-xs text-slate-500 mt-0.5 truncate">{s.email}</p>
@@ -669,14 +713,19 @@ export function SuppliersView({ role = 'ADMIN' }) {
                 </div>
               </div>
               {canManage && (
-                <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition">
+                <motion.div
+                  className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end"
+                  initial={{ opacity: 0, height: 0 }}
+                  whileInView={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.2 }}
+                >
                   <ActionBtn onClick={() => handleEdit(s)}>Edit</ActionBtn>
                   <ActionBtn onClick={() => handleDelete(s.id)} color="rose">Delete</ActionBtn>
-                </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -791,9 +840,11 @@ export function SalesView({ role = 'ADMIN' }) {
   };
 
   const handleDelete = async (id) => {
-    if (!token() || !window.confirm('Delete this transaction? Stock will be reverted.')) return;
+    const result = await Swal.fire({ title: 'Delete this transaction?', text: 'Stock will be reverted.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
+    if (!result.isConfirmed || !token()) return;
     if ((await fetch(`${API}/api/admin/sales/${id}`, { method: 'DELETE', headers: auth() })).ok) {
       setSuccessMessage('Transaction deleted. Inventory reverted.'); loadData(searchQuery.trim() || null);
+      Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
     }
   };
 
@@ -830,7 +881,7 @@ export function SalesView({ role = 'ADMIN' }) {
 
       {/* Form */}
       {canManage && (
-        <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           {/* Form header strip */}
           <div className={`px-5 py-3 border-b flex items-center justify-between ${form.type === 'PURCHASE' ? 'bg-blue-50/80 border-blue-100' : 'bg-emerald-50/80 border-emerald-100'}`}>
             <h4 className={`text-sm font-bold ${form.type === 'PURCHASE' ? 'text-blue-800' : 'text-emerald-800'}`}>
@@ -841,13 +892,13 @@ export function SalesView({ role = 'ADMIN' }) {
 
           <div className="p-5 grid gap-4 md:grid-cols-2">
             {/* Type */}
-            <FormSelect label="Transaction Type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value, medicineId: '', batch: '', supplierId: '', newMedicineName: '', newMedicineDescription: '', newMedicineCategory: '' })}>
+            <FormSelect label="Transaction Type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value, medicineId: '', batch: '', supplierId: '', newMedicineName: '', newMedicineDescription: '', newMedicineCategory: '' })} tooltip="Choose Purchase to receive stock or Sale to dispense">
               <option value="PURCHASE">PURCHASE (Receive Stock)</option>
               <option value="SALE">SALE (Dispense Stock)</option>
             </FormSelect>
 
             {/* Medicine */}
-              <FormSelect label="Medicine" value={form.medicineId} onChange={(e) => setForm({ ...form, medicineId: e.target.value, batch: '' })} required>
+              <FormSelect label="Medicine" value={form.medicineId} onChange={(e) => setForm({ ...form, medicineId: e.target.value, batch: '' })} required tooltip="Select an existing medicine or add a new one">
                   <option value="">-- Select Medicine --</option>
                   {form.type === 'PURCHASE' && <option value="new" className="text-blue-600 font-bold">+ Add New Medicine (Inline)</option>}
                   {medicines.map(m => {
@@ -860,21 +911,21 @@ export function SalesView({ role = 'ADMIN' }) {
             {form.medicineId === 'new' && form.type === 'PURCHASE' && (
               <div className="md:col-span-2 border border-dashed border-blue-200 bg-blue-50/40 rounded-2xl p-4 grid gap-3 md:grid-cols-2">
                 <div className="md:col-span-2 text-sm font-bold text-blue-800 border-b border-blue-100 pb-2">Define New Medicine</div>
-                <FormInput label="Medicine Name" placeholder="e.g. Ibuprofen 400mg" value={form.newMedicineName} onChange={(e) => setForm({ ...form, newMedicineName: e.target.value })} required />
-                <FormSelect label="Category" value={form.newMedicineCategory} onChange={(e) => setForm({ ...form, newMedicineCategory: e.target.value })} required>
+                <FormInput label="Medicine Name" placeholder="e.g. Ibuprofen 400mg" value={form.newMedicineName} onChange={(e) => setForm({ ...form, newMedicineName: e.target.value })} required tooltip="Name of the new medicine to add" />
+                <FormSelect label="Category" value={form.newMedicineCategory} onChange={(e) => setForm({ ...form, newMedicineCategory: e.target.value })} required tooltip="Therapeutic category for the new medicine">
                   <option value="">Select Category</option>
                   {Object.entries(CAT_LABELS).map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
                 </FormSelect>
                 <div className="md:col-span-2 flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Description / Usage</label>
-                  <textarea className="rounded-xl border border-blue-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 h-16 resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none transition" placeholder="Clinical details, dosage, warnings..." value={form.newMedicineDescription} onChange={(e) => setForm({ ...form, newMedicineDescription: e.target.value })} />
+                  <textarea className="rounded-xl border border-blue-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 h-16 resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none transition" placeholder="Clinical details, dosage, warnings..." value={form.newMedicineDescription} onChange={(e) => setForm({ ...form, newMedicineDescription: e.target.value })} data-tooltip-id="dash-tooltip" data-tooltip-content="Clinical details, dosage instructions, or warnings" />
                 </div>
               </div>
             )}
 
             {/* Batch */}
             {form.type === 'SALE' ? (
-              <FormSelect label="Select Batch (In Stock)" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required>
+              <FormSelect label="Select Batch (In Stock)" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required tooltip="Choose which batch to dispense from">
                 <option value="">-- Select Batch --</option>
                 {availableBatches.length > 0
                   ? availableBatches.map(b => <option key={b.id} value={b.batch}>{b.batch} — Qty: {b.available_qty}</option>)
@@ -882,27 +933,27 @@ export function SalesView({ role = 'ADMIN' }) {
                 }
               </FormSelect>
             ) : (
-              <FormInput label="Batch Code" placeholder="e.g. BATCH-2026A" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required />
+              <FormInput label="Batch Code" placeholder="e.g. BATCH-2026A" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required tooltip="Unique batch identifier for this purchase" />
             )}
 
             {/* Quantity */}
-            <FormInput label="Quantity (Units)" type="number" placeholder="Number of units" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} min="1" required />
+            <FormInput label="Quantity (Units)" type="number" placeholder="Number of units" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} min="1" required tooltip="Number of units being purchased or sold" />
 
             {/* Amount */}
-            <FormInput label="Total Amount ($)" type="number" step="0.01" placeholder="Total cost" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} min="0" required />
+            <FormInput label="Total Amount ($)" type="number" step="0.01" placeholder="Total cost" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} min="0" required tooltip="Total monetary value of the transaction" />
 
             {/* Date */}
-            <FormInput label="Transaction Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
+            <FormInput label="Transaction Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required tooltip="Date when the transaction took place" />
 
             {/* Purchase-only */}
             {form.type === 'PURCHASE' && (
               <>
-                <FormSelect label="Supplier (Vendor)" value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })}>
+                <FormSelect label="Supplier (Vendor)" value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })} tooltip="Select the vendor this purchase is from">
                   <option value="">-- Select Supplier --</option>
                   {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </FormSelect>
-                <FormInput label="Manufacturing Date" type="date" value={form.manufacturing_date} onChange={(e) => setForm({ ...form, manufacturing_date: e.target.value })} />
-                <FormInput label="Expiration Date" type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} />
+                <FormInput label="Manufacturing Date" type="date" value={form.manufacturing_date} onChange={(e) => setForm({ ...form, manufacturing_date: e.target.value })} tooltip="Date the batch was manufactured" />
+                <FormInput label="Expiration Date" type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} tooltip="Expiration date of this batch" />
               </>
             )}
 
@@ -921,21 +972,21 @@ export function SalesView({ role = 'ADMIN' }) {
               </button>
             </div>
           </div>
-        </form>
+        </motion.form>
       )}
 
       {/* Records */}
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by medicine, batch or type..." />
 
       {loading ? <Spinner color="border-violet-300" /> : (
-        <div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <h4 className="text-sm font-bold text-slate-700 mb-3">Transaction History ({records.length})</h4>
           {records.length === 0 ? (
             <EmptyState icon="🧾" title={searchQuery ? 'No matching transactions' : 'No transactions yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Register your first purchase or sale above.'} />
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {records.map((r) => (
-                <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-md transition group">
+            <motion.div className="grid gap-3 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
+              {records.map((r, i) => (
+                <motion.div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-md transition group" variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ y: -2 }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h4 className="font-bold text-slate-900 truncate">{r.medicine?.name || 'Unknown'}</h4>
@@ -955,11 +1006,11 @@ export function SalesView({ role = 'ADMIN' }) {
                       <ActionBtn onClick={() => handleDelete(r.id)} color="rose">Delete</ActionBtn>
                     </div>
                   )}
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

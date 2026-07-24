@@ -60,16 +60,77 @@ body {
 
 /* Formal White Card Container */
 .auth-card {
-  max-width: 50vw;
-  position: relative;
-  transform: translate(50%);
+  max-width: 900px;
+  width: 95%;
+  margin: 2rem auto;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
+}
+
+.auth-content {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.auth-image-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  border-radius: 12px;
+}
+
+.auth-side-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
+.auth-lottie-wrapper {
+  margin-top: 16px;
+}
+
+.auth-lottie {
+  width: 60px;
+  height: 60px;
+}
+
+.auth-image-caption {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+.auth-form-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .auth-content {
+    flex-direction: column;
+  }
+  .auth-image-panel {
+    min-height: 200px;
+    order: -1;
+  }
+  .auth-side-image {
+    max-width: 200px;
+  }
 }
 
 .auth-card:hover {
