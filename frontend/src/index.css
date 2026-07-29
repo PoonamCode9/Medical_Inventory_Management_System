@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-sidebar: #334155;
+  --color-sidebar-hover: #475569;
+  --color-selected: #0F766E;
+  --color-primary-brand: #0F766E;
+  --color-secondary-brand: #2563EB;
+  --color-success-brand: #16A34A;
+  --color-warning-brand: #F59E0B;
+  --color-danger-brand: #DC2626;
+}
+
+/* Custom styles for application */
+body {
+  font-family: var(--font-sans);
+  background-color: #F8FAFC;
+}
+
+.rounded-card {
+  border-radius: 10px;
+}
