@@ -1,6 +1,11 @@
+import Navbar from "../components/Navbar";
+import { Link } from "react-router-dom";
 function Dashboard() {
 
   return (
+    <>
+    <Navbar />
+    
 
     <div className="container mt-5">
 
@@ -8,40 +13,30 @@ function Dashboard() {
 
       <hr />
 
-      <div className="row">
+      
 
-        <div className="col-md-3">
-          <div className="card text-center p-3">
-            <h5>Total Medicines</h5>
-            <h2>20</h2>
-          </div>
-        </div>
+        <div className="card text-center shadow">
 
-        <div className="col-md-3">
-          <div className="card text-center p-3">
-            <h5>Total Suppliers</h5>
-            <h2>10</h2>
-          </div>
-        </div>
+<h4>Total Medicines</h4>
 
-        <div className="col-md-3">
-          <div className="card text-center p-3">
-            <h5>Low Stock</h5>
-            <h2>4</h2>
-          </div>
-        </div>
+<h1>20</h1>
 
-        <div className="col-md-3">
-          <div className="card text-center p-3">
-            <h5>Expired</h5>
-            <h2>2</h2>
-          </div>
-        </div>
+<Link to="/medicines">
+
+<button className="btn btn-primary">
+
+View Medicines
+
+</button>
+
+</Link>
+
+</div>
 
       </div>
 
-    </div>
-
+    
+    </>
   );
 
 }

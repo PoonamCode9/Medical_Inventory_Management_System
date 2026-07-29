@@ -8,11 +8,11 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "Welcome to MediStock Backend";
+        return "Welcome to MediStock";
     }
 
     @GetMapping("/api/test")
     public String test() {
-        return "MediStock API is Working Successfully!";
+        return "MediStock API Working";
     }
 }

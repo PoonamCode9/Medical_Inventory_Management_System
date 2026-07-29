@@ -3,6 +3,10 @@ package com.medistock.repository;
 import com.medistock.entity.Supplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SupplierRepository extends JpaRepository<Supplier,Long>{
+import java.util.List;
 
-}
+public interface SupplierRepository extends JpaRepository<Supplier, Long> {
+
+    List<Supplier> findBySupplierNameContainingIgnoreCase(String supplierName);
+
+}   
