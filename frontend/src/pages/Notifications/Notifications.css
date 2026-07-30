@@ -1,0 +1,11 @@
+.notification-page{
+    width:100%;
+    min-height:100vh;
+    padding:25px;
+    background:#f4f7fb;
+}
+.notification-content{
+    width:100%;
+    margin-left:0;
+    padding-left:0;
+}
