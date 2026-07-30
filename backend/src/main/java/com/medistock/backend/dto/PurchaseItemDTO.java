@@ -1,0 +1,63 @@
+package com.medistock.backend.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class PurchaseItemDTO {
+    private Long medicineId;
+    private String medicineName;
+    private String batchNumber;
+    private Integer quantity;
+    private BigDecimal unitCostPrice;
+    private LocalDate expiryDate;
+
+    public PurchaseItemDTO() {}
+
+    public Long getMedicineId() {
+        return medicineId;
+    }
+
+    public void setMedicineId(Long medicineId) {
+        this.medicineId = medicineId;
+    }
+
+    public String getMedicineName() {
+        return medicineName;
+    }
+
+    public void setMedicineName(String medicineName) {
+        this.medicineName = medicineName;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitCostPrice() {
+        return unitCostPrice;
+    }
+
+    public void setUnitCostPrice(BigDecimal unitCostPrice) {
+        this.unitCostPrice = unitCostPrice;
+    }
+
+    public LocalDate getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+}
