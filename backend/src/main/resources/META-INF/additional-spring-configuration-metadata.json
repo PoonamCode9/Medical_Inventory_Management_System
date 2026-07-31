@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "JWT signing secret key. Use a long random string in production."
+    },
+    {
+      "name": "app.jwt.expiration-ms",
+      "type": "java.lang.String",
+      "description": "JWT token expiration time in milliseconds. Default: 86400000 (24 hours)."
+    },
+    {
+      "name": "app.email.from-address",
+      "type": "java.lang.String",
+      "description": "Sender email address for outgoing email alerts."
+    },
+    {
+      "name": "app.email.from-name",
+      "type": "java.lang.String",
+      "description": "Display name used as the sender for outgoing email alerts."
+    },
+    {
+      "name": "app.email.alert-recipient-roles",
+      "type": "java.lang.String",
+      "description": "Comma-separated list of user roles that receive email alerts. Available: Admin, Pharmacist, Staff, Supplier."
+    }
+  ]
+}

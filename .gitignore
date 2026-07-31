@@ -1,0 +1,27 @@
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Backend / Maven
+backend/target/
+backend/mvnw
+backend/mvnw.cmd
+backend/HELP.md
+backend/.mvn
+
+# React / Node
+node_modules
+frontend/node_modules/
+frontend/dist/
+
+# Environment / secrets
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediStock Critical Alert</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .header.critical-stock {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        }
+        .header.expiring {
+            background: linear-gradient(135deg, #e65100, #bf360c);
+        }
+        .header.test {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        }
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .header .alert-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px 40px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .alert-card {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .alert-card.expired {
+            background: #ffebee;
+            border-color: #ffcdd2;
+        }
+        .alert-card .medicine-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #bf360c;
+            margin: 0 0 8px;
+        }
+        .alert-card .medicine-name.expired-color {
+            color: #c62828;
+        }
+        .alert-card .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 14px;
+        }
+        .alert-card .detail-row:last-child {
+            border-bottom: none;
+        }
+        .alert-card .detail-label {
+            color: #666;
+        }
+        .alert-card .detail-value {
+            font-weight: 600;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-badge.critical {
+            background: #d32f2f;
+            color: #ffffff;
+        }
+        .status-badge.warning {
+            background: #e65100;
+            color: #ffffff;
+        }
+        .status-badge.info {
+            background: #1565c0;
+            color: #ffffff;
+        }
+        .status-badge.success {
+            background: #2e7d32;
+            color: #ffffff;
+        }
+        .action-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 28px;
+            background: #1a73e8;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .action-button:hover {
+            background: #1557b0;
+        }
+        .footer {
+            background: #fafafa;
+            padding: 20px 40px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+        .footer a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        .timestamp {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 16px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container { margin: 10px; }
+            .content { padding: 20px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Dynamic Header based on alert type -->
+        <!-- Stock Alert Header -->
+        <div class="header critical-stock" th:if="${alertType != null and (isOutOfStock != null or isCritical != null)}">
+            <span class="alert-icon">🚨</span>
+            <h1 th:text="${alertType}">Critical Stock Alert</h1>
+            <p>Immediate action required — <span th:text="${timestamp}">January 1, 2025 at 10:00 AM</span></p>
+        </div>
+
+        <!-- Expiring Alert Header -->
+        <div class="header expiring" th:if="${alertType != null and (isExpired != null or (isCritical != null and isExpired == null)) and alertType != 'Critically Low Stock' and alertType != 'Out of Stock'}">
+            <span class="alert-icon">⏰</span>
+            <h1 th:text="${alertType}">Expiry Alert</h1>
+            <p>Immediate action required — <span th:text="${timestamp}">January 1, 2025 at 10:00 AM</span></p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Hello <strong th:text="${recipientName}">User</strong>,
+            </div>
+            <p style="margin-top: 0; color: #555;">
+                This is an <strong>automated urgent alert</strong> from the MediStock Pharmacy Management System.
+            </p>
+
+            <!-- Stock Alert Card -->
+            <div class="alert-card" th:if="${medicineName != null and quantity != null}">
+                <div class="medicine-name" th:text="${medicineName}">Paracetamol</div>
+                <div class="detail-row">
+                    <span class="detail-label">Batch Number</span>
+                    <span class="detail-value" th:text="${batchNumber}">BAT-001</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Current Quantity</span>
+                    <span class="detail-value" th:text="${quantity}">0</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status</span>
+                    <span>
+                        <span class="status-badge critical" th:if="${isOutOfStock}" th:text="'Out of Stock'">Out of Stock</span>
+                        <span class="status-badge warning" th:if="${isCritical and !isOutOfStock}" th:text="'Critical'">Critical</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Expiry Alert Card -->
+            <div class="alert-card expired" th:if="${medicineName != null and expiryDate != null}">
+                <div class="medicine-name expired-color" th:text="${medicineName}">Amoxicillin</div>
+                <div class="detail-row">
+                    <span class="detail-label">Batch Number</span>
+                    <span class="detail-value" th:text="${batchNumber}">BAT-002</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Expiry Date</span>
+                    <span class="detail-value" th:text="${expiryDate}">2025-03-15</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Days Remaining</span>
+                    <span class="detail-value" th:text="${daysToExpiry}">-5</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status</span>
+                    <span>
+                        <span class="status-badge critical" th:if="${isExpired}" th:text="'Expired'">Expired</span>
+                        <span class="status-badge warning" th:if="${isCritical and !isExpired}" th:text="'Critical'">Critical</span>
+                    </span>
+                </div>
+            </div>
+
+            <p style="color: #555; font-size: 14px; margin-top: 20px;">
+                Please log in to the MediStock system immediately to take appropriate action.
+            </p>
+
+            <div style="text-align: center;">
+                <a class="action-button" href="http://localhost:5173" target="_blank">
+                    Go to MediStock Dashboard →
+                </a>
+            </div>
+
+            <div class="timestamp">
+                Alert generated at <span th:text="${timestamp}">January 1, 2025 at 10:00 AM</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>MediStock Pharmacy Management System &bull; Automated Urgent Alert</p>
+            <p>
+                This email was sent to <span th:text="${recipientEmail}">user@example.com</span>.<br/>
+                If you have any questions, please contact your system administrator.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

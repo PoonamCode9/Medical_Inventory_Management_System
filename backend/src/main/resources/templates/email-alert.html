@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediStock Daily Alert Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            color: #333;
+        }
+        .container {
+            max-width: 680px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px 40px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .summary-cards {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .summary-card {
+            flex: 1;
+            padding: 18px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .summary-card.low-stock {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+        .summary-card.expiring {
+            background: #fce4ec;
+            border: 1px solid #f8bbd0;
+        }
+        .summary-card .count {
+            font-size: 32px;
+            font-weight: 700;
+            display: block;
+        }
+        .summary-card .label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .summary-card.low-stock .count { color: #e65100; }
+        .summary-card.expiring .count { color: #c62828; }
+
+        .section {
+            margin-bottom: 28px;
+        }
+        .section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8eaf6;
+            color: #1a237e;
+        }
+        .section h2 .icon {
+            margin-right: 6px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f5f5f5;
+            text-align: left;
+            padding: 10px 12px;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-badge.critical {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .status-badge.warning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .status-badge.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-style: italic;
+        }
+        .footer {
+            background: #fafafa;
+            padding: 20px 40px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+        .footer a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container { margin: 10px; }
+            .content { padding: 20px; }
+            .summary-cards { flex-direction: column; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏥 MediStock Daily Alert Summary</h1>
+            <p>Inventory status report for <span th:text="${reportDate}">January 1, 2025</span></p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Hello <strong th:text="${recipientName}">User</strong>,
+            </div>
+            <p style="margin-top: 0; color: #555;">
+                Here is your daily summary of medicines that require your attention.
+            </p>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card low-stock">
+                    <span class="count" th:text="${lowStockCount}">0</span>
+                    <span class="label">Low Stock Items</span>
+                </div>
+                <div class="summary-card expiring">
+                    <span class="count" th:text="${expiringCount}">0</span>
+                    <span class="label">Expiring Soon</span>
+                </div>
+            </div>
+
+            <!-- Low Stock Section -->
+            <div class="section">
+                <h2><span class="icon">📦</span> Low Stock &amp; Out of Stock Medicines</h2>
+                <table th:if="${lowStockMedicines != null and !lowStockMedicines.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Batch #</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="med : ${lowStockMedicines}">
+                            <td th:text="${med.name}">Paracetamol</td>
+                            <td th:text="${med.batchNumber}">BAT-001</td>
+                            <td th:text="${med.quantity}">5</td>
+                            <td>
+                                <span class="status-badge warning" th:if="${med.quantity <= 0}">Out of Stock</span>
+                                <span class="status-badge warning" th:if="${med.quantity > 0 and med.quantity <= 5}">Critical</span>
+                                <span class="status-badge info" th:if="${med.quantity > 5 and med.quantity <= 10}">Low</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="no-data" th:if="${lowStockMedicines == null or lowStockMedicines.isEmpty()}">
+                    ✅ All medicines are adequately stocked.
+                </div>
+            </div>
+
+            <!-- Expiring Section -->
+            <div class="section">
+                <h2><span class="icon">⏰</span> Medicines Expiring Within 30 Days</h2>
+                <table th:if="${expiringMedicines != null and !expiringMedicines.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Batch #</th>
+                            <th>Expiry Date</th>
+                            <th>Days Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="med : ${expiringMedicines}">
+                            <td th:text="${med.name}">Amoxicillin</td>
+                            <td th:text="${med.batchNumber}">BAT-002</td>
+                            <td th:text="${med.expiryDate}">2025-03-15</td>
+                            <td>
+                                <span class="status-badge critical" th:if="${med.daysToExpiry <= 0}">Expired</span>
+                                <span class="status-badge warning" th:if="${med.daysToExpiry > 0 and med.daysToExpiry <= 7}">Critical</span>
+                                <span class="status-badge info" th:if="${med.daysToExpiry > 7 and med.daysToExpiry <= 30}">Expiring</span>
+                                <span th:text="${med.daysToExpiry} + ' days'" th:if="${med.daysToExpiry > 0}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="no-data" th:if="${expiringMedicines == null or expiringMedicines.isEmpty()}">
+                    ✅ No medicines are expiring within the next 30 days.
+                </div>
+            </div>
+
+            <p style="margin-top: 24px; color: #777; font-size: 13px; text-align: center;">
+                This is an automated alert from the MediStock Pharmacy Management System.<br/>
+                Please log in to the system for detailed information and actions.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>MediStock Pharmacy Management System &bull; Automated Alert</p>
+            <p>
+                This email was sent to <span th:text="${recipientEmail}">user@example.com</span>.<br/>
+                If you have any questions, please contact your system administrator.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
