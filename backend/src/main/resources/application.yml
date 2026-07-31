@@ -1,0 +1,69 @@
+server:
+  port: 8081
+ 
+
+spring:
+  application:
+    name: medistock-backend
+
+  # ---- Database ----
+  # Default: in-memory H2, zero setup, resets on restart. Good for demo/dev.
+  # For real persistence, switch to the postgres profile (see application-postgres.yml)
+  # or set SPRING_PROFILES_ACTIVE=postgres and provide DB_URL / DB_USERNAME / DB_PASSWORD.
+  datasource:
+    url: jdbc:h2:mem:medistock;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  # ---- Email (SMTP) ----
+  # These are read from environment variables so real credentials never sit in source control.
+  # Example for Gmail:
+  #   SMTP_HOST=smtp.gmail.com  SMTP_PORT=587
+  #   SMTP_USERNAME=youraddress@gmail.com
+  #   SMTP_PASSWORD=<16-char Gmail App Password, NOT your normal password>
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# ---- MediStock-specific settings ----
+medistock:
+  notification:
+    # Who receives expiry alert emails. Comma-separated for multiple recipients.
+    recipient-emails: ${NOTIFICATION_RECIPIENT_EMAILS:pharmacy-manager@example.com}
+    # "from" address shown on outgoing mail. Many providers require this to match SMTP_USERNAME.
+    from-email: ${NOTIFICATION_FROM_EMAIL:${SMTP_USERNAME:no-reply@medistock.example}}
+    # A medicine counts as "near expiry" when its days-to-expiry is <= this value.
+    near-expiry-threshold-days: 90
+    # A medicine counts as "critical" when its days-to-expiry is <= this value (still >= 0).
+    critical-threshold-days: 30
+    # Cron for the automatic daily check. Default: every day at 08:00 server time.
+    check-cron: "0 0 8 * * *"
+    # If true, an expiry check also runs once, a few seconds after the app starts (handy for demos).
+    run-on-startup: true
+
+logging:
+  level:
+    com.medistock.backend: INFO
