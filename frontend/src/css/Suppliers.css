@@ -1,0 +1,97 @@
+.supplier-page{
+    margin-left:260px;
+    padding:30px;
+    background:#f4f7fc;
+    min-height:100vh;
+}
+
+.page-title{
+    font-size:34px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.page-subtitle{
+    color:#64748b;
+    margin-bottom:30px;
+}
+
+.supplier-form{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    margin-bottom:30px;
+}
+
+.table-card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.form-control{
+    border-radius:12px;
+    height:48px;
+}
+
+textarea.form-control{
+    height:100px;
+}
+
+.btn-primary{
+    background:#2563eb;
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+}
+
+.btn-primary:hover{
+    background:#1d4ed8;
+}
+
+.table thead th{
+    background:#2563eb;
+    color:white;
+}
+
+.table tbody tr:hover{
+    background:#f8fbff;
+}
+
+.btn-outline-primary,
+.btn-outline-danger{
+    border-radius:10px;
+}
+
+.search-card{
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    margin-bottom:25px;
+}
+
+.stats-card{
+    border:none;
+    border-radius:18px;
+    padding:20px;
+    color:white;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.stats-card:hover{
+    transform:translateY(-6px);
+}
+
+.stats-card h5{
+    font-size:17px;
+    margin-bottom:10px;
+}
+
+.stats-card h2{
+    font-size:34px;
+    font-weight:700;
+}

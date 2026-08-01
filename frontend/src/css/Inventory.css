@@ -1,0 +1,46 @@
+.inventory-page{
+    margin-left:260px;
+    padding:30px;
+    background:#f4f7fc;
+    min-height:100vh;
+}
+
+.page-title{
+    font-size:34px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.page-subtitle{
+    color:#64748b;
+    margin-bottom:30px;
+}
+
+.stats-card{
+    border:none;
+    border-radius:18px;
+    padding:20px;
+    color:white;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.stats-card:hover{
+    transform:translateY(-6px);
+}
+
+.table-card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.table thead th{
+    background:#2563eb;
+    color:white;
+}
+
+.table tbody tr:hover{
+    background:#f8fbff;
+}

@@ -1,0 +1,338 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+}
+
+.login-page{
+
+    width:100%;
+    min-height:100vh;
+
+    background:url("../assets/pharmacy-login.jpg");
+
+    background-size:cover;
+
+    background-position:center;
+
+    background-repeat:no-repeat;
+
+}
+
+.overlay{
+
+    width:100%;
+    min-height:100vh;
+
+    background:linear-gradient(
+        rgba(13,40,95,.78),
+        rgba(37,99,235,.72)
+    );
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.login-wrapper{
+
+    width:90%;
+
+    max-width:1300px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:80px;
+
+}
+
+.left-section{
+
+    width:50%;
+
+    color:white;
+
+}
+
+.left-section h1{
+
+    font-size:60px;
+
+    font-weight:700;
+
+    line-height:1.2;
+
+    margin-bottom:20px;
+
+}
+
+.left-section span{
+
+    color:#FFD54F;
+
+}
+
+.tagline{
+
+    font-size:22px;
+
+    color:#F1F5F9;
+
+    margin-bottom:45px;
+
+    line-height:1.7;
+
+}
+
+.features{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+    font-size:21px;
+
+    font-weight:500;
+
+}
+
+.features div{
+
+    background:rgba(255,255,255,.15);
+
+    padding:18px 22px;
+
+    border-radius:15px;
+
+    backdrop-filter:blur(6px);
+
+    transition:.35s;
+
+}
+
+.features div:hover{
+
+    transform:translateX(12px);
+
+    background:rgba(255,255,255,.22);
+
+}
+
+.login-card{
+
+    width:430px;
+
+    background:rgba(255,255,255,.95);
+
+    border-radius:25px;
+
+    padding:45px;
+
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+
+    animation:slide .8s ease;
+
+}
+
+@keyframes slide{
+
+from{
+
+opacity:0;
+
+transform:translateY(60px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+}
+
+.logo-circle{
+
+    width:90px;
+
+    height:90px;
+
+    border-radius:50%;
+
+    background:#2563EB;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    margin:auto;
+
+    margin-bottom:20px;
+
+}
+
+.login-card h2{
+
+    text-align:center;
+
+    color:#1E3A8A;
+
+    font-size:36px;
+
+    margin-bottom:8px;
+
+}
+
+.subtitle{
+
+    text-align:center;
+
+    color:#64748B;
+
+    margin-bottom:35px;
+
+}
+
+.input-group{
+
+    margin-bottom:20px;
+
+}
+
+.input-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#334155;
+
+    font-weight:600;
+
+}
+
+.input-group input{
+
+    width:100%;
+
+    height:55px;
+
+    border:2px solid #E2E8F0;
+
+    border-radius:12px;
+
+    padding:0 18px;
+
+    font-size:16px;
+
+    transition:.3s;
+
+}
+
+.input-group input:focus{
+
+    outline:none;
+
+    border-color:#2563EB;
+
+    box-shadow:0 0 10px rgba(37,99,235,.25);
+
+}
+
+button{
+
+    width:100%;
+
+    height:56px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#2563EB;
+
+    color:white;
+
+    font-size:19px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    margin-top:15px;
+
+}
+
+button:hover{
+
+    background:#1D4ED8;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 25px rgba(37,99,235,.35);
+
+}
+
+@media(max-width:992px){
+
+.login-wrapper{
+
+flex-direction:column;
+
+padding:40px 0;
+
+}
+
+.left-section{
+
+width:100%;
+
+text-align:center;
+
+}
+
+.left-section h1{
+
+font-size:42px;
+
+}
+
+.features{
+
+font-size:18px;
+
+}
+
+.login-card{
+
+width:100%;
+
+max-width:450px;
+
+}
+
+}
