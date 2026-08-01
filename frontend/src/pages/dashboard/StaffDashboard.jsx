@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import InventoryAnalytics from '../../components/analytics/InventoryAnalytics';
 
 export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // States
   const [tasks, setTasks] = useState([]);
@@ -105,8 +107,36 @@ export default function StaffDashboard() {
         </div>
       </div>
 
-      {/* Row 1: KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
+      {/* Tabs Switcher */}
+      <div className="flex border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`py-2 px-4 font-bold text-xs border-b-2 cursor-pointer transition-colors ${
+            activeTab === 'overview'
+              ? 'border-teal-700 text-teal-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Console Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`py-2 px-4 font-bold text-xs border-b-2 cursor-pointer transition-colors ${
+            activeTab === 'analytics'
+              ? 'border-teal-700 text-teal-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Inventory Analytics
+        </button>
+      </div>
+
+      {activeTab === 'analytics' ? (
+        <InventoryAnalytics />
+      ) : (
+        <>
+          {/* Row 1: KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
         {loading ? (
           <>
             <CardSkeleton />
@@ -260,6 +290,9 @@ export default function StaffDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </>
+  )}
+</div>
+
   );
 }

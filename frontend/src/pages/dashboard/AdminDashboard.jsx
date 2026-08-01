@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import InventoryAnalytics from '../../components/analytics/InventoryAnalytics';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Stats variables from dashboard summary API
   const [medicinesCount, setMedicinesCount] = useState(0);
@@ -221,20 +223,50 @@ export default function AdminDashboard() {
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">System Admin Console</h1>
           <p className="text-xs text-gray-500">Real-time status analysis of live database counts, procurement lists, and warnings.</p>
         </div>
-        <button 
-          onClick={fetchDashboardData}
-          className="py-1.5 px-3 border border-gray-300 hover:bg-slate-100 text-gray-700 text-xs font-bold rounded-card cursor-pointer flex items-center gap-1.5"
-          title="Reload Dashboard metrics"
+        {activeTab === 'overview' && (
+          <button 
+            onClick={fetchDashboardData}
+            className="py-1.5 px-3 border border-gray-300 hover:bg-slate-100 text-gray-700 text-xs font-bold rounded-card cursor-pointer flex items-center gap-1.5"
+            title="Reload Dashboard metrics"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
+            </svg>
+            Sync
+          </button>
+        )}
+      </div>
+
+      {/* Tabs Switcher */}
+      <div className="flex border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`py-2 px-4 font-bold text-xs border-b-2 cursor-pointer transition-colors ${
+            activeTab === 'overview'
+              ? 'border-teal-700 text-teal-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
-          </svg>
-          Sync
+          Console Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`py-2 px-4 font-bold text-xs border-b-2 cursor-pointer transition-colors ${
+            activeTab === 'analytics'
+              ? 'border-teal-700 text-teal-700'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Inventory Analytics
         </button>
       </div>
 
-      {/* Row 1: KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      {activeTab === 'analytics' ? (
+        <InventoryAnalytics />
+      ) : (
+        <>
+          {/* Row 1: KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {loading ? (
           <>
             <CardSkeleton />
@@ -557,6 +589,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </>
+  )}
+</div>
+
   );
 }
