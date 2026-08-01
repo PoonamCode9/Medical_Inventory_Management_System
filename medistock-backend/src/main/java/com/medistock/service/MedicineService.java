@@ -5,6 +5,7 @@ import com.medistock.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -51,4 +52,28 @@ public class MedicineService {
     public List<Medicine> searchMedicine(String name){
         return medicineRepository.findByMedicineNameContainingIgnoreCase(name);
     }
+    public List<Medicine> getLowStockMedicines() {
+    return medicineRepository.findByQuantityLessThan(10);
+    }
+
+    public List<Medicine> getExpiredMedicines() {
+        return medicineRepository.findByExpiryDateBefore(LocalDate.now());
+    }
+    public List<Medicine> getOutOfStockMedicines() {
+
+    return medicineRepository.findByQuantity(0);
+
+}
+public List<Medicine> getNearExpiryMedicines() {
+
+    LocalDate today = LocalDate.now();
+    LocalDate next30Days = today.plusDays(30);
+
+    return medicineRepository.findByExpiryDateBetween(today, next30Days);
+}
+public List<Medicine> getExpiredMedicines() {
+
+    return medicineRepository.findByExpiryDateBefore(LocalDate.now());
+
+}
 }

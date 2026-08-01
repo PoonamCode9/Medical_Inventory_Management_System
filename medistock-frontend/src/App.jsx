@@ -5,6 +5,11 @@ import Medicines from "./pages/Medicines";
 import Suppliers from "./pages/Suppliers";
 import AddMedicine from "./pages/AddMedicine";
 import AddSupplier from "./pages/AddSupplier";
+import LowStock from "./pages/LowStock";
+import OutOfStock from "./pages/OutOfStock";
+import NearExpiry from "./pages/NearExpiry";
+import ExpiredMedicines from "./pages/ExpiredMedicines";
+
 function App() {
   return (
     <BrowserRouter>
@@ -15,6 +20,10 @@ function App() {
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/add-medicine" element={<AddMedicine />} />
         <Route path="/add-supplier" element={<AddSupplier />} />
+        <Route path="/low-stock" element={<LowStock />} />
+        <Route path="/out-of-stock" element={<OutOfStock />} />
+        <Route path="/near-expiry" element={<NearExpiry />} />
+        <Route path="/expired" element={<ExpiredMedicines />} />
       </Routes>
     </BrowserRouter>
   );

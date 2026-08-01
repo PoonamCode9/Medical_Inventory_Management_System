@@ -11,3 +11,13 @@ export const updateMedicine = (id, medicine) =>
 
 export const deleteMedicine = (id) =>
   axios.delete(`${API}/${id}`);
+export const searchMedicine = (name) =>
+    axios.get(`${API}/search?name=${name}`);
+export const getLowStockMedicines = () =>
+    axios.get(`${API}/low-stock`);
+export const getOutOfStockMedicines = () =>
+    axios.get(`${API}/out-of-stock`);
+export const getNearExpiryMedicines = () =>
+    axios.get(`${API}/near-expiry`);
+export const getExpiredMedicines = () =>
+    axios.get(`${API}/expired`);

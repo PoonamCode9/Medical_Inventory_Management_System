@@ -1,89 +1,120 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { addSupplier } from "../services/supplierService";
 import Navbar from "../components/Navbar";
 
 function AddSupplier() {
 
-  const [supplier, setSupplier] = useState({
-    supplierName: "",
-    contactNumber: "",
-    email: "",
-    address: ""
-  });
+    const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setSupplier({
-      ...supplier,
-      [e.target.name]: e.target.value
+    const [supplier, setSupplier] = useState({
+        supplierName: "",
+        contactNumber: "",
+        email: "",
+        address: ""
     });
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const handleChange = (e) => {
+        setSupplier({
+            ...supplier,
+            [e.target.name]: e.target.value
+        });
+    };
 
-    await addSupplier(supplier);
+    const handleSubmit = async (e) => {
 
-    alert("Supplier Added Successfully");
+        e.preventDefault();
 
-    setSupplier({
-      supplierName: "",
-      contactNumber: "",
-      email: "",
-      address: ""
-    });
-  };
+        if (!supplier.supplierName.trim()) {
+            alert("Supplier Name is required");
+            return;
+        }
 
-  return (
-    <>
-      <Navbar />
+        if (!supplier.contactNumber.trim()) {
+            alert("Contact Number is required");
+            return;
+        }
 
-      <div className="container mt-4">
+        if (!/^\d{10}$/.test(supplier.contactNumber)) {
+            alert("Contact Number must be exactly 10 digits");
+            return;
+        }
 
-        <h2>Add Supplier</h2>
+        if (!supplier.email.trim()) {
+            alert("Email is required");
+            return;
+        }
 
-        <form onSubmit={handleSubmit}>
+        if (!/\S+@\S+\.\S+/.test(supplier.email)) {
+            alert("Enter a valid Email Address");
+            return;
+        }
 
-          <input
-            className="form-control mb-2"
-            placeholder="Supplier Name"
-            name="supplierName"
-            value={supplier.supplierName}
-            onChange={handleChange}
-          />
+        if (!supplier.address.trim()) {
+            alert("Address is required");
+            return;
+        }
 
-          <input
-            className="form-control mb-2"
-            placeholder="Contact Number"
-            name="contactNumber"
-            value={supplier.contactNumber}
-            onChange={handleChange}
-          />
+        await addSupplier(supplier);
 
-          <input
-            className="form-control mb-2"
-            placeholder="Email"
-            name="email"
-            value={supplier.email}
-            onChange={handleChange}
-          />
+        alert("Supplier Added Successfully");
 
-          <input
-            className="form-control mb-2"
-            placeholder="Address"
-            name="address"
-            value={supplier.address}
-            onChange={handleChange}
-          />
+        navigate("/suppliers");
+    };
 
-          <button className="btn btn-success">
-            Save Supplier
-          </button>
+    return (
+        <>
+            <Navbar />
 
-        </form>
+            <div className="container mt-4">
 
-      </div>
-    </>
-  );
+                <h2>Add Supplier</h2>
+
+                <form onSubmit={handleSubmit}>
+
+                    <input
+                        className="form-control mb-2"
+                        placeholder="Supplier Name"
+                        name="supplierName"
+                        value={supplier.supplierName}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        className="form-control mb-2"
+                        placeholder="Contact Number"
+                        name="contactNumber"
+                        value={supplier.contactNumber}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        type="email"
+                        className="form-control mb-2"
+                        placeholder="Email"
+                        name="email"
+                        value={supplier.email}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        className="form-control mb-3"
+                        placeholder="Address"
+                        name="address"
+                        value={supplier.address}
+                        onChange={handleChange}
+                    />
+
+                    <button className="btn btn-success">
+                        Save Supplier
+                    </button>
+
+                </form>
+
+            </div>
+
+        </>
+    );
 }
 
 export default AddSupplier;

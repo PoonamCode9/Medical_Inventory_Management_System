@@ -46,4 +46,26 @@ public class MedicineController {
     public List<Medicine> searchMedicine(@RequestParam String name){
         return medicineService.searchMedicine(name);
     }
+    @GetMapping("/low-stock")
+    public List<Medicine> getLowStockMedicines() {
+        return medicineService.getLowStockMedicines();
+    }
+
+    @GetMapping("/expired")
+    public List<Medicine> getExpiredMedicines() {
+        return medicineService.getExpiredMedicines();
+    }
+    @GetMapping("/out-of-stock")
+public List<Medicine> getOutOfStockMedicines() {
+
+    return medicineService.getOutOfStockMedicines();
+
+}
+@GetMapping("/near-expiry")
+public List<Medicine> getNearExpiryMedicines() {
+
+    return medicineService.getNearExpiryMedicines();
+
+}
+
 }   

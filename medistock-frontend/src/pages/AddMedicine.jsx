@@ -1,118 +1,164 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { addMedicine } from "../services/medicineService";
 import Navbar from "../components/Navbar";
 
-function AddMedicine(){
+function AddMedicine() {
 
-const [medicine,setMedicine]=useState({
+    const navigate = useNavigate();
 
-medicineName:"",
-category:"",
-batchNumber:"",
-quantity:"",
-price:"",
-manufacturingDate:"",
-expiryDate:""
+    const [medicine, setMedicine] = useState({
+        medicineName: "",
+        category: "",
+        batchNumber: "",
+        quantity: "",
+        price: "",
+        manufacturingDate: "",
+        expiryDate: ""
+    });
 
-});
+    const handleChange = (e) => {
+        setMedicine({
+            ...medicine,
+            [e.target.name]: e.target.value
+        });
+    };
 
-const handleChange=(e)=>{
+    const handleSubmit = async (e) => {
 
-setMedicine({
+        e.preventDefault();
 
-...medicine,
+        if (!medicine.medicineName.trim()) {
+            alert("Medicine Name is required");
+            return;
+        }
 
-[e.target.name]:e.target.value
+        if (!medicine.category.trim()) {
+            alert("Category is required");
+            return;
+        }
 
-});
+        if (!medicine.batchNumber.trim()) {
+            alert("Batch Number is required");
+            return;
+        }
 
-};
+        if (medicine.quantity === "" || Number(medicine.quantity) <= 0) {
+            alert("Quantity must be greater than 0");
+            return;
+        }
 
-const handleSubmit=async(e)=>{
+        if (medicine.price === "" || Number(medicine.price) <= 0) {
+            alert("Price must be greater than 0");
+            return;
+        }
 
-e.preventDefault();
+        if (!medicine.manufacturingDate) {
+            alert("Manufacturing Date is required");
+            return;
+        }
 
-await addMedicine(medicine);
+        if (!medicine.expiryDate) {
+            alert("Expiry Date is required");
+            return;
+        }
 
-alert("Medicine Added Successfully");
+        if (
+            new Date(medicine.expiryDate) <=
+            new Date(medicine.manufacturingDate)
+        ) {
+            alert("Expiry Date must be after Manufacturing Date");
+            return;
+        }
 
-};
+        await addMedicine(medicine);
 
-return(
+        alert("Medicine Added Successfully");
 
-<>
+        navigate("/medicines");
+    };
 
-<Navbar/>
+    return (
+        <>
+            <Navbar />
 
-<div className="container mt-4">
+            <div className="container mt-4">
 
-<h2>Add Medicine</h2>
+                <h2>Add Medicine</h2>
 
-<form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
 
-<input
-className="form-control mb-2"
-placeholder="Medicine Name"
-name="medicineName"
-onChange={handleChange}
-/>
+                    <input
+                        className="form-control mb-2"
+                        placeholder="Medicine Name"
+                        name="medicineName"
+                        value={medicine.medicineName}
+                        onChange={handleChange}
+                    />
 
-<input
-className="form-control mb-2"
-placeholder="Category"
-name="category"
-onChange={handleChange}
-/>
+                    <input
+                        className="form-control mb-2"
+                        placeholder="Category"
+                        name="category"
+                        value={medicine.category}
+                        onChange={handleChange}
+                    />
 
-<input
-className="form-control mb-2"
-placeholder="Batch Number"
-name="batchNumber"
-onChange={handleChange}
-/>
+                    <input
+                        className="form-control mb-2"
+                        placeholder="Batch Number"
+                        name="batchNumber"
+                        value={medicine.batchNumber}
+                        onChange={handleChange}
+                    />
 
-<input
-className="form-control mb-2"
-placeholder="Quantity"
-name="quantity"
-onChange={handleChange}
-/>
+                    <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Quantity"
+                        name="quantity"
+                        value={medicine.quantity}
+                        onChange={handleChange}
+                    />
 
-<input
-className="form-control mb-2"
-placeholder="Price"
-name="price"
-onChange={handleChange}
-/>
+                    <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Price"
+                        name="price"
+                        value={medicine.price}
+                        onChange={handleChange}
+                    />
 
-<input
-type="date"
-className="form-control mb-2"
-name="manufacturingDate"
-onChange={handleChange}
-/>
+                    <label>Manufacturing Date</label>
 
-<input
-type="date"
-className="form-control mb-2"
-name="expiryDate"
-onChange={handleChange}
-/>
+                    <input
+                        type="date"
+                        className="form-control mb-2"
+                        name="manufacturingDate"
+                        value={medicine.manufacturingDate}
+                        onChange={handleChange}
+                    />
 
-<button className="btn btn-success">
+                    <label>Expiry Date</label>
 
-Save
+                    <input
+                        type="date"
+                        className="form-control mb-3"
+                        name="expiryDate"
+                        value={medicine.expiryDate}
+                        onChange={handleChange}
+                    />
 
-</button>
+                    <button className="btn btn-success">
+                        Save Medicine
+                    </button>
 
-</form>
+                </form>
 
-</div>
-
-</>
-
-);
-
+            </div>
+        </>
+    );
 }
 
 export default AddMedicine;
