@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MediStock — Medical Inventory Management Platform
 
 Root project folder containing the frontend and backend as separate subprojects.
@@ -44,3 +45,7 @@ Maven Central, so `mvn spring-boot:run` / `mvn package` has **not** been run or
 verified to compile here. Run it locally and fix any dependency-version hiccups
 (e.g. Lombok isn't actually used — safe to remove from `pom.xml` — the rest of
 the code doesn't depend on annotation processing).
+=======
+# Medical_Inventory_Management_System
+Build a full-stack web application (React.js frontend + Spring Boot backend) that allows pharmacies, hospitals, and healthcare organizations to manage medicine inventory, track stock availability, monitor expiry dates, maintain supplier records, and generate inventory analytics.
+>>>>>>> 7403fac0130162cfea50fea3a6241031e8a6e5dc
