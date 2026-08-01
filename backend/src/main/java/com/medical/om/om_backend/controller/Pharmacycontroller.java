@@ -5,6 +5,8 @@ import com.medical.om.om_backend.repository.InventoryRepository;
 import com.medical.om.om_backend.repository.MedicineRepository;
 import com.medical.om.om_backend.repository.SupplierRepository;
 import com.medical.om.om_backend.service.DashboardService;
+import com.medical.om.om_backend.service.ExpiryService;
+import com.medical.om.om_backend.service.InventoryCleanupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,15 +22,21 @@ public class Pharmacycontroller {
     private final InventoryRepository inventoryRepository;
     private final SupplierRepository supplierRepository;
     private final DashboardService dashboardService;
+    private final ExpiryService expiryService;
+    private final InventoryCleanupService cleanupService;
 
     public Pharmacycontroller(MedicineRepository medicineRepository, 
                               InventoryRepository inventoryRepository,
                               SupplierRepository supplierRepository,
-                              DashboardService dashboardService) {
+                              DashboardService dashboardService,
+                              ExpiryService expiryService,
+                              InventoryCleanupService cleanupService) {
         this.medicineRepository = medicineRepository;
         this.inventoryRepository = inventoryRepository;
         this.supplierRepository = supplierRepository;
         this.dashboardService = dashboardService;
+        this.expiryService = expiryService;
+        this.cleanupService = cleanupService;
     }
 
     @GetMapping("/medicines")
@@ -43,6 +51,7 @@ public class Pharmacycontroller {
 
     @GetMapping("/inventory")
     public ResponseEntity<List<?>> getInventory() {
+        cleanupService.cleanup();
         return ResponseEntity.ok((inventoryRepository.findAll()));
     }
 
@@ -64,5 +73,10 @@ public class Pharmacycontroller {
     @GetMapping("/dashboard/stats")
     public ResponseEntity<?> getStats() {
         return ResponseEntity.ok(dashboardService.getCommonStats());
+    }
+
+    @GetMapping("/expiry")
+    public ResponseEntity<?> getExpiry(@RequestParam(defaultValue = "30") int days) {
+        return ResponseEntity.ok(expiryService.getExpirySummary(days));
     }
 }

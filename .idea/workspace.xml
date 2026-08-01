@@ -5,21 +5,36 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08e27dff-8c51-43f0-867d-c80cb5afad8f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/icon.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/static/medicine.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-Tn43fprS.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/Dto/RegisterReq.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/Dto/RegisterReq.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/Dto/UserDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/Dto/UserDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Admincontroller.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Admincontroller.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Pharmacycontroller.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/controller/Pharmacycontroller.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/Inventory.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/Inventory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/SalesPurchase.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/SalesPurchase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/Users.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/entity/Users.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SalesPurchaseRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/SalesPurchaseRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/DashboardService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/DashboardService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/RegisterReq.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/RegisterReq.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/UserDto.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/Dto/UserDto.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Users.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/entity/Users.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SalesPurchaseRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/SalesPurchaseRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/UserRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/UserRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/AuthService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/AuthService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/node_modules/.package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/node_modules/.package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/_metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/_metadata.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/react_jsx-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/react_jsx-runtime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/recharts.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/recharts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/recharts.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/node_modules/.vite/deps/recharts.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AdminDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AdminDashboard.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" afterDir="false" />
     </list>
@@ -44,17 +59,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Unnamed.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "sudipto__karmakar",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/mesud/Desktop/om_medical/backend/src/main/resources/static"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;sudipto__karmakar&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mesud/Desktop/om_medical/backend/src/main/resources/static&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mesud\Desktop\om_medical\backend\src\main\resources\static" />

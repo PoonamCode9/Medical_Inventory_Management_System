@@ -15,16 +15,20 @@ public class DashboardService {
     private final MedicineRepository medicineRepository;
     private final InventoryRepository inventoryRepository;
     private final SupplierRepository supplierRepository;
+    private final InventoryCleanupService cleanupService;
 
     public DashboardService(MedicineRepository medicineRepository,
                             InventoryRepository inventoryRepository,
-                            SupplierRepository supplierRepository) {
+                            SupplierRepository supplierRepository,
+                            InventoryCleanupService cleanupService) {
         this.medicineRepository = medicineRepository;
         this.inventoryRepository = inventoryRepository;
         this.supplierRepository = supplierRepository;
+        this.cleanupService = cleanupService;
     }
 
     public Map<String, Object> getCommonStats() {
+        cleanupService.cleanup();
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalMedicines", medicineRepository.count());
         stats.put("totalInventoryItems", inventoryRepository.count());

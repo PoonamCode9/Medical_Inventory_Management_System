@@ -3,6 +3,8 @@ package com.medical.om.om_backend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
@@ -16,6 +18,7 @@ public class SalesPurchase {
     private long id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 

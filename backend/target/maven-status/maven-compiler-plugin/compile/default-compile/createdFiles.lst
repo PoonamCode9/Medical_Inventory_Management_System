@@ -4,9 +4,11 @@ com\medical\om\om_backend\Dto\AuthReq.class
 com\medical\om\om_backend\entity\Users.class
 com\medical\om\om_backend\Dto\SalesPurchaseDto.class
 com\medical\om\om_backend\security\JwtAuthenticationFilter.class
+com\medical\om\om_backend\service\EmailService.class
 com\medical\om\om_backend\Dto\SupplierDto.class
 com\medical\om\om_backend\repository\InventoryRepository.class
 com\medical\om\om_backend\repository\UserRepository.class
+com\medical\om\om_backend\service\ExpiryService.class
 com\medical\om\om_backend\entity\Catagories.class
 com\medical\om\om_backend\Dto\RegisterReq.class
 com\medical\om\om_backend\Dto\LoginReq.class
@@ -29,3 +31,4 @@ com\medical\om\om_backend\controller\Pharmacycontroller.class
 com\medical\om\om_backend\entity\Role.class
 com\medical\om\om_backend\entity\Medicine.class
 com\medical\om\om_backend\repository\SupplierRepository.class
+com\medical\om\om_backend\service\InventoryCleanupService.class

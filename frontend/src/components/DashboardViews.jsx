@@ -41,6 +41,27 @@ const CAT_LABELS = {
   OTHER: 'Other',
 };
 
+const ROLE_GRADIENTS = {
+  ADMIN: 'from-violet-500 to-purple-600',
+  PHARMACIST: 'from-sky-500 to-indigo-600',
+  STAFF: 'from-slate-500 to-slate-700',
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  const s = String(dateStr);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    const [, y, mo, d] = m;
+    return `${d}-${mo}-${y}`;
+  }
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}-${mm}-${d.getFullYear()}`;
+};
+
 function Spinner({ color = 'border-slate-300' }) {
   return (
     <div className="flex justify-center py-16">
@@ -137,9 +158,10 @@ function SearchInput({ value, onChange, placeholder = 'Search...', tooltip = 'Se
 
 export function UsersView() {
   const [users, setUsers] = useState([]);
-  const [form, setForm] = useState({ name: '', username: '', password: '', role: 'STAFF' });
+  const [form, setForm] = useState({ name: '', username: '', password: '', role: 'STAFF', email: '' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadUsers = (q) => {
@@ -165,11 +187,11 @@ export function UsersView() {
     const payload = { ...form };
     if (editingId && !payload.password.trim()) delete payload.password;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
-    if (res.ok) { setForm({ name: '', username: '', password: '', role: 'STAFF' }); setEditingId(null); loadUsers(searchQuery.trim() || null); }
+    if (res.ok) { setForm({ name: '', username: '', password: '', role: 'STAFF', email: '' }); setEditingId(null); setShowForm(false); loadUsers(searchQuery.trim() || null); }
   };
 
-  const handleEdit = (u) => { setEditingId(u.id); setForm({ name: u.name, username: u.username, password: '', role: u.role }); };
-  const cancelEdit = () => { setEditingId(null); setForm({ name: '', username: '', password: '', role: 'STAFF' }); };
+  const handleEdit = (u) => { setEditingId(u.id); setShowForm(true); setForm({ name: u.name, username: u.username, password: '', role: u.role, email: u.email || '' }); };
+  const cancelEdit = () => { setEditingId(null); setShowForm(false); setForm({ name: '', username: '', password: '', role: 'STAFF', email: '' }); };
   const handleDelete = async (id) => {
     const result = await Swal.fire({ title: 'Delete this user?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
     if (!result.isConfirmed || !token()) return;
@@ -181,65 +203,87 @@ export function UsersView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-black text-slate-900 tracking-tight">User Management</h3>
-        <p className="text-sm text-slate-500 mt-1">Create, update and manage user accounts and role assignments.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">User Management</h3>
+          <p className="text-sm text-slate-500 mt-1">Create, update and manage user accounts and role assignments.</p>
+        </div>
+        <button
+          onClick={() => {
+            if (showForm && !editingId) setShowForm(false);
+            else { setEditingId(null); setForm({ name: '', username: '', password: '', role: 'STAFF', email: '' }); setShowForm(true); }
+          }}
+          className="self-start sm:self-auto rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition"
+        >
+          <span className="text-base leading-none">{showForm && !editingId ? '✕' : '＋'}</span>
+          {showForm && !editingId ? 'Close' : 'Add User'}
+        </button>
       </div>
 
-      <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <div className="grid gap-4 md:grid-cols-4">
-          <FormInput label="Full Name" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="User's full display name" />
-          <FormInput label="Username" placeholder="johndoe" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required tooltip="Unique login username" />
-          <FormInput label={editingId ? 'Password (blank = keep)' : 'Password'} type="password" placeholder="••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} tooltip="Set a secure password for the user" />
-          <FormSelect label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} tooltip="Assign a system role to define permissions">
-            <option value="STAFF">Staff</option>
-            <option value="PHARMACIST">Pharmacist</option>
-            <option value="ADMIN">Admin</option>
-          </FormSelect>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <button type="submit" className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-800 active:bg-slate-950 transition shadow-sm">
-            {editingId ? 'Update User' : 'Add User'}
-          </button>
-          {editingId && (
-            <button type="button" onClick={cancelEdit} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
-              Cancel
+      <AnimatePresence>
+        {showForm && (
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25 }}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormInput label="Full Name" placeholder="John Doe" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="User's full display name" />
+            <FormInput label="Username" placeholder="johndoe" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required tooltip="Unique login username" />
+            <FormInput label={editingId ? 'Password (blank = keep)' : 'Password'} type="password" placeholder="••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} tooltip="Set a secure password for the user" />
+            <FormInput label="Email" type="email" placeholder="johndoe@hospital.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} tooltip="Receives medicine expiry reports (required for ADMIN & STAFF)" />
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <FormSelect label="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} tooltip="Assign a system role to define permissions">
+              <option value="STAFF">Staff</option>
+              <option value="PHARMACIST">Pharmacist</option>
+              <option value="ADMIN">Admin</option>
+            </FormSelect>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button type="submit" className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 active:bg-indigo-800 transition shadow-sm">
+              {editingId ? 'Update User' : 'Add User'}
             </button>
-          )}
-        </div>
-      </motion.form>
+            {editingId && (
+              <button type="button" onClick={cancelEdit} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                Cancel
+              </button>
+            )}
+          </div>
+        </motion.form>
+        )}
+      </AnimatePresence>
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or username..." />
 
       {loading ? <Spinner /> : (
-        <motion.div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/80">
-                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Name</th>
-                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Username</th>
-                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
-                <th className="px-5 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {users.length === 0 ? (
-                <tr><td colSpan="4"><EmptyState icon="👤" title={searchQuery ? 'No matching users' : 'No users yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first user above.'} /></td></tr>
-              ) : users.map((u, i) => (
-                <motion.tr key={u.id} className="hover:bg-slate-50/50 transition" custom={i} variants={{hidden: {opacity:0}, visible:{opacity:1}}} initial="hidden" animate="visible" whileHover={{ scale: 1.01 }}>
-                  <td className="px-5 py-3.5 font-semibold text-slate-900">{u.name}</td>
-                  <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{u.username}</td>
-                  <td className="px-5 py-3.5"><Badge color={ROLE_COLORS[u.role] || ROLE_COLORS.STAFF}>{u.role}</Badge></td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex gap-1.5 justify-end">
-                      <ActionBtn onClick={() => handleEdit(u)}>Edit</ActionBtn>
-                      <ActionBtn onClick={() => handleDelete(u.id)} color="rose">Delete</ActionBtn>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
+        <motion.div className="grid gap-7 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
+          {users.length === 0 ? (
+            <div className="md:col-span-2"><EmptyState icon="👤" title={searchQuery ? 'No matching users' : 'No users yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Click "Add User" to create your first account.'} /></div>
+          ) : users.map((u, i) => (
+            <motion.div
+              key={u.id}
+              className="rounded-2xl border border-slate-200 bg-white overflow-hidden transition group flex flex-col"
+              variants={{ hidden: { opacity: 0, y: 20, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14 } } }}
+              whileHover={{ y: -4, boxShadow: '0 8px 25px -8px rgba(0,0,0,0.1)' }}
+              layout
+            >
+              <div className="flex items-center gap-3 px-5 pt-5">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${ROLE_GRADIENTS[u.role] || ROLE_GRADIENTS.STAFF} text-white font-bold text-lg shadow-sm`}>
+                  {u.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-bold text-slate-900 text-lg leading-tight truncate">{u.name}</h4>
+                  <p className="text-xs text-slate-500 mt-0.5 font-mono truncate">@{u.username}</p>
+                </div>
+                <Badge color={ROLE_COLORS[u.role] || ROLE_COLORS.STAFF}>{u.role}</Badge>
+              </div>
+              <div className="mx-5 mt-3 border-t border-slate-100 pt-3 pb-1 space-y-1.5 text-sm">
+                <p className="flex items-center gap-2 text-slate-600"><span className="w-4 shrink-0">✉️</span><span className="min-w-0 break-words">{u.email || 'No email set'}</span></p>
+
+              </div>
+              <div className="mt-auto px-5 pb-5 pt-3 flex gap-2 justify-end">
+                <ActionBtn onClick={() => handleEdit(u)}>Edit</ActionBtn>
+                <ActionBtn onClick={() => handleDelete(u.id)} color="rose">Delete</ActionBtn>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
       )}
     </div>
@@ -250,9 +294,11 @@ export function UsersView() {
 
 export function MedicinesView({ role = 'ADMIN' }) {
   const [medicines, setMedicines] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
   const [form, setForm] = useState({ name: '', description: '', category: '' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -261,9 +307,14 @@ export function MedicinesView({ role = 'ADMIN' }) {
     const base = role === 'PHARMACIST' ? `${API}/api/pharmacy` : `${API}/api/admin`;
     const url = q ? `${base}/medicines/search?q=${encodeURIComponent(q)}` : `${base}/medicines`;
     setLoading(true);
-    fetch(url, { headers: auth() })
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setMedicines)
+    Promise.all([
+      fetch(url, { headers: auth() }),
+      fetch(`${base}/inventory`, { headers: auth() }),
+    ])
+      .then(async ([mRes, iRes]) => {
+        if (mRes.ok) setMedicines(await mRes.json());
+        if (iRes.ok) setInventoryItems(await iRes.json());
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
@@ -281,12 +332,12 @@ export function MedicinesView({ role = 'ADMIN' }) {
     if (!payload.category) payload.category = null;
     const url = editingId ? `${API}/api/admin/medicines/${editingId}` : `${API}/api/admin/medicines`;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
-    if (res.ok) { setForm({ name: '', description: '', category: '' }); setEditingId(null); loadMedicines(searchQuery.trim() || null); }
+    if (res.ok) { setForm({ name: '', description: '', category: '' }); setEditingId(null); setShowForm(false); loadMedicines(searchQuery.trim() || null); }
     else { const txt = await res.text(); setErrorMsg(txt || 'Failed to save medicine.'); }
   };
 
-  const handleEdit = (m) => { setEditingId(m.id); setForm({ name: m.name, description: m.description || '', category: m.category || '' }); };
-  const cancelEdit = () => { setEditingId(null); setForm({ name: '', description: '', category: '' }); };
+  const handleEdit = (m) => { setEditingId(m.id); setShowForm(true); setForm({ name: m.name, description: m.description || '', category: m.category || '' }); };
+  const cancelEdit = () => { setEditingId(null); setShowForm(false); setForm({ name: '', description: '', category: '' }); };
   const handleDelete = async (id) => {
     const result = await Swal.fire({ title: 'Delete this medicine?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
     if (!result.isConfirmed || !token()) return;
@@ -296,17 +347,44 @@ export function MedicinesView({ role = 'ADMIN' }) {
     }
   };
 
+  const stockByMedicine = useMemo(() => {
+    const map = {};
+    inventoryItems.forEach(i => {
+      const id = i.medicine?.id;
+      if (!map[id]) map[id] = { qty: 0, batches: 0 };
+      map[id].qty += i.available_qty || 0;
+      map[id].batches += 1;
+    });
+    return map;
+  }, [inventoryItems]);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-black text-slate-900 tracking-tight">Medicine Catalog</h3>
-        <p className="text-sm text-slate-500 mt-1">{role === 'PHARMACIST' ? 'Browse available medicines and clinical details.' : 'Define formulas, descriptions and therapeutic categories.'}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Medicine Catalog</h3>
+          <p className="text-sm text-slate-500 mt-1">{role === 'PHARMACIST' ? 'Browse available medicines and clinical details.' : 'Define formulas, descriptions and therapeutic categories.'}</p>
+        </div>
+        {(role === 'ADMIN' || role === 'PHARMACIST') && (
+          <button
+            onClick={() => {
+              if (showForm && !editingId) setShowForm(false);
+              else { setEditingId(null); setForm({ name: '', description: '', category: '' }); setErrorMsg(''); setShowForm(true); }
+            }}
+            className="self-start sm:self-auto rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition"
+          >
+            <span className="text-base leading-none">{showForm && !editingId ? '✕' : '＋'}</span>
+            {showForm && !editingId ? 'Close' : 'Add Medicine'}
+          </button>
+        )}
       </div>
 
       {errorMsg && <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-sm font-semibold text-rose-700">{errorMsg}</div>}
 
       {(role === 'ADMIN' || role === 'PHARMACIST') && (
-        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <AnimatePresence>
+          {showForm && (
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25 }}>
           <div className="grid gap-4 md:grid-cols-2">
             <FormInput label="Medicine Name" placeholder="e.g. Paracetamol 500mg" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="Official name of the medicine" />
             <FormSelect label="Therapeutic Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required tooltip="Select the therapeutic classification">
@@ -340,6 +418,8 @@ export function MedicinesView({ role = 'ADMIN' }) {
             )}
           </div>
         </motion.form>
+          )}
+        </AnimatePresence>
       )}
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or description..." />
@@ -347,37 +427,43 @@ export function MedicinesView({ role = 'ADMIN' }) {
       {loading ? <Spinner color="border-emerald-300" /> : (
         <motion.div className="grid gap-4 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
           {medicines.length === 0 ? (
-            <div className="md:col-span-2"><EmptyState icon="💊" title={searchQuery ? 'No matching medicines' : 'No medicines in catalog'} subtitle={searchQuery ? 'Try a different search term.' : 'Define your first medicine formula above.'} /></div>
-          ) : medicines.map((m, i) => (
+            <div className="md:col-span-2"><EmptyState icon="💊" title={searchQuery ? 'No matching medicines' : 'No medicines in catalog'} subtitle={searchQuery ? 'Try a different search term.' : 'Click "Add Medicine" to define your first formula.'} /></div>
+          ) : medicines.map((m, i) => {
+            const stock = stockByMedicine[m.id] || { qty: 0, batches: 0 };
+            return (
             <motion.div
               key={m.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between transition group"
+              className="rounded-2xl border border-slate-200 bg-white overflow-hidden transition group flex flex-col"
               variants={{ hidden: { opacity: 0, y: 20, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14 } } }}
               whileHover={{ y: -4, boxShadow: '0 8px 25px -8px rgba(0,0,0,0.1)' }}
               layout
             >
-              <div>
+              <div className="px-5 pt-5">
                 <div className="flex items-start justify-between gap-3">
                   <h4 className="font-bold text-slate-900 text-lg leading-tight">{m.name}</h4>
                   <Badge color={CAT_COLORS[m.category] || CAT_COLORS.OTHER}>{CAT_LABELS[m.category] || m.category || 'N/A'}</Badge>
                 </div>
-                {m.description && (
-                  <p className="mt-3 text-sm text-slate-600 leading-relaxed line-clamp-3 border-t border-slate-50 pt-3">{m.description}</p>
-                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold border ${
+                    stock.qty === 0 ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                    stock.qty < 15 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                    'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}>{stock.qty} units in stock</span>
+                  <span className="text-xs text-slate-400">{stock.batches} batch{stock.batches !== 1 ? 'es' : ''}</span>
+                </div>
               </div>
+              {m.description && (
+                <p className="mx-5 mt-3 text-sm text-left text-slate-600 leading-relaxed line-clamp-3 border-t border-slate-100 py-3"><b>{m.description}</b></p>
+              )}
               {(role === 'ADMIN' || role === 'PHARMACIST') && (
-                <motion.div
-                  className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end"
-                  initial={{ opacity: 0, height: 0 }}
-                  whileInView={{ opacity: 1, height: 'auto' }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="mt-auto px-5 pb-5 pt-3 flex gap-2 justify-end">
                   <ActionBtn onClick={() => handleEdit(m)}>Edit</ActionBtn>
                   <ActionBtn onClick={() => handleDelete(m.id)} color="rose">Delete</ActionBtn>
-                </motion.div>
+                </div>
               )}
             </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
       )}
     </div>
@@ -388,7 +474,7 @@ export function MedicinesView({ role = 'ADMIN' }) {
 
 const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
 
-export function InventoryView({ role = 'ADMIN' }) {
+export function InventoryView({ role = 'ADMIN', onNavigate }) {
   const [items, setItems] = useState([]);
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -453,9 +539,9 @@ export function InventoryView({ role = 'ADMIN' }) {
       </head><body><h1>OM Medical Inventory Report</h1><div class="date">Generated ${today}</div>`;
     if (activeTab === 'stock') {
       html += `<h2>Stock by Medicine</h2><table><thead><tr><th>Medicine</th><th>Total Qty</th><th>Batches</th></tr></thead><tbody>${stockByMedicine.map(s => `<tr><td><b>${s.name}</b></td><td>${s.totalQty}</td><td>${s.batches.length}</td></tr>`).join('')}</tbody></table>`;
-      html += `<h2>Batch Details</h2><table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Supplier</th><th>Mfg</th><th>Exp</th></tr></thead><tbody>${items.map(i => `<tr><td><b>${i.medicine?.name || '—'}</b></td><td>${i.batch || '—'}</td><td>${i.available_qty}</td><td>${i.supplier || '—'}</td><td>${i.manufacturing_date || '—'}</td><td>${i.expiration_date || '—'}</td></tr>`).join('')}</tbody></table>`;
+      html += `<h2>Batch Details</h2><table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Supplier</th><th>Mfg</th><th>Exp</th></tr></thead><tbody>${items.map(i => `<tr><td><b>${i.medicine?.name || '—'}</b></td><td>${i.batch || '—'}</td><td>${i.available_qty}</td><td>${i.supplier || '—'}</td><td>${formatDate(i.manufacturing_date)}</td><td>${formatDate(i.expiration_date)}</td></tr>`).join('')}</tbody></table>`;
     } else {
-      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>${movements.map(m => `<tr><td>${m.date || '—'}</td><td><span class="badge ${m.type === 'PURCHASE' ? 'in' : 'out'}">${m.type}</span></td><td><b>${m.medicine?.name || '—'}</b></td><td>${m.batch || '—'}</td><td>${m.quantity}</td><td>$${m.amount?.toFixed(2)}</td><td>${m.supplier?.name || '—'}</td></tr>`).join('')}</tbody></table>`;
+      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>${movements.map(m => `<tr><td>${formatDate(m.date)}</td><td><span class="badge ${m.type === 'PURCHASE' ? 'in' : 'out'}">${m.type}</span></td><td><b>${m.medicine?.name || '—'}</b></td><td>${m.batch || '—'}</td><td>${m.quantity}</td><td>$${m.amount?.toFixed(2)}</td><td>${m.supplier?.name || '—'}</td></tr>`).join('')}</tbody></table>`;
     }
     html += '</body></html>';
     w.document.write(html);
@@ -470,9 +556,14 @@ export function InventoryView({ role = 'ADMIN' }) {
           <h3 className="text-2xl font-black text-slate-900 tracking-tight">Stock & Transactions</h3>
           <p className="text-sm text-slate-500 mt-1">Medicine-wise stock overview with auto‑updating charts.</p>
         </div>
-        <button onClick={handlePrint} className="self-start sm:self-auto rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition">
-          🖨️ Print Report
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={handlePrint} className="self-start sm:self-auto rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition">
+            🖨️ Print Report
+          </button>
+          <button onClick={() => onNavigate && onNavigate('sales')} className="self-start sm:self-auto rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition">
+            <span className="text-base leading-none">＋</span> Add Stock
+          </button>
+        </div>
       </div>
 
       <div className="flex border-b border-slate-200 gap-6">
@@ -491,10 +582,22 @@ export function InventoryView({ role = 'ADMIN' }) {
             <>
               {/* Summary cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 font-medium">Total Medicines</p><p className="text-2xl font-black text-slate-900 mt-1">{stockByMedicine.length}</p></div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 font-medium">Total Units</p><p className="text-2xl font-black text-slate-900 mt-1">{totalStock}</p></div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 font-medium">Total Batches</p><p className="text-2xl font-black text-slate-900 mt-1">{items.length}</p></div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500 font-medium">Low Stock Items</p><p className="text-2xl font-black text-amber-600 mt-1">{items.filter(i => i.available_qty < 15).length}</p></div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-slate-700">
+                  <p className="text-xs text-slate-500 font-medium">Total Medicines</p>
+                  <p className="text-2xl font-black text-slate-900 mt-1 leading-none">{stockByMedicine.length}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-emerald-500">
+                  <p className="text-xs text-slate-500 font-medium">Total Units</p>
+                  <p className="text-2xl font-black text-slate-900 mt-1 leading-none">{totalStock}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-amber-500">
+                  <p className="text-xs text-slate-500 font-medium">Total Batches</p>
+                  <p className="text-2xl font-black text-slate-900 mt-1 leading-none">{items.length}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-rose-500">
+                  <p className="text-xs text-slate-500 font-medium">Low Stock Items</p>
+                  <p className="text-2xl font-black text-amber-600 mt-1 leading-none">{items.filter(i => i.available_qty < 15).length}</p>
+                </div>
               </div>
 
               <SearchInput value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} placeholder="Search stock by medicine, batch or supplier..." />
@@ -536,25 +639,30 @@ export function InventoryView({ role = 'ADMIN' }) {
                 <h4 className="text-sm font-bold text-slate-700 mb-3">Medicine‑wise Stock ({stockByMedicine.length})</h4>
                 <div className="grid gap-4 md:grid-cols-2">
                   {stockByMedicine.map((s) => (
-                    <div key={s.name} className="rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-md transition">
-                      <div className="flex items-start justify-between gap-3">
-                        <h4 className="font-bold text-slate-900 text-lg">{s.name}</h4>
-                        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold border ${
-                          s.totalQty === 0 ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                          s.totalQty < 15 ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                          'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        }`}>{s.totalQty} units</span>
+                    <div key={s.name} className="rounded-2xl border border-slate-200 bg-white overflow-hidden transition hover:shadow-md">
+                      <div className="px-5 pt-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <h4 className="font-bold text-slate-900 text-lg leading-tight">{s.name}</h4>
+                          <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold border ${
+                            s.totalQty === 0 ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            s.totalQty < 15 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}>{s.totalQty} units</span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">{s.batches.length} batch{s.batches.length > 1 ? 'es' : ''}</p>
                       </div>
-                      <p className="text-xs text-slate-400 mt-2">{s.batches.length} batch{s.batches.length > 1 ? 'es' : ''}</p>
-                      <div className="mt-3 space-y-1.5">
+                      <div className="text-left mx-5 mt-3 border-t border-slate-100 pt-3 pb-5 space-y-2">
                         {s.batches.map(b => {
                           const exp = b.expiration_date && new Date(b.expiration_date);
                           const expired = exp && exp < new Date();
                           return (
-                            <div key={b.id} className="flex items-center justify-between text-xs border-t border-slate-50 pt-1.5">
-                              <span className="font-mono text-slate-500">{b.batch}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-slate-700">{b.available_qty}</span>
+                            <div key={b.id} className="flex items-center justify-between gap-3 text-xs">
+                              <div className="min-w-0">
+                                <p className="font-mono text-slate-600 font-semibold truncate">{b.batch || '—'}</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">Mfg {formatDate(b.manufacturing_date)} · Exp {formatDate(b.expiration_date)}</p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="rounded-lg bg-slate-50 border border-slate-200 px-2 py-1 font-bold text-slate-700">{b.available_qty} in stock</span>
                                 {expired && <span className="rounded bg-rose-100 text-rose-700 px-1.5 py-0.5 font-bold text-[10px]">EXPIRED</span>}
                               </div>
                             </div>
@@ -583,10 +691,10 @@ export function InventoryView({ role = 'ADMIN' }) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {movements.length === 0 ? (
-                  <tr><td colSpan="7"><EmptyState icon="📋" title={movementSearch ? 'No matching movements' : 'No transactions yet'} subtitle={movementSearch ? 'Try a different search term.' : 'Register your first purchase or sale above.'} /></td></tr>
+                  <tr><td colSpan="7"><EmptyState icon="📋" title={movementSearch ? 'No matching movements' : 'No transactions yet'} subtitle={movementSearch ? 'Try a different search term.' : 'Click "Add Stock" to register a purchase.'} /></td></tr>
                 ) : movements.map((m, i) => (
                   <motion.tr key={m.id} className="hover:bg-slate-50/50 transition" custom={i} variants={{hidden: {opacity:0}, visible:{opacity:1}}} initial="hidden" animate="visible" whileHover={{ scale: 1.01 }}>
-                    <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.date || '—'}</td>
+                    <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{formatDate(m.date)}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       <Badge color={m.type === 'PURCHASE' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}>{m.type}</Badge>
                     </td>
@@ -614,6 +722,7 @@ export function SuppliersView({ role = 'ADMIN' }) {
   const [form, setForm] = useState({ name: '', address: '', joinedfrom: '', contact: '', email: '' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadSuppliers = (q) => {
@@ -638,11 +747,11 @@ export function SuppliersView({ role = 'ADMIN' }) {
     if (!token()) return;
     const url = editingId ? `${API}/api/admin/suppliers/${editingId}` : `${API}/api/admin/suppliers`;
     const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: jsonHeaders(), body: JSON.stringify({ ...form, contact: Number(form.contact) }) });
-    if (res.ok) { setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); setEditingId(null); loadSuppliers(searchQuery.trim() || null); }
+    if (res.ok) { setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); setEditingId(null); setShowForm(false); loadSuppliers(searchQuery.trim() || null); }
   };
 
-  const handleEdit = (s) => { setEditingId(s.id); setForm({ name: s.name, address: s.address, joinedfrom: s.joinedfrom || '', contact: s.contact || '', email: s.email }); };
-  const cancelEdit = () => { setEditingId(null); setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); };
+  const handleEdit = (s) => { setEditingId(s.id); setShowForm(true); setForm({ name: s.name, address: s.address, joinedfrom: s.joinedfrom || '', contact: s.contact || '', email: s.email }); };
+  const cancelEdit = () => { setEditingId(null); setShowForm(false); setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); };
   const handleDelete = async (id) => {
     const result = await Swal.fire({ title: 'Delete this supplier?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Delete' });
     if (!result.isConfirmed || !token()) return;
@@ -656,13 +765,29 @@ export function SuppliersView({ role = 'ADMIN' }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-black text-slate-900 tracking-tight">Suppliers</h3>
-        <p className="text-sm text-slate-500 mt-1">Manage vendor contacts and partnership details.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Suppliers</h3>
+          <p className="text-sm text-slate-500 mt-1">Manage vendor contacts and partnership details.</p>
+        </div>
+        {canManage && (
+          <button
+            onClick={() => {
+              if (showForm && !editingId) setShowForm(false);
+              else { setEditingId(null); setForm({ name: '', address: '', joinedfrom: '', contact: '', email: '' }); setShowForm(true); }
+            }}
+            className="self-start sm:self-auto rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition"
+          >
+            <span className="text-base leading-none">{showForm && !editingId ? '✕' : '＋'}</span>
+            {showForm && !editingId ? 'Close' : 'Add Supplier'}
+          </button>
+        )}
       </div>
 
       {canManage && (
-        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <AnimatePresence>
+          {showForm && (
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25 }}>
           <div className="grid gap-4 md:grid-cols-2">
             <FormInput label="Company Name" placeholder="Acme Pharma Ltd." value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required tooltip="Legal business name of the supplier" />
             <FormInput label="Email" type="email" placeholder="vendor@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required tooltip="Supplier's primary email address" />
@@ -681,6 +806,8 @@ export function SuppliersView({ role = 'ADMIN' }) {
             )}
           </div>
         </motion.form>
+          )}
+        </AnimatePresence>
       )}
 
       <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, address or email..." />
@@ -688,40 +815,32 @@ export function SuppliersView({ role = 'ADMIN' }) {
       {loading ? <Spinner color="border-violet-300" /> : (
         <motion.div className="grid gap-4 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
           {suppliers.length === 0 ? (
-            <div className="md:col-span-2"><EmptyState icon="🏭" title={searchQuery ? 'No matching suppliers' : 'No suppliers yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Add your first vendor partner above.'} /></div>
+            <div className="md:col-span-2"><EmptyState icon="🏭" title={searchQuery ? 'No matching suppliers' : 'No suppliers yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Click "Add Supplier" to add your first vendor.'} /></div>
           ) : suppliers.map((s, i) => (
             <motion.div
               key={s.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 transition group"
+              className="rounded-2xl border border-slate-200 bg-white overflow-hidden transition group flex flex-col"
               variants={{ hidden: { opacity: 0, y: 20, scale: 0.97 }, visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14 } } }}
               whileHover={{ y: -4, boxShadow: '0 8px 25px -8px rgba(0,0,0,0.1)' }}
               layout
             >
-              <div className="flex items-start gap-3">
-                <motion.div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold text-sm"
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                >
-                  {s.name?.charAt(0)?.toUpperCase()}
-                </motion.div>
-                <div className="min-w-0">
-                  <h4 className="font-bold text-slate-900 truncate">{s.name}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">{s.email}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">{s.address}</p>
-                  <p className="text-xs text-slate-400 mt-1">Contact: {s.contact}</p>
+              <div className="px-5 pt-5">
+                <div className="flex items-start justify-between gap-3">
+                  <h4 className="font-bold text-slate-900 text-lg leading-tight">{s.name}</h4>
+                  <Badge color="bg-violet-50 text-violet-700 border-violet-200">Partner</Badge>
                 </div>
+                <p className="text-left text-xs text-violet-600 font-semibold mt-0.5 truncate">{s.email}</p>
+              </div>
+              <div className="mx-5 mt-3 border-t border-slate-100 pt-3 space-y-1.5 text-sm">
+                <p className="flex items-start gap-2 text-slate-600"><span className="w-4 shrink-0">📍</span><span className="min-w-0 break-words">{s.address || '—'}</span></p>
+                <p className="flex items-center gap-2 text-slate-600"><span className="w-4 shrink-0">📞</span>{s.contact || '—'}</p>
+                <p className="flex items-center gap-2 text-slate-600"><span className="w-4 shrink-0">🗓️</span>Partner since <b className="text-slate-800">{formatDate(s.joinedfrom)}</b></p>
               </div>
               {canManage && (
-                <motion.div
-                  className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end"
-                  initial={{ opacity: 0, height: 0 }}
-                  whileInView={{ opacity: 1, height: 'auto' }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="mt-auto px-5 pb-5 pt-3 flex gap-2 justify-end">
                   <ActionBtn onClick={() => handleEdit(s)}>Edit</ActionBtn>
                   <ActionBtn onClick={() => handleDelete(s.id)} color="rose">Delete</ActionBtn>
-                </motion.div>
+                </div>
               )}
             </motion.div>
           ))}
@@ -739,13 +858,14 @@ export function SalesView({ role = 'ADMIN' }) {
   const [suppliers, setSuppliers] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
   const [form, setForm] = useState({
-    medicineId: '', quantity: 1, amount: 0, date: new Date().toISOString().split('T')[0],
+    medicineId: '', quantity: '', amount: '', date: new Date().toISOString().split('T')[0],
     type: 'PURCHASE', batch: '', supplierId: '', manufacturing_date: '', expiration_date: '',
     newMedicineName: '', newMedicineDescription: '', newMedicineCategory: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -778,11 +898,11 @@ export function SalesView({ role = 'ADMIN' }) {
 
   const resetForm = () => {
     setForm({
-      medicineId: '', quantity: 1, amount: 0, date: new Date().toISOString().split('T')[0],
+      medicineId: '', quantity: '', amount: '', date: new Date().toISOString().split('T')[0],
       type: 'PURCHASE', batch: '', supplierId: '', manufacturing_date: '', expiration_date: '',
       newMedicineName: '', newMedicineDescription: '', newMedicineCategory: '',
     });
-    setEditingId(null); setErrorMessage(''); setSuccessMessage('');
+    setEditingId(null); setShowForm(false); setErrorMessage(''); setSuccessMessage('');
   };
 
   const handleSave = async (e) => {
@@ -829,7 +949,7 @@ export function SalesView({ role = 'ADMIN' }) {
   };
 
   const handleEdit = (r) => {
-    setEditingId(r.id); setErrorMessage(''); setSuccessMessage('');
+    setEditingId(r.id); setShowForm(true); setErrorMessage(''); setSuccessMessage('');
     setForm({
       medicineId: r.medicine?.id || '', quantity: r.quantity, amount: r.amount,
       date: r.date || '', type: r.type, batch: r.batch || '',
@@ -865,9 +985,23 @@ export function SalesView({ role = 'ADMIN' }) {
           <h3 className="text-2xl font-black text-slate-900 tracking-tight">Sales & Purchase</h3>
           <p className="text-sm text-slate-500 mt-1">Register transactions. Inventory adjusts automatically on save.</p>
         </div>
-        <div className="flex gap-2">
-          <Badge color="bg-emerald-50 text-emerald-700 border-emerald-200">{saleCount} Sales</Badge>
-          <Badge color="bg-blue-50 text-blue-700 border-blue-200">{purchaseCount} Purchases</Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex gap-2">
+            <Badge color="bg-emerald-50 text-emerald-700 border-emerald-200">{saleCount} Sales</Badge>
+            <Badge color="bg-blue-50 text-blue-700 border-blue-200">{purchaseCount} Purchases</Badge>
+          </div>
+          {canManage && (
+            <button
+              onClick={() => {
+                if (showForm && !editingId) setShowForm(false);
+                else { setEditingId(null); setForm({ medicineId: '', quantity: '', amount: '', date: new Date().toISOString().split('T')[0], type: 'PURCHASE', batch: '', supplierId: '', manufacturing_date: '', expiration_date: '', newMedicineName: '', newMedicineDescription: '', newMedicineCategory: '' }); setErrorMessage(''); setSuccessMessage(''); setShowForm(true); }
+              }}
+              className="rounded-xl bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition"
+            >
+              <span className="text-base leading-none">{showForm && !editingId ? '✕' : '＋'}</span>
+              {showForm && !editingId ? 'Close' : 'Add Transaction'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -881,7 +1015,9 @@ export function SalesView({ role = 'ADMIN' }) {
 
       {/* Form */}
       {canManage && (
-        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <AnimatePresence>
+          {showForm && (
+        <motion.form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.25 }}>
           {/* Form header strip */}
           <div className={`px-5 py-3 border-b flex items-center justify-between ${form.type === 'PURCHASE' ? 'bg-blue-50/80 border-blue-100' : 'bg-emerald-50/80 border-emerald-100'}`}>
             <h4 className={`text-sm font-bold ${form.type === 'PURCHASE' ? 'text-blue-800' : 'text-emerald-800'}`}>
@@ -973,6 +1109,8 @@ export function SalesView({ role = 'ADMIN' }) {
             </div>
           </div>
         </motion.form>
+          )}
+        </AnimatePresence>
       )}
 
       {/* Records */}
@@ -982,7 +1120,7 @@ export function SalesView({ role = 'ADMIN' }) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <h4 className="text-sm font-bold text-slate-700 mb-3">Transaction History ({records.length})</h4>
           {records.length === 0 ? (
-            <EmptyState icon="🧾" title={searchQuery ? 'No matching transactions' : 'No transactions yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Register your first purchase or sale above.'} />
+            <EmptyState icon="🧾" title={searchQuery ? 'No matching transactions' : 'No transactions yet'} subtitle={searchQuery ? 'Try a different search term.' : 'Click "Add Transaction" to register a purchase or sale.'} />
           ) : (
             <motion.div className="grid gap-3 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
               {records.map((r, i) => (
@@ -997,7 +1135,7 @@ export function SalesView({ role = 'ADMIN' }) {
                   <div className="mt-3 pt-2 border-t border-slate-50 space-y-1.5 text-xs">
                     <div className="flex justify-between"><span className="text-slate-400">Quantity</span><span className="font-bold text-slate-700">{r.quantity} units</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Amount</span><span className="font-black text-slate-900">${r.amount?.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Date</span><span className="font-semibold text-slate-600">{r.date || '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Date</span><span className="font-semibold text-slate-600">{formatDate(r.date)}</span></div>
                     {r.supplier && <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5"><span className="text-slate-400">Vendor</span><span className="font-semibold text-slate-600">{r.supplier.name}</span></div>}
                   </div>
                   {canManage && (
@@ -1012,6 +1150,204 @@ export function SalesView({ role = 'ADMIN' }) {
           )}
         </motion.div>
       )}
+    </div>
+  );
+}
+
+/* ───────────────────────────── EXPIRY ───────────────────────────── */
+
+const STATUS_META = {
+  expired:  { label: 'Expired',     dot: 'bg-rose-600',        badge: 'bg-rose-100 text-rose-700 border-rose-200' },
+  critical: { label: 'Critical',    dot: 'bg-red-500',         badge: 'bg-red-50 text-red-700 border-red-200' },
+  warning:  { label: 'Warning',     dot: 'bg-amber-500',       badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  safe:     { label: 'Safe',        dot: 'bg-emerald-500',     badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+};
+
+const daysUntil = (dateStr) => {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const exp = new Date(dateStr + 'T00:00:00');
+  return Math.round((exp - today) / 86400000);
+};
+
+const itemStatus = (item) => {
+  const d = daysUntil(item.expiration_date);
+  if (d === null) return 'safe';
+  if (d < 0) return 'expired';
+  if (d < 10) return 'critical';
+  if (d <= 30) return 'warning';
+  return 'safe';
+};
+
+export function ExpiryView({ role = 'ADMIN' }) {
+  const [summary, setSummary] = useState({ expired: 0, critical: 0, warning: 0, safe: 0, atRiskUnits: 0 });
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const loadData = () => {
+    if (!token()) { setLoading(false); return; }
+    setLoading(true);
+    const base = role === 'PHARMACIST' ? `${API}/api/pharmacy` : `${API}/api/admin`;
+    fetch(`${base}/expiry?days=30`, { headers: auth() })
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((data) => {
+        setSummary(data);
+        setItems(data.items || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, [role]);
+
+  const enriched = useMemo(() =>
+    items.map((i) => {
+      const status = itemStatus(i);
+      const d = daysUntil(i.expiration_date);
+      return { ...i, status, daysLeft: d };
+    }),
+  [items]);
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return enriched.filter((i) => {
+      if (filter !== 'all' && i.status !== filter) return false;
+      if (q) {
+        const hay = `${i.medicine?.name || ''} ${i.medicine_name || ''} ${i.batch || ''} ${i.supplier || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [enriched, filter, searchQuery]);
+
+  const handleSendReport = async () => {
+    const confirm = await Swal.fire({
+      title: 'Send expiry report?',
+      text: 'Email report will be sent to all ADMIN, PHARMACIST and STAFF users.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Send Report',
+      confirmButtonColor: '#0f172a',
+      cancelButtonText: 'Cancel',
+    });
+    if (!confirm.isConfirmed || !token()) return;
+    setSending(true);
+    try {
+      const res = await fetch(`${API}/api/admin/expiry/send-report`, { method: 'POST', headers: auth() });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        Swal.fire({ icon: 'success', title: 'Report sent!', text: `Emailed ${data.recipients ?? 0} recipient(s) · Critical ${data.criticalCount ?? 0} · Warning ${data.warningCount ?? 0}`, timer: 3000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Failed to send', text: data.message || data || 'Check SMTP settings in application.properties.' });
+      }
+    } catch (e) {
+      Swal.fire({ icon: 'error', title: 'Failed to send', text: 'Check the SMTP configuration and try again.' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const cards = [
+    { key: 'expired', title: 'Expired', value: summary.expired, accent: 'text-rose-600', bg: 'bg-rose-50 border-rose-200', icon: '⛔' },
+    { key: 'critical', title: 'Critical < 10 days', value: summary.critical, accent: 'text-red-600', bg: 'bg-red-50 border-red-200', icon: '🔴' },
+    { key: 'warning', title: 'Warning < 30 days', value: summary.warning, accent: 'text-amber-600', bg: 'bg-amber-50 border-amber-200', icon: '🟡' },
+    { key: 'atRiskUnits', title: 'At-Risk Units', value: summary.atRiskUnits, accent: 'text-slate-900', bg: 'bg-slate-100 border-slate-200', icon: '⚠️' },
+  ];
+
+  const tabs = [
+    { key: 'all', label: `All (${items.length})` },
+    { key: 'expired', label: `Expired (${summary.expired})` },
+    { key: 'critical', label: `Critical (${summary.critical})` },
+    { key: 'warning', label: `Warning (${summary.warning})` },
+    { key: 'safe', label: `Safe (${summary.safe})` },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Medicine Expiry Tracking</h3>
+          <p className="text-sm text-slate-500 mt-1">Monitor stock expiring soon across all batches.</p>
+        </div>
+        <button
+          onClick={handleSendReport}
+          disabled={sending}
+          className="self-start sm:self-auto rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white px-4 py-2.5 text-sm font-bold flex items-center gap-2 shadow-sm transition disabled:opacity-50"
+        >
+          {sending ? <span className="animate-spin inline-block">⏳</span> : '📧'} Send Expiry Report
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {cards.map((c) => (
+          <motion.div key={c.key} className={`rounded-2xl border p-4 ${c.bg}`} whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 200, damping: 16 }}>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500 font-medium">{c.title}</p>
+              <span>{c.icon}</span>
+            </div>
+            <p className={`text-2xl font-black mt-1 ${c.accent}`}>{c.value}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex border-b border-slate-200 gap-5 overflow-x-auto">
+          {tabs.map((t) => (
+            <button key={t.key} onClick={() => setFilter(t.key)} className={`pb-3 text-sm font-bold border-b-2 whitespace-nowrap transition ${filter === t.key ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="sm:w-72">
+          <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search medicine, batch, supplier..." />
+        </div>
+      </div>
+
+      {loading ? <Spinner color="border-rose-300" /> : filtered.length === 0 ? (
+        <EmptyState icon="🗓️" title={searchQuery || filter !== 'all' ? 'No matching items' : 'No inventory with expiry dates'} subtitle={searchQuery || filter !== 'all' ? 'Try a different search or filter.' : 'Add stock via purchase transactions to track expiry.'} />
+      ) : (
+        <motion.div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/80">
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Medicine</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Batch</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Qty</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Supplier</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Expiry Date</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Days Left</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((i) => {
+                const meta = STATUS_META[i.status];
+                return (
+                  <tr key={i.id} className="hover:bg-slate-50/50 transition">
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">{i.medicine?.name || i.medicine_name || 'Unknown'}</td>
+                    <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{i.batch || '—'}</td>
+                    <td className="px-5 py-3.5 font-bold text-slate-900">{i.available_qty}</td>
+                    <td className="px-5 py-3.5 text-slate-500 text-xs">{i.supplier || '—'}</td>
+                    <td className="px-5 py-3.5 text-slate-600 font-medium">{formatDate(i.expiration_date)}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 font-bold ${i.daysLeft === null ? 'text-slate-700' : i.daysLeft < 0 ? 'text-rose-700' : i.daysLeft < 10 ? 'text-red-600' : i.daysLeft <= 30 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                        {i.daysLeft === null ? '—' : i.daysLeft < 0 ? 'EXPIRED' : `${i.daysLeft} days`}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5"><Badge color={meta.badge}>{meta.label}</Badge></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </motion.div>
+      )}
+
+
     </div>
   );
 }

@@ -50,6 +50,7 @@ public class AuthService {
         // Cryptographically hash the raw password using BCrypt
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setEmail(request.getEmail());
 
         return userRepository.save(user);
     }

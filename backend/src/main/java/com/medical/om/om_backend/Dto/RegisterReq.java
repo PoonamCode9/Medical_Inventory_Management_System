@@ -32,4 +32,8 @@ public class RegisterReq {
     // Spring automatically converts the string "ADMIN" from JSON into the Role enum
     // Maps to "role" in JSON: { "role": "ADMIN" }
     private Role role;
+
+    // The user's email — used to receive expiry report notifications
+    // Maps to "email" in JSON
+    private String email;
 }

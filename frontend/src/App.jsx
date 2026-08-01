@@ -71,6 +71,7 @@ function App() {
     username: '',
     password: '',
     role: 'STAFF',
+    email: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -260,21 +261,21 @@ function App() {
             initial="hidden"
             animate="visible"
           >
-            <motion.div
-              className="auth-image-panel"
-              variants={itemVariants}
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-            >
-              <motion.img
-                src="/medicine.jpg"
-                alt="Medicine"
-                className="auth-side-image"
-                initial={{ filter: 'blur(8px)', scale: 0.9 }}
-                animate={{ filter: 'blur(0px)', scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                whileHover={{ scale: 1.03 }}
-              />
+{/*             <motion.div */}
+{/*               className="auth-image-panel" */}
+{/*               variants={itemVariants} */}
+{/*               whileHover={{ scale: 1.01 }} */}
+{/*               transition={{ type: 'spring', stiffness: 200 }} */}
+{/*             > */}
+{/*               <motion.img */}
+{/*                 src="/medicine.jpg" */}
+{/*                 alt="Medicine" */}
+{/*                 className="auth-side-image" */}
+{/*                 initial={{ filter: 'blur(8px)', scale: 0.9 }} */}
+{/*                 animate={{ filter: 'blur(0px)', scale: 1 }} */}
+{/*                 transition={{ delay: 0.4, duration: 0.6 }} */}
+{/*                 whileHover={{ scale: 1.03 }} */}
+{/*               /> */}
 {/*               <motion.div */}
 {/*                 className="auth-lottie-wrapper" */}
 {/*                 initial={{ scale: 0, rotate: -90 }} */}
@@ -294,7 +295,7 @@ function App() {
 {/*               > */}
 {/*                 Secure healthcare management platform */}
 {/*               </motion.p> */}
-            </motion.div>
+{/*             </motion.div> */}
 
             <motion.div className="auth-form-panel" variants={itemVariants}>
               {error && (
@@ -462,6 +463,21 @@ function App() {
                   required
                   data-tooltip-id="form-tooltip"
                   data-tooltip-content="Create a strong password for your account"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="reg-email">Email</label>
+                <input
+                  type="email"
+                  id="reg-email"
+                  name="email"
+                  className="form-input"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="e.g. drsmith@hospital.com"
+                  data-tooltip-id="form-tooltip"
+                  data-tooltip-content="You'll receive medicine expiry reports here (required for ADMIN & STAFF)"
                 />
               </div>
 

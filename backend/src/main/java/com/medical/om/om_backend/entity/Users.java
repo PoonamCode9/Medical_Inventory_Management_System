@@ -30,4 +30,7 @@ public class Users {
 
     @Column(nullable = false)   // Password field — will store the BCrypt hash, never raw text
     private String password;
+
+    @Column(nullable = true)    // Email — used to send expiry reports
+    private String email;
 }

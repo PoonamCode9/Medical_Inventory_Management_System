@@ -29,3 +29,6 @@ C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backen
 C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\security\UserDetailsServiceImpl.java
 C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\service\AuthService.java
 C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\service\DashboardService.java
+C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\service\EmailService.java
+C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\service\ExpiryService.java
+C:\Users\mesud\Desktop\om_medical\backend\src\main\java\com\medical\om\om_backend\service\InventoryCleanupService.java

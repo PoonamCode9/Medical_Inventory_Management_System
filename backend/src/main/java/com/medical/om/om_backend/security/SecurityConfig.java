@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/inventory/**").hasAnyAuthority("ADMIN", "PHARMACIST", "STAFF")
                 .requestMatchers("/api/admin/suppliers/**").hasAnyAuthority("ADMIN", "PHARMACIST", "STAFF")
                 .requestMatchers("/api/admin/sales/**").hasAnyAuthority("ADMIN", "PHARMACIST")
+                .requestMatchers("/api/admin/expiry/**").hasAnyAuthority("ADMIN", "PHARMACIST", "STAFF")
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/pharmacy/**").hasAnyAuthority("PHARMACIST", "STAFF")
                 .requestMatchers("/api/staff/**").hasAuthority("STAFF")

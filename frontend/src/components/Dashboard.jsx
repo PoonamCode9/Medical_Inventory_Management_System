@@ -4,7 +4,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import Swal from 'sweetalert2'
 import { Tooltip } from 'react-tooltip'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
-import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView } from './DashboardViews';
+import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView, ExpiryView } from './DashboardViews';
 
 const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
 
@@ -32,59 +32,62 @@ const pageTransition = {
 const ROLE_CONFIG = {
   ADMIN: {
     label: 'Administrator',
-    title: 'Admin Dashboard',
-    subtitle: 'Live inventory and system overview',
+//     title: 'Admin Dashboard',
+//     subtitle: 'Live inventory and system overview',
     api: 'http://localhost:8080/api/admin/dashboard/stats',
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
-      { label: 'Users', icon: '/icon.png', view: 'users' },
-      { label: 'Medicine', icon: '/icon.png', view: 'medicine' },
-      { label: 'Inventory', icon: '/icon.png', view: 'inventory' },
-      { label: 'Sales/ Purchase', icon: '/icon.png', view: 'sales' },
-      { label: 'Suppliers', icon: '/icon.png', view: 'suppliers' },
+      { label: 'Users', icon: '/total.png', view: 'users' },
+      { label: 'Medicine', icon: '/medicines.png', view: 'medicine' },
+      { label: 'Inventory', icon: '/Inventory-maintenance_25374.png', view: 'inventory' },
+      { label: 'Sales/ Purchase', icon: '/purchase.png', view: 'sales' },
+      { label: 'Expiry', icon: '/report.png', view: 'expiry' },
+      { label: 'Suppliers', icon: '/supplier.png', view: 'suppliers' },
     ],
     statCards: (s) => [
-      { title: 'Total Users', value: s.totalUsers ?? 0, subtitle: 'Registered accounts', icon: '/icon.png', accent: 'from-indigo-500 to-blue-500' },
-      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/icon.png', accent: 'from-emerald-500 to-teal-500' },
-      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries tracked', icon: '/icon.png', accent: 'from-amber-500 to-orange-500' },
-      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/icon.png', accent: 'from-fuchsia-500 to-purple-500' },
+      { title: 'Total Users', value: s.totalUsers ?? 0, subtitle: 'Registered accounts', icon: '/total.png', accent: 'from-indigo-500 to-blue-500' },
+      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/medicines.png', accent: 'from-emerald-500 to-teal-500' },
+      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries tracked', icon: '/Inventory-maintenance_25374.png', accent: 'from-amber-500 to-orange-500' },
+      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/supplier.png', accent: 'from-fuchsia-500 to-purple-500' },
     ],
   },
   PHARMACIST: {
     label: 'Pharmacist',
-    title: 'Pharmacist Dashboard',
-    subtitle: 'Stock and transaction overview',
+//     title: 'Pharmacist Dashboard',
+//     subtitle: 'Stock and transaction overview',
     api: 'http://localhost:8080/api/pharmacy/dashboard/stats',
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
-      { label: 'Medicine', icon: '/icon.png', view: 'medicine' },
-      { label: 'Inventory', icon: '/icon.png', view: 'inventory' },
-      { label: 'Sales/ Purchase', icon: '/icon.png', view: 'sales' },
-      { label: 'Suppliers', icon: '/icon.png', view: 'suppliers' },
+      { label: 'Medicine', icon: '/medicines.png', view: 'medicine' },
+      { label: 'Inventory', icon: '/Inventory-maintenance_25374.png', view: 'inventory' },
+      { label: 'Sales/ Purchase', icon: '/purchase.png', view: 'sales' },
+      { label: 'Expiry', icon: '/report.png', view: 'expiry' },
+      { label: 'Suppliers', icon: '/supplier.png', view: 'suppliers' },
     ],
     statCards: (s) => [
-      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/icon.png', accent: 'from-emerald-500 to-teal-500' },
-      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries', icon: '/icon.png', accent: 'from-amber-500 to-orange-500' },
-      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/icon.png', accent: 'from-fuchsia-500 to-purple-500' },
-      { title: 'Total Units', value: s.totalStock ?? 0, subtitle: 'In stock', icon: '/icon.png', accent: 'from-sky-500 to-indigo-500' },
+      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/medicines.png', accent: 'from-emerald-500 to-teal-500' },
+      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries', icon: '/Inventory-maintenance_25374.png', accent: 'from-amber-500 to-orange-500' },
+      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/supplier.png', accent: 'from-fuchsia-500 to-purple-500' },
+      { title: 'Total Units', value: s.totalStock ?? 0, subtitle: 'In stock', icon: '/total.png', accent: 'from-sky-500 to-indigo-500' },
     ],
   },
   STAFF: {
     label: 'Staff',
-    title: 'Staff Dashboard',
-    subtitle: 'View inventory and medicines',
+//     title: 'Staff Dashboard',
+//     subtitle: 'View inventory and medicines',
     api: 'http://localhost:8080/api/pharmacy/dashboard/stats',
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
-      { label: 'Medicine', icon: '/icon.png', view: 'medicine' },
-      { label: 'Inventory', icon: '/icon.png', view: 'inventory' },
-      { label: 'Suppliers', icon: '/icon.png', view: 'suppliers' },
+      { label: 'Medicine', icon: '/medicines.png', view: 'medicine' },
+      { label: 'Inventory', icon: '/Inventory-maintenance_25374.png', view: 'inventory' },
+      { label: 'Expiry', icon: '/report.png', view: 'expiry' },
+      { label: 'Suppliers', icon: '/supplier.png', view: 'suppliers' },
     ],
     statCards: (s) => [
-      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/icon.png', accent: 'from-emerald-500 to-teal-500' },
-      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries', icon: '/icon.png', accent: 'from-amber-500 to-orange-500' },
-      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/icon.png', accent: 'from-fuchsia-500 to-purple-500' },
-      { title: 'Total Units', value: s.totalStock ?? 0, subtitle: 'In stock', icon: '/icon.png', accent: 'from-sky-500 to-indigo-500' },
+      { title: 'Medicines', value: s.totalMedicines ?? 0, subtitle: 'Products in catalog', icon: '/medicines.png', accent: 'from-emerald-500 to-teal-500' },
+      { title: 'Inventory Items', value: s.totalInventoryItems ?? 0, subtitle: 'Stock entries', icon: '/Inventory-maintenance_25374.png', accent: 'from-amber-500 to-orange-500' },
+      { title: 'Suppliers', value: s.totalSuppliers ?? 0, subtitle: 'Active vendors', icon: '/supplier.png', accent: 'from-fuchsia-500 to-purple-500' },
+      { title: 'Total Units', value: s.totalStock ?? 0, subtitle: 'In stock', icon: '/total.png', accent: 'from-sky-500 to-indigo-500' },
     ],
   },
 };
@@ -100,27 +103,33 @@ function StatCard({ card, i }) {
       variants={itemVariants}
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}
-      whileHover={{ y: -6, boxShadow: '0 16px 40px -12px rgba(0,0,0,0.12)' }}
+      whileHover={{ y: -6, boxShadow: '0 16px 40px -12px rgba(0,0,0,0.14)' }}
       layout
-      className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 transition"
+      className="group bg-white rounded-3xl border border-slate-200 shadow-sm p-5 md:p-6 transition relative overflow-hidden"
     >
-      <motion.div
-        className={`inline-flex rounded-2xl bg-gradient-to-br ${card.accent} p-3 text-2xl text-white`}
-        whileHover={{ rotate: [0, -12, 12, -6, 0] }}
-        transition={{ duration: 0.6 }}
-      >
-        <img src={card.icon} alt="" className="w-6 h-6 brightness-0 invert" />
-      </motion.div>
-      <h3 className="text-slate-500 font-medium mt-4">{card.title}</h3>
-      <motion.p
-        className="text-4xl font-extrabold mt-2 text-slate-900"
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={isInView ? { scale: 1, opacity: 1 } : {}}
-        transition={{ delay: 0.15 + i * 0.08, type: 'spring', stiffness: 80, damping: 12 }}
-      >
-        {card.value}
-      </motion.p>
-      <p className="text-sm text-slate-500 mt-2">{card.subtitle}</p>
+      <div className={`pointer-events-none absolute -right-6 -top-6 w-24 h-24 rounded-full bg-gradient-to-br ${card.accent} opacity-10 group-hover:opacity-20 transition`} />
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider truncate">{card.title}</h3>
+          <motion.p
+            className="text-3xl md:text-4xl font-extrabold mt-3 text-slate-900 leading-none"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={isInView ? { scale: 1, opacity: 1 } : {}}
+            transition={{ delay: 0.15 + i * 0.08, type: 'spring', stiffness: 80, damping: 12 }}
+          >
+            {card.value}
+          </motion.p>
+          <p className="text-sm text-slate-500 mt-3">{card.subtitle}</p>
+        </div>
+        <motion.div
+          className={`shrink-0 rounded-2xl bg-gradient-to-br ${card.accent} p-3 md:p-4 text-white shadow-lg`}
+          whileHover={{ rotate: [0, -12, 12, -6, 0], scale: 1.05 }}
+          transition={{ duration: 0.6 }}
+        >
+          <img src={card.icon} alt="" className="w-6 h-6 md:w-7 md:h-7 brightness-0 invert" />
+        </motion.div>
+      </div>
+      <div className={`mt-4 h-1 w-12 rounded-full bg-gradient-to-r ${card.accent} group-hover:w-full transition-all duration-500`} />
     </motion.div>
   );
 }
@@ -165,9 +174,10 @@ export default function Dashboard({ user, onLogout }) {
     switch (activeView) {
       case 'users': return <UsersView />;
       case 'medicine': return <MedicinesView role={role} />;
-      case 'inventory': return <InventoryView role={role} />;
+      case 'inventory': return <InventoryView role={role} onNavigate={setActiveView} />;
       case 'sales': return <SalesView role={role} />;
       case 'suppliers': return <SuppliersView role={role} />;
+      case 'expiry': return <ExpiryView role={role} />;
       case 'home':
       default:
         return (
@@ -224,44 +234,6 @@ export default function Dashboard({ user, onLogout }) {
                 </motion.div>
               </InViewSection>
             )}
-
-            <InViewSection className="grid lg:grid-cols-3 gap-5 md:gap-6 mt-6 md:mt-8">
-              {[
-                { title: 'Recent Medicines', items: stats.recentMedicines, icon: '/icon.png', empty: 'No medicines found.', render: (item) => (<><p className="font-semibold text-slate-900">{item.name}</p><p className="text-sm text-slate-500">Batch: {item.batch} \u2022 Expires {item.expiration_date}</p></>) },
-                { title: 'Inventory Snapshot', items: stats.recentInventoryItems, icon: '/icon.png', empty: 'No inventory records found.', render: (item) => (<><p className="font-semibold text-slate-900">{item.medicine?.name}</p><p className="text-sm text-slate-500">Qty: {item.available_qty} \u2022 Supplier: {item.supplier}</p></>) },
-                { title: 'Recent Suppliers', items: stats.recentSuppliers, icon: '/icon.png', empty: 'No supplier records found.', render: (item) => (<><p className="font-semibold text-slate-900">{item.name}</p><p className="text-sm text-slate-500">{item.email} \u2022 {item.address}</p></>) },
-              ].map((section, si) => (
-                <motion.div
-                  key={section.title}
-                  className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6"
-                  whileHover={{ y: -4, boxShadow: '0 12px 30px -10px rgba(0,0,0,0.08)' }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + si * 0.1, type: 'spring', stiffness: 80, damping: 14 }}
-                  layout
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <img src={section.icon} alt="" className="w-5 h-5 opacity-60" />
-                    <h2 className="text-lg md:text-xl font-bold text-slate-900">{section.title}</h2>
-                    <span className="ml-auto text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Latest 5</span>
-                  </div>
-                  <ul className="space-y-3">
-                    {section.items?.length > 0 ? section.items.map((item, ii) => (
-                      <motion.li
-                        key={item.id}
-                        className="rounded-2xl border border-slate-100 p-3"
-                        initial={{ opacity: 0, x: -15 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + si * 0.1 + ii * 0.04, type: 'spring', stiffness: 80, damping: 16 }}
-                        whileHover={{ x: 4, borderColor: '#cbd5e1' }}
-                      >
-                        {section.render(item)}
-                      </motion.li>
-                    )) : <li className="text-sm text-slate-500">{section.empty}</li>}
-                  </ul>
-                </motion.div>
-              ))}
-            </InViewSection>
           </motion.div>
         );
     }
@@ -271,7 +243,7 @@ export default function Dashboard({ user, onLogout }) {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Tooltip id="dash-tooltip" place="top" className="!text-xs !font-medium !rounded-lg !px-3 !py-1.5" />
       <motion.header
-        className="fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur border-b border-slate-200 z-50"
+        className="fixed top-0 left-0 right-0 h-14 bg-slate-900/90 backdrop-blur border-b border-slate-700 z-50"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -290,7 +262,7 @@ export default function Dashboard({ user, onLogout }) {
               data-tooltip-content="OM Medical System"
             />
             <div className="leading-tight">
-              <h1 className="font-bold text-lg md:text-xl text-slate-900">OM Medical</h1>
+              <h1 className="font-bold text-lg md:text-xl text-white">OM Medical</h1>
             </div>
             <motion.div
               className="hidden sm:block"
@@ -305,7 +277,7 @@ export default function Dashboard({ user, onLogout }) {
           <div className="flex items-center gap-3 md:gap-5">
             <div className="hidden sm:flex items-center gap-3">
               <motion.div
-                className="w-8 h-8 rounded-full bg-slate-900 text-white grid place-items-center font-semibold"
+                className="w-8 h-8 rounded-full bg-white text-slate-600 grid place-items-center font-semibold"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 10 }}
@@ -314,8 +286,8 @@ export default function Dashboard({ user, onLogout }) {
               </motion.div>
 
               <div className="text-right leading-tight">
-                <h3 className="font-semibold text-slate-900">{username}</h3>
-                <p className="text-xs text-slate-500">{cfg.label}</p>
+                <h3 className="font-semibold text-white">{username}</h3>
+                <p className="text-xs text-slate-300">{cfg.label}</p>
               </div>
             </div>
 
@@ -336,7 +308,7 @@ export default function Dashboard({ user, onLogout }) {
 
       <div className="flex flex-1 pt-14">
         <motion.aside
-          className="hidden md:flex w-72 bg-white border-r border-slate-200 flex-col"
+          className="hidden md:flex w-50 bg-slate-900/90 backdrop-blur border-r border-slate-700 flex-col"
           initial={{ x: -80, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
@@ -356,29 +328,29 @@ export default function Dashboard({ user, onLogout }) {
                   onClick={() => setActiveView(item.view)}
                   className={`w-full group flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-all duration-200 ${
                     activeView === item.view
-                      ? 'bg-indigo-50 border border-indigo-100 shadow-sm'
-                      : 'hover:bg-slate-50 border border-transparent'
+                      ? 'bg-indigo-500/20 border border-indigo-500/30 shadow-md'
+                      : 'hover:bg-slate-800 border border-transparent'
                   }`}
                 >
                   <motion.span
                     layout
                     className={`w-9 h-9 rounded-xl grid place-items-center transition-all duration-200 ${
                       activeView === item.view
-                        ? 'bg-indigo-500 text-white shadow-md'
-                        : 'group-hover:bg-indigo-500/10 text-slate-600'
+                        ? 'bg-indigo-500/60 text-white shadow-md'
+                        : 'group-hover:bg-indigo-500/50 text-slate-600'
                     }`}
                   >
                     <motion.img
-                      src="/icon.png"
-                      className="w-5 h-5"
+                      src={item.icon}
+                      className={`w-5 h-5 transition-opacity duration-200 ${activeView === item.view ? 'opacity-100' : 'opacity-50 group-hover:opacity-80'}`}
                       initial={{ scale: 0, rotate: -90 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                      style={{ filter: activeView === item.view ? 'brightness(0) invert(1)' : 'none' }}
+                      style={{ filter: 'brightness(0) invert(1)' }}
                     />
                   </motion.span>
                   <motion.span
-                    className={`font-semibold text-sm ${activeView === item.view ? 'text-indigo-700' : 'text-slate-700'}`}
+                    className={`font-semibold text-sm ${activeView === item.view ? 'text-indigo-300' : 'text-slate-300'}`}
                     whileHover={{ x: 4 }}
                     transition={{ type: 'spring', stiffness: 200 }}
                   >
@@ -389,12 +361,12 @@ export default function Dashboard({ user, onLogout }) {
             ))}
           </nav>
           <motion.div
-            className="p-4 text-xs text-slate-400 border-t border-slate-200"
+            className="p-4 text-xs text-slate-500 border-t border-slate-700"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            Signed in as <span className="text-slate-600 font-medium">{username}</span>
+            Signed in as <span className="text-slate-300 font-medium">{username}</span>
           </motion.div>
         </motion.aside>
 
@@ -425,7 +397,7 @@ export default function Dashboard({ user, onLogout }) {
 
             <div className="md:hidden mt-6">
               <motion.div
-                className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4"
+                className="bg-slate-800 rounded-3xl border border-slate-700 shadow-sm p-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -435,12 +407,12 @@ export default function Dashboard({ user, onLogout }) {
                     <motion.button
                       key={item.label}
                       onClick={() => setActiveView(item.view)}
-                      className="rounded-2xl border border-slate-200 p-3 hover:bg-slate-50 transition text-left"
+                      className="rounded-2xl border border-slate-200 p-3 hover:bg-slate-800 transition text-left"
                       whileHover={{ scale: 1.03, borderColor: '#6366f1' }}
                       whileTap={{ scale: 0.97 }}
                     >
-                      <img src="/icon.png" alt="" className="w-5 h-5 mb-1 opacity-70" />
-                      <div className="text-sm font-medium text-slate-900 mt-1">{item.label}</div>
+                      <img src={item.icon} alt="" className="w-5 h-5 mb-1 opacity-70 brightness-0 invert" />
+                      <div className="text-sm font-medium text-slate-100 mt-1">{item.label}</div>
                     </motion.button>
                   ))}
                 </div>
@@ -451,7 +423,7 @@ export default function Dashboard({ user, onLogout }) {
       </div>
 
       <motion.footer
-        className="bg-white border-t border-slate-200 h-14 flex items-center justify-center text-slate-500 text-sm"
+        className="bg-slate-900/90 backdrop-blur border-b border-slate-700 z-50 h-14 flex items-center justify-center text-slate-50 text-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}

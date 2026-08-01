@@ -13,6 +13,8 @@ import com.medical.om.om_backend.entity.Suppliers;
 import com.medical.om.om_backend.entity.Users;
 import com.medical.om.om_backend.entity.SalesPurchase;
 import com.medical.om.om_backend.service.DashboardService;
+import com.medical.om.om_backend.service.ExpiryService;
+import com.medical.om.om_backend.service.InventoryCleanupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import com.medical.om.om_backend.repository.MedicineRepository;
 import com.medical.om.om_backend.repository.SupplierRepository;
 import com.medical.om.om_backend.repository.UserRepository;
 import com.medical.om.om_backend.repository.SalesPurchaseRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -33,6 +36,8 @@ public class Admincontroller {
     private final SalesPurchaseRepository salesPurchaseRepository;
     private final PasswordEncoder passwordEncoder;
     private final DashboardService dashboardService;
+    private final ExpiryService expiryService;
+    private final InventoryCleanupService cleanupService;
 
     public Admincontroller(UserRepository userRepository,
                            MedicineRepository medicineRepository,
@@ -40,7 +45,9 @@ public class Admincontroller {
                            SupplierRepository supplierRepository,
                            SalesPurchaseRepository salesPurchaseRepository,
                            PasswordEncoder passwordEncoder,
-                           DashboardService dashboardService) {
+                           DashboardService dashboardService,
+                           ExpiryService expiryService,
+                           InventoryCleanupService cleanupService) {
         this.userRepository = userRepository;
         this.medicineRepository = medicineRepository;
         this.inventoryRepository = inventoryRepository;
@@ -48,6 +55,8 @@ public class Admincontroller {
         this.salesPurchaseRepository = salesPurchaseRepository;
         this.passwordEncoder = passwordEncoder;
         this.dashboardService = dashboardService;
+        this.expiryService = expiryService;
+        this.cleanupService = cleanupService;
     }
 
     @GetMapping("/dashboard/stats")
@@ -55,6 +64,16 @@ public class Admincontroller {
         Map<String, Object> stats = dashboardService.getCommonStats();
         stats.put("totalUsers", userRepository.count());
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/expiry")
+    public ResponseEntity<?> getExpiry(@RequestParam(defaultValue = "30") int days) {
+        return ResponseEntity.ok(expiryService.getExpirySummary(days));
+    }
+
+    @PostMapping("/expiry/send-report")
+    public ResponseEntity<?> sendExpiryReport() {
+        return ResponseEntity.ok(expiryService.sendExpiryReport());
     }
 
     @GetMapping("/users")
@@ -74,6 +93,7 @@ public class Admincontroller {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setEmail(request.getEmail());
         return ResponseEntity.ok(userRepository.save(user));
     }
 
@@ -86,6 +106,7 @@ public class Admincontroller {
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
             }
             user.setRole(request.getRole());
+            user.setEmail(request.getEmail());
             return ResponseEntity.ok(userRepository.save(user));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -132,13 +153,17 @@ public class Admincontroller {
     }
 
     @DeleteMapping("/medicines/{id}")
+    @Transactional
     public ResponseEntity<?> deleteMedicine(@PathVariable Long id) {
+        inventoryRepository.deleteByMedicineId(id);
+        salesPurchaseRepository.deleteByMedicineId(id);
         medicineRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/inventory")
     public ResponseEntity<List<Inventory>> getInventory() {
+        cleanupService.cleanup();
         return ResponseEntity.ok(inventoryRepository.findAll());
     }
 
