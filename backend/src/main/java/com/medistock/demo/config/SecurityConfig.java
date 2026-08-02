@@ -24,7 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 
@@ -41,7 +40,6 @@ public class SecurityConfig {
 
 
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
@@ -52,9 +50,9 @@ public class SecurityConfig {
         http
 
 
-        // ================================
+        // ==================================
         // CSRF
-        // ================================
+        // ==================================
 
         .csrf(
                 csrf -> csrf.disable()
@@ -62,9 +60,9 @@ public class SecurityConfig {
 
 
 
-        // ================================
+        // ==================================
         // CORS
-        // ================================
+        // ==================================
 
         .cors(
                 Customizer.withDefaults()
@@ -72,9 +70,9 @@ public class SecurityConfig {
 
 
 
-        // ================================
+        // ==================================
         // SESSION
-        // ================================
+        // ==================================
 
         .sessionManagement(
 
@@ -88,15 +86,15 @@ public class SecurityConfig {
 
 
 
-        // ================================
+        // ==================================
         // AUTHORIZATION
-        // ================================
+        // ==================================
 
         .authorizeHttpRequests(auth -> auth
 
 
 
-                // OPTIONS REQUEST
+                // OPTIONS
 
                 .requestMatchers(
                         HttpMethod.OPTIONS,
@@ -108,9 +106,9 @@ public class SecurityConfig {
 
 
 
-                // =========================
-                // PUBLIC APIs
-                // =========================
+                // ==================================
+                // PUBLIC
+                // ==================================
 
                 .requestMatchers(
 
@@ -125,17 +123,23 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+                // ==================================
                 // DASHBOARD
-                // =========================
+                // ALL USERS
+                // ==================================
 
                 .requestMatchers(
+
                         "/api/dashboard/**"
+
                 )
                 .hasAnyRole(
+
                         "ADMIN",
                         "PHARMACIST",
                         "STAFF"
+
                 )
 
 
@@ -143,9 +147,10 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+                // ==================================
                 // USER PROFILE
-                // =========================
+                // ==================================
 
                 .requestMatchers(
 
@@ -161,13 +166,15 @@ public class SecurityConfig {
 
 
 
-                // =========================
+                // ==================================
                 // USER MANAGEMENT
-                // ADMIN
-                // =========================
+                // ADMIN ONLY
+                // ==================================
 
                 .requestMatchers(
+
                         "/api/users/**"
+
                 )
                 .hasRole("ADMIN")
 
@@ -177,9 +184,10 @@ public class SecurityConfig {
 
 
 
-                // =========================
-                // MEDICINES VIEW
-                // =========================
+                // ==================================
+                // MEDICINE VIEW
+                // ALL ROLES
+                // ==================================
 
                 .requestMatchers(
 
@@ -200,10 +208,11 @@ public class SecurityConfig {
 
 
 
-                // =========================
-                // MEDICINE CRUD
-                // ADMIN
-                // =========================
+
+                // ==================================
+                // MEDICINE ADD UPDATE DELETE
+                // ADMIN ONLY
+                // ==================================
 
                 .requestMatchers(
 
@@ -218,11 +227,27 @@ public class SecurityConfig {
 
 
 
-                // =========================
-                // SUPPLIERS
-                // ADMIN + PHARMACIST VIEW
-                // =========================
+                // ==================================
+                // ADMIN STOCK UPDATE
+                // ==================================
 
+                .requestMatchers(
+
+                        "/api/admin/stock/**"
+
+                )
+                .hasRole("ADMIN")
+
+
+
+
+
+
+
+
+                // ==================================
+                // SUPPLIERS
+                // ==================================
 
                 .requestMatchers(
 
@@ -252,9 +277,11 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+                // ==================================
                 // NOTIFICATIONS
-                // =========================
+                // ALL USERS
+                // ==================================
 
                 .requestMatchers(
 
@@ -274,9 +301,12 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+
+                // ==================================
                 // STOCK LOGS
-                // =========================
+                // ADMIN ONLY
+                // ==================================
 
                 .requestMatchers(
 
@@ -290,9 +320,12 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+
+                // ==================================
                 // EXPIRY
-                // =========================
+                // ADMIN + PHARMACIST
+                // ==================================
 
                 .requestMatchers(
 
@@ -312,9 +345,11 @@ public class SecurityConfig {
 
 
 
-                // =========================
+
+                // ==================================
                 // REPORTS
-                // =========================
+                // ADMIN ONLY
+                // ==================================
 
                 .requestMatchers(
 
@@ -330,9 +365,10 @@ public class SecurityConfig {
 
 
 
-                // =========================
+                // ==================================
                 // SALES
-                // =========================
+                // ADMIN + PHARMACIST
+                // ==================================
 
                 .requestMatchers(
 
@@ -353,9 +389,9 @@ public class SecurityConfig {
 
 
 
-                // =========================
+                // ==================================
                 // PHARMACIST
-                // =========================
+                // ==================================
 
                 .requestMatchers(
 
@@ -371,10 +407,9 @@ public class SecurityConfig {
 
 
 
-
-                // =========================
+                // ==================================
                 // STAFF
-                // =========================
+                // ==================================
 
                 .requestMatchers(
 
@@ -390,13 +425,12 @@ public class SecurityConfig {
 
 
 
-                // =========================
+                // ==================================
                 // EVERYTHING ELSE
-                // =========================
+                // ==================================
 
                 .anyRequest()
                 .authenticated()
-
 
 
         );
@@ -407,10 +441,9 @@ public class SecurityConfig {
 
 
 
-        // ================================
-        // DISABLE BASIC LOGIN
-        // ================================
-
+        // ==================================
+        // DISABLE LOGIN
+        // ==================================
 
         http
 
@@ -429,10 +462,9 @@ public class SecurityConfig {
 
 
 
-        // ================================
+        // ==================================
         // JWT FILTER
-        // ================================
-
+        // ==================================
 
         http.addFilterBefore(
 
@@ -457,11 +489,9 @@ public class SecurityConfig {
 
 
 
-
-    // ================================
+    // ==================================
     // PASSWORD ENCODER
-    // ================================
-
+    // ==================================
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -469,7 +499,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
 
     }
-
 
 
 }

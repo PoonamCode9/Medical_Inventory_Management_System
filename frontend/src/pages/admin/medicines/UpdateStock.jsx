@@ -244,7 +244,7 @@ function UpdateStock() {
 
             await axios.put(
 
-                `http://localhost:8080/api/staff/stock/update/${form.medicineId}`,
+                `http://localhost:8080/api/admin/stock/update/${form.medicineId}`,
 
                 {
 
