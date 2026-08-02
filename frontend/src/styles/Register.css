@@ -1,0 +1,123 @@
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    margin:0
+}
+
+.register-page{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f4c81,#4facfe,#8ec5fc);
+}
+
+.register-container{
+    width:380px;
+    background:rgba(255,255,255,0.96);
+    padding: 25px 35px;
+    border-radius:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.15);
+    backdrop-filter:blur(8px);
+}
+
+.register-container h1{
+    text-align:center;
+    color:#0f4c81;
+    font-size:30px;
+    margin-bottom:5px;
+}
+
+.register-container h2{
+    text-align:center;
+    color:#666;
+    font-size:18px;
+    font-weight:500;
+    margin-bottom:30px;
+}
+
+.register-container label{
+    display:block;
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:7px;
+    color:#333;
+}
+
+.register-container input,
+.register-container select{
+    width:100%;
+    padding:13px 15px;
+    margin-bottom:18px;
+    border:1px solid #d6d6d6;
+    border-radius:12px;
+    outline:none;
+    font-size:15px;
+    transition:.3s;
+    background:#f8f9fc;
+}
+
+.register-container input:focus,
+.register-container select:focus{
+    border-color:#0f4c81;
+    background:white;
+    box-shadow:0 0 8px rgba(15,76,129,0.2);
+}
+
+.register-container button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#0f4c81,#3b82f6);
+    color:white;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+    margin-top:10px;
+}
+
+.register-container button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(59,130,246,0.3);
+}
+
+.login-link{
+    margin-top:22px;
+    text-align:center;
+    font-size:14px;
+    color:#555;
+}
+
+.login-link a{
+    color:#0f4c81;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.login-link a:hover{
+    text-decoration:underline;
+}
+
+@media(max-width:480px){
+
+    .register-container{
+        width:92%;
+        padding:28px;
+    }
+
+    .register-container h1{
+        font-size:25px;
+    }
+
+}

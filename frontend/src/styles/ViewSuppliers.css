@@ -1,0 +1,302 @@
+body {
+    background-color: #f4f7fc;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    width: 100%;
+    margin: 30px auto;
+
+}
+
+h2 {
+    text-align: center;
+    color: #1f3b73;
+    margin-bottom: 20px;
+}
+
+.edit-form {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 25px;
+}
+
+.edit-form h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.edit-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+table th {
+    background: #2c7be5;
+    color: white;
+    padding: 12px;
+}
+
+table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+table tr:hover {
+    background: #eef5ff;
+}
+
+button {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.edit-btn {
+    background: #ffc107;
+    color: black;
+}
+
+.edit-btn:hover {
+    background: #e0a800;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: black;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.delete-btn:hover {
+    background: #b52a37;
+    color: black
+}
+
+.update-btn {
+    background: #198754;
+    color: white;
+}
+
+.update-btn:hover {
+    background: #157347;
+}
+
+.cancel-btn {
+    background: gray;
+    color: white;
+    margin-left: 10px;
+}
+
+.cancel-btn:hover {
+    background: #555;
+}
+
+td:last-child {
+    white-space: nowrap;
+}
+
+.edit-btn,
+.delete-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+    color: black;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: black;
+    margin-left: 10px;
+}
+
+.supplier-name {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.edit-form h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.edit-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+/* ================= Modal ================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-content {
+    width: 650px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover {
+    color: red;
+}
+
+.modal-content h3 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.modal-content label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* Actions column */
+table th:last-child,
+table td:last-child {
+    width: 180px;
+    min-width: 180px;
+}
+
+/* Keep buttons side by side */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Buttons */
+.edit-btn,
+.delete-btn {
+    width: 75px;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.supplier-filters {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.supplier-filters input {
+    width: 300px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.supplier-filters select {
+    width: 200px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* ================= Supplier Action Buttons ================= */
+
+/* Make Actions column wide enough */
+table th:last-child,
+table td:last-child {
+    width: 180px;
+    min-width: 180px;
+    white-space: nowrap;
+}
+
+/* Keep Edit and Delete buttons side by side */
+table td:last-child .action-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Edit and Delete button size */
+table td:last-child .action-buttons .edit-btn,
+table td:last-child .action-buttons .delete-btn {
+    width: 75px;
+    height: 38px;
+    padding: 8px 0;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap;
+}

@@ -1,0 +1,132 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Main Container */
+.medicine-container {
+    width: 95%;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+/* Heading */
+.medicine-container h1 {
+    text-align: center;
+    color: #1976d2;
+    margin-bottom: 20px;
+}
+
+/* Table */
+.medicine-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Header */
+.medicine-table th {
+    background-color: #1976d2;
+    color: white;
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Data */
+.medicine-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+
+/* Alternate Rows */
+.medicine-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover */
+.medicine-table tr:hover {
+    background-color: #eef5ff;
+}
+
+/* Actions Column */
+.medicine-table th:last-child,
+.medicine-table td:last-child {
+    min-width: 220px;
+
+    white-space: nowrap;
+}
+
+/* Buttons */
+.stock-in-btn,
+.stock-out-btn {
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    margin: 0 5px;
+}
+
+/* Stock In */
+.stock-in-btn {
+    background-color: #3cd944;
+}
+
+.stock-in-btn:hover {
+    background-color: #50cb58;
+}
+
+/* Stock Out */
+.stock-out-btn {
+    background-color: #d3892f;
+}
+
+.stock-out-btn:hover {
+    background-color: #b7381c;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.stock-in-btn,
+.stock-out-btn {
+    width: 100px;
+}
+
+.stock-filters {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.stock-filters input,
+.stock-filters select {
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.stock-filters input {
+    width: 300px;
+}
+
+.stock-filters select {
+    width: 200px;
+}

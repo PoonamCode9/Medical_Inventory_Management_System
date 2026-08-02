@@ -1,0 +1,368 @@
+/* ==========================
+   STAFF PROFILE CONTAINER
+========================== */
+
+.staff-profile-container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px;
+    box-sizing: border-box;
+    background-color: #f4f7fc;
+}
+
+
+/* ==========================
+   PROFILE CARD
+========================== */
+
+.staff-profile-card {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 12px;
+    padding: 35px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ==========================
+   PROFILE HEADER
+========================== */
+
+.staff-profile-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 25px;
+    width: 100%;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* ==========================
+   PROFILE AVATAR
+========================== */
+
+.staff-profile-avatar {
+    width: 90px;
+    height: 90px;
+    min-width: 90px;
+    border-radius: 50%;
+    background-color: #2563eb;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 38px;
+    font-weight: bold;
+}
+
+
+/* ==========================
+   HEADER INFORMATION
+========================== */
+
+.staff-profile-header-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.staff-profile-header-info h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    color: #1f2937;
+}
+
+.staff-profile-header-info p {
+    margin: 0 0 8px;
+}
+
+.staff-profile-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* ==========================
+   ROLE BADGE
+========================== */
+
+.staff-role-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background-color: #e0ecff;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+
+/* ==========================
+   PROFILE SECTIONS
+========================== */
+
+.staff-profile-section {
+    margin-top: 30px;
+}
+
+.staff-profile-section h3 {
+    margin-bottom: 20px;
+    font-size: 19px;
+    color: #1f2937;
+}
+
+
+/* ==========================
+   INFORMATION GRID
+========================== */
+
+.staff-profile-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.staff-info-item {
+    padding: 18px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.staff-info-label {
+    display: block;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 7px;
+}
+
+.staff-info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+
+/* ==========================
+   ACCOUNT ACTIONS
+========================== */
+
+.staff-profile-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.staff-edit-profile-btn,
+.staff-change-password-btn {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.staff-edit-profile-btn {
+    background-color: #2563eb;
+    color: white;
+}
+
+.staff-change-password-btn {
+    background-color: #374151;
+    color: white;
+}
+
+.staff-edit-profile-btn:hover,
+.staff-change-password-btn:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================
+   MODAL OVERLAY
+========================== */
+
+.staff-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1000;
+}
+
+
+/* ==========================
+   PROFILE MODAL
+========================== */
+
+.staff-profile-modal {
+    width: 90%;
+    max-width: 450px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.staff-profile-modal h3 {
+    margin-top: 0;
+    margin-bottom: 25px;
+
+    color: #1f2937;
+
+    font-size: 22px;
+}
+
+
+/* ==========================
+   MODAL LABELS
+========================== */
+
+.staff-profile-modal label {
+    display: block;
+
+    margin-top: 15px;
+    margin-bottom: 7px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #374151;
+}
+
+
+/* ==========================
+   MODAL INPUTS
+========================== */
+
+.staff-profile-modal input {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+.staff-profile-modal input:focus {
+    border-color: #2563eb;
+}
+
+
+/* ==========================
+   MODAL BUTTONS
+========================== */
+
+.staff-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 25px;
+}
+
+.staff-save-btn,
+.staff-cancel-btn {
+    padding: 10px 18px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.staff-save-btn {
+    background-color: #2563eb;
+    color: white;
+}
+
+.staff-cancel-btn {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.staff-save-btn:hover,
+.staff-cancel-btn:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================
+   RESPONSIVE DESIGN
+========================== */
+
+@media (max-width: 700px) {
+
+    .staff-profile-container {
+        padding: 20px;
+    }
+
+    .staff-profile-card {
+        padding: 25px;
+    }
+
+    .staff-profile-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .staff-profile-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .staff-profile-actions {
+        flex-direction: column;
+    }
+
+    .staff-edit-profile-btn,
+    .staff-change-password-btn {
+        width: 100%;
+    }
+
+    .staff-modal-buttons {
+        flex-direction: column;
+    }
+
+    .staff-save-btn,
+    .staff-cancel-btn {
+        width: 100%;
+    }
+}

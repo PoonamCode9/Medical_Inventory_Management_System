@@ -1,0 +1,248 @@
+.purchase-view-container {
+    width: 100%;
+    min-height: 100vh;
+    background: #f4f7fc;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+
+.purchase-view-card {
+
+    width: 90%;
+    margin: auto;
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 12px;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+}
+
+
+
+.purchase-view-card h2 {
+
+    text-align: center;
+
+    color: #1e3a8a;
+
+    margin-bottom: 5px;
+
+}
+
+
+.purchase-view-card p {
+
+    text-align: center;
+
+    color: #666;
+
+    margin-bottom: 25px;
+
+}
+
+
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 20px;
+
+}
+
+
+th {
+
+    background: #2563eb;
+
+    color: white;
+
+    padding: 12px;
+
+    text-align: center;
+
+}
+
+
+td {
+
+    padding: 12px;
+
+    text-align: center;
+
+    border-bottom: 1px solid #ddd;
+
+}
+
+
+
+tr:hover {
+
+    background: #f8fafc;
+
+}
+
+
+
+.status {
+
+    background: #fef3c7;
+
+    color: #92400e;
+
+    padding: 6px 12px;
+
+    border-radius: 15px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+
+
+.view-btn {
+
+    background: #2563eb;
+
+    color: white;
+
+    border: none;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    margin-right: 8px;
+
+}
+
+
+
+.view-btn:hover {
+
+    background: #1d4ed8;
+
+}
+
+
+
+.delete-btn {
+
+    background: #dc2626;
+
+    color: white;
+
+    border: none;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+}
+
+
+.delete-btn:hover {
+
+    background: #b91c1c;
+
+}
+
+
+
+.order-details {
+
+    margin-top: 30px;
+
+    padding: 20px;
+
+    background: #f8fafc;
+
+    border-radius: 10px;
+
+    border: 1px solid #e2e8f0;
+
+}
+
+
+
+.order-details h3 {
+
+    color: #1e3a8a;
+
+}
+
+
+
+.close-btn {
+
+    margin-top: 20px;
+
+    background: #64748b;
+
+    color: white;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+}
+
+
+
+@media(max-width:900px) {
+
+    .purchase-view-card {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+    }
+
+
+    table {
+
+        min-width: 800px;
+
+    }
+
+}
+
+.purchase-filters {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.purchase-filters input {
+    width: 300px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.purchase-filters select {
+    width: 180px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}

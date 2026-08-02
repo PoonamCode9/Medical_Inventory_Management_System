@@ -1,0 +1,21 @@
+.stocklogs-filters {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.stocklogs-filters input {
+    width: 300px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.stocklogs-filters select {
+    width: 180px;
+    padding: 10px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+}

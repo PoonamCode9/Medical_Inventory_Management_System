@@ -1,0 +1,201 @@
+/* Medicine Page Container */
+.medicine-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    color: #2c3e50;
+    margin: 0 0 20px 0;
+}
+
+/* Filters */
+.medicine-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Search Box */
+.medicine-filters .search-box {
+    width: 300px;
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Category Select */
+.medicine-filters select {
+    width: 200px;
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Table Wrapper */
+
+
+/* Table */
+.medicine-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+/* Table Header */
+.medicine-table th {
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Table Data */
+.medicine-table td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Alternate Rows */
+.medicine-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover */
+.medicine-table tr:hover {
+    background-color: #eaf4ff;
+}
+
+/* Action Buttons */
+/* Action Buttons */
+.medicine-table .action-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    white-space: nowrap;
+}
+
+/* Actions Column */
+.medicine-table th:last-child,
+.medicine-table td:last-child {
+    min-width: 180px;
+    width: 180px;
+    white-space: nowrap;
+}
+
+/* Buttons */
+.medicine-table .edit-btn,
+.medicine-table .delete-btn {
+    display: inline-block !important;
+    flex-shrink: 0;
+    width: auto;
+    margin: 0;
+}
+
+.action-buttons button {
+    flex-shrink: 0;
+}
+
+/* Edit Button */
+.edit-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 7px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.edit-btn:hover {
+    background-color: #1259a7;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 7px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.delete-btn:hover {
+    background-color: #b71c1c;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+
+    .medicine-container {
+        padding: 15px;
+    }
+
+    .medicine-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .medicine-filters .search-box,
+    .medicine-filters select {
+        width: 100%;
+    }
+}
+
+/* Actions Column */
+.medicine-table th:last-child,
+.medicine-table td:last-child {
+    min-width: 150px;
+    width: 150px;
+}
+
+/* Actions column */
+.medicine-table td:last-child .action-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Larger Edit and Delete buttons */
+.medicine-table td:last-child .action-buttons .edit-btn,
+.medicine-table td:last-child .action-buttons .delete-btn {
+    width: 70px;
+    height: 38px;
+    padding: 8px 12px;
+    font-size: 14px;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    white-space: nowrap;
+}
