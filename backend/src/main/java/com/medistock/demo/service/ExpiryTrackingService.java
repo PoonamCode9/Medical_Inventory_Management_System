@@ -27,18 +27,32 @@ public class ExpiryTrackingService {
     private final NotificationService notificationService;
 
 
+    private final EmailService emailService;
+
+
+
 
 
     public ExpiryTrackingService(
+
             ExpiryTrackingRepository repository,
-            NotificationService notificationService
+
+            NotificationService notificationService,
+
+            EmailService emailService
+
     ){
 
         this.repository = repository;
 
         this.notificationService = notificationService;
 
+        this.emailService = emailService;
+
     }
+
+
+
 
 
 
@@ -51,8 +65,11 @@ public class ExpiryTrackingService {
 
 
     public ExpiryTracking createExpiryTracking(
+
             Medicine medicine
+
     ){
+
 
 
         if(medicine.getExpiryDate()==null){
@@ -67,11 +84,14 @@ public class ExpiryTrackingService {
 
 
 
+
         ExpiryTracking expiry =
+
 
                 repository.findByMedicineId(
                         medicine.getId()
                 )
+
                 .orElse(
                         new ExpiryTracking()
                 );
@@ -100,6 +120,7 @@ public class ExpiryTrackingService {
 
         long days =
 
+
                 ChronoUnit.DAYS.between(
 
                         LocalDate.now(),
@@ -113,8 +134,11 @@ public class ExpiryTrackingService {
 
 
 
+
         expiry.setDaysRemaining(
-                (int) days
+
+                (int)days
+
         );
 
 
@@ -123,12 +147,14 @@ public class ExpiryTrackingService {
 
 
 
-        // ===============================
-        // STATUS
-        // ===============================
+        // =================================
+        // STATUS CHECK
+        // =================================
+
 
 
         if(days < 0){
+
 
 
             expiry.setStatus(
@@ -137,20 +163,30 @@ public class ExpiryTrackingService {
 
 
 
+
             sendNotification(
+
                     expiry,
+
                     medicine,
+
                     "Medicine Expired",
+
                     medicine.getName()
-                    + " has expired"
+                    +
+                    " has expired"
+
             );
+
 
 
         }
 
 
 
-        else if(days <= 30){
+
+        else if(days <=30){
+
 
 
             expiry.setStatus(
@@ -159,22 +195,35 @@ public class ExpiryTrackingService {
 
 
 
+
+
             sendNotification(
+
                     expiry,
+
                     medicine,
+
                     "Expiry Alert",
+
                     medicine.getName()
-                    + " expires in "
-                    + days
-                    + " days"
+                    +
+                    " expires in "
+                    +
+                    days
+                    +
+                    " days"
+
             );
+
 
 
         }
 
 
 
+
         else{
+
 
 
             expiry.setStatus(
@@ -182,9 +231,11 @@ public class ExpiryTrackingService {
             );
 
 
+
             expiry.setNotificationSent(
                     false
             );
+
 
 
         }
@@ -197,6 +248,8 @@ public class ExpiryTrackingService {
 
         return repository.save(expiry);
 
+
+
     }
 
 
@@ -207,13 +260,175 @@ public class ExpiryTrackingService {
 
 
 
+
+
+
+
+
     // =====================================
-    // DELETE EXPIRY TRACKING BY MEDICINE
+    // SEND NOTIFICATION + EMAIL
     // =====================================
+
+
+    private void sendNotification(
+
+
+            ExpiryTracking expiry,
+
+
+            Medicine medicine,
+
+
+            String title,
+
+
+            String message
+
+
+    ){
+
+
+
+        if(!Boolean.TRUE.equals(
+
+                expiry.getNotificationSent()
+
+        )){
+
+
+
+
+
+
+            // ===============================
+            // SYSTEM NOTIFICATION
+            // ===============================
+
+
+
+            notificationService.createNotification(
+
+
+                    title,
+
+
+                    message,
+
+
+                    "EXPIRY"
+
+
+            );
+
+
+
+
+
+
+
+            // ===============================
+            // EMAIL ALERT
+            // ===============================
+
+
+
+            try {
+
+
+
+                emailService.sendEmail(
+
+
+
+                        "kalyanamshanthipriya021@gmail.com",
+
+
+
+                        "MediStock - "
+                        +
+                        title,
+
+
+
+                        medicine.getName(),
+
+
+
+                        medicine.getBatchNumber(),
+
+
+
+                        medicine.getExpiryDate()
+                                .toString(),
+
+
+
+                        medicine.getQuantity()
+
+
+
+                );
+
+
+
+            }
+
+
+            catch(Exception e){
+
+
+
+                System.out.println(
+                        "Email sending failed : "
+                        +
+                        e.getMessage()
+                );
+
+
+
+            }
+
+
+
+
+
+
+
+            expiry.setNotificationSent(
+
+                    true
+
+            );
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    // =====================================
+    // DELETE EXPIRY TRACKING
+    // =====================================
+
 
 
     public void deleteByMedicine(
+
             Medicine medicine
+
     ){
 
 
@@ -226,58 +441,6 @@ public class ExpiryTrackingService {
 
 
 
-
-
-
-
-
-
-    // =====================================
-    // NOTIFICATION HANDLER
-    // =====================================
-
-
-    private void sendNotification(
-
-            ExpiryTracking expiry,
-
-            Medicine medicine,
-
-            String title,
-
-            String message
-
-    ){
-
-
-
-        if(!Boolean.TRUE.equals(
-                expiry.getNotificationSent()
-        )){
-
-
-
-            notificationService.createNotification(
-
-                    title,
-
-                    message,
-
-                    "EXPIRY"
-
-            );
-
-
-
-            expiry.setNotificationSent(
-                    true
-            );
-
-
-        }
-
-
-    }
 
 
 
@@ -297,6 +460,7 @@ public class ExpiryTrackingService {
 
         return repository.findAll();
 
+
     }
 
 
@@ -307,12 +471,16 @@ public class ExpiryTrackingService {
 
 
 
+
+
+
     // =====================================
-    // EXPIRED
+    // GET EXPIRED MEDICINES
     // =====================================
 
 
     public List<ExpiryTracking> getExpired(){
+
 
 
         return repository.findByStatus(
@@ -320,6 +488,7 @@ public class ExpiryTrackingService {
         );
 
 
+
     }
 
 
@@ -330,12 +499,16 @@ public class ExpiryTrackingService {
 
 
 
+
+
+
     // =====================================
-    // EXPIRING SOON
+    // GET EXPIRING SOON
     // =====================================
 
 
     public List<ExpiryTracking> getExpiringSoon(){
+
 
 
         return repository.findByStatus(
@@ -343,7 +516,10 @@ public class ExpiryTrackingService {
         );
 
 
+
     }
+
+
 
 
 

@@ -11,8 +11,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 
+
 public interface MedicineRepository
         extends JpaRepository<Medicine, Long> {
+
 
 
     // ==================================================
@@ -24,6 +26,9 @@ public interface MedicineRepository
     );
 
 
+
+
+
     // ==================================================
     // CATEGORY
     // ==================================================
@@ -33,8 +38,12 @@ public interface MedicineRepository
     );
 
 
+
+
+
     // ==================================================
     // LOW STOCK
+    // quantity <= minStockLevel
     // ==================================================
 
     @Query("""
@@ -43,6 +52,9 @@ public interface MedicineRepository
             WHERE m.quantity <= m.minStockLevel
             """)
     List<Medicine> findLowStockMedicines();
+
+
+
 
 
     // ==================================================
@@ -57,6 +69,9 @@ public interface MedicineRepository
     long countLowStockMedicines();
 
 
+
+
+
     // ==================================================
     // QUANTITY LESS THAN
     // ==================================================
@@ -66,13 +81,19 @@ public interface MedicineRepository
     );
 
 
+
+
+
     // ==================================================
-    // EXPIRED
+    // EXPIRED MEDICINES
     // ==================================================
 
     List<Medicine> findByExpiryDateBefore(
             LocalDate date
     );
+
+
+
 
 
     // ==================================================
@@ -82,6 +103,9 @@ public interface MedicineRepository
     long countByExpiryDateBefore(
             LocalDate date
     );
+
+
+
 
 
     // ==================================================
@@ -99,10 +123,27 @@ public interface MedicineRepository
             @Param("today")
             LocalDate today,
 
+
             @Param("futureDate")
             LocalDate futureDate
 
     );
+
+
+
+
+
+    // ==================================================
+    // EXPIRY RANGE
+    // ==================================================
+
+    List<Medicine> findByExpiryDateBetween(
+            LocalDate start,
+            LocalDate end
+    );
+
+
+
 
 
     // ==================================================
@@ -116,6 +157,9 @@ public interface MedicineRepository
     Long getTotalStock();
 
 
+
+
+
     // ==================================================
     // TOTAL STOCK VALUE
     // ==================================================
@@ -127,6 +171,9 @@ public interface MedicineRepository
     Double getTotalStockValue();
 
 
+
+
+
     // ==================================================
     // CATEGORY COUNT
     // ==================================================
@@ -134,5 +181,7 @@ public interface MedicineRepository
     long countByCategory(
             String category
     );
+
+
 
 }

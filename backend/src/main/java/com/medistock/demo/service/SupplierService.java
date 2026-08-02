@@ -1,13 +1,23 @@
 package com.medistock.demo.service;
 
+
 import com.medistock.demo.entity.Supplier;
 import com.medistock.demo.repository.SupplierRepository;
+
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
+import java.util.Locale;
+
+
 
 @Service
+@Transactional
 public class SupplierService {
+
 
 
     private final SupplierRepository supplierRepository;
@@ -16,12 +26,18 @@ public class SupplierService {
 
 
 
+
+
     public SupplierService(
+
             SupplierRepository supplierRepository,
+
             NotificationService notificationService
+
     ){
 
         this.supplierRepository = supplierRepository;
+
         this.notificationService = notificationService;
 
     }
@@ -30,32 +46,92 @@ public class SupplierService {
 
 
 
-    // ============================
+
+
+    // =====================================================
     // ADD SUPPLIER
-    // ============================
-
-    public Supplier addSupplier(Supplier supplier) {
+    // =====================================================
 
 
-        Supplier savedSupplier =
-                supplierRepository.save(supplier);
+    public Supplier addSupplier(
+            Supplier supplier
+    ){
+
+
+        validateSupplier(supplier);
 
 
 
-        notificationService.createNotification(
+
+        if(
+                supplier.getEmail()!=null
+                &&
+                supplierRepository
+                .findAll()
+                .stream()
+                .anyMatch(existingSupplier ->
+                        existingSupplier.getEmail()!=null
+                        &&
+                        existingSupplier.getEmail()
+                                .equalsIgnoreCase(
+                                        supplier.getEmail()
+                                )
+                )
+        ){
+
+            throw new RuntimeException(
+                    "Supplier email already exists"
+            );
+
+        }
+
+
+
+
+
+        if(supplier.getEmail()!=null){
+
+            supplier.setEmail(
+                    supplier.getEmail()
+                    .trim()
+                    .toLowerCase(Locale.ROOT)
+            );
+
+        }
+
+
+
+
+
+
+        Supplier saved =
+
+                supplierRepository.save(
+                        supplier
+                );
+
+
+
+
+
+
+
+        createNotification(
 
                 "Supplier Added",
 
-                savedSupplier.getName()
-                + " supplier added successfully",
-
-                "SYSTEM"
+                saved.getName()
+                +
+                " supplier added successfully"
 
         );
 
 
 
-        return savedSupplier;
+
+
+        return saved;
+
 
     }
 
@@ -65,14 +141,20 @@ public class SupplierService {
 
 
 
-    // ============================
-    // GET ALL SUPPLIERS
-    // ============================
 
-    public List<Supplier> getAllSuppliers() {
+
+    // =====================================================
+    // GET ALL SUPPLIERS
+    // =====================================================
+
+
+    @Transactional(readOnly = true)
+    public List<Supplier> getAllSuppliers(){
+
 
         return supplierRepository.findAll();
 
+
     }
 
 
@@ -81,20 +163,40 @@ public class SupplierService {
 
 
 
-    // ============================
+
+
+    // =====================================================
     // GET SUPPLIER BY ID
-    // ============================
-
-    public Supplier getSupplierById(Long id) {
+    // =====================================================
 
 
-        return supplierRepository.findById(id)
+    @Transactional(readOnly = true)
+    public Supplier getSupplierById(
+            Long id
+    ){
+
+
+        if(id==null){
+
+            throw new RuntimeException(
+                    "Supplier id required"
+            );
+
+        }
+
+
+
+        return supplierRepository
+                .findById(id)
 
                 .orElseThrow(() ->
+
                         new RuntimeException(
                                 "Supplier not found"
                         )
+
                 );
+
 
     }
 
@@ -104,73 +206,106 @@ public class SupplierService {
 
 
 
-    // ============================
+
+
+    // =====================================================
     // UPDATE SUPPLIER
-    // ============================
+    // =====================================================
+
 
     public Supplier updateSupplier(
+
             Long id,
+
             Supplier supplier
-    ) {
 
-
-        Supplier existingSupplier =
-                supplierRepository.findById(id)
-
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Supplier not found"
-                        )
-                );
+    ){
 
 
 
-        existingSupplier.setName(
+        Supplier existing =
+
+                getSupplierById(id);
+
+
+
+
+        validateSupplier(supplier);
+
+
+
+
+
+
+
+        existing.setName(
+
                 supplier.getName()
+                        .trim()
+
         );
 
 
-        existingSupplier.setContact(
+
+        existing.setContact(
+
                 supplier.getContact()
+
         );
 
 
-        existingSupplier.setEmail(
+
+        existing.setEmail(
+
                 supplier.getEmail()
+                        .trim()
+                        .toLowerCase(Locale.ROOT)
+
         );
 
 
-        existingSupplier.setAddress(
+
+        existing.setAddress(
+
                 supplier.getAddress()
+
         );
+
+
 
 
 
 
         Supplier updated =
+
                 supplierRepository.save(
-                        existingSupplier
+                        existing
                 );
 
 
 
 
-        notificationService.createNotification(
+
+
+        createNotification(
 
                 "Supplier Updated",
 
                 updated.getName()
-                + " supplier details updated",
-
-                "SYSTEM"
+                +
+                " supplier details updated"
 
         );
+
+
+
 
 
 
         return updated;
 
 
+
     }
 
 
@@ -181,27 +316,32 @@ public class SupplierService {
 
 
 
-    // ============================
+    // =====================================================
     // DELETE SUPPLIER
-    // ============================
+    // =====================================================
 
-    public void deleteSupplier(Long id) {
+
+    public void deleteSupplier(
+
+            Long id
+
+    ){
 
 
 
         Supplier supplier =
-                supplierRepository.findById(id)
 
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Supplier not found"
-                        )
-                );
+                getSupplierById(id);
 
 
 
-        String supplierName =
+
+        String name =
+
                 supplier.getName();
+
+
+
 
 
 
@@ -212,19 +352,166 @@ public class SupplierService {
 
 
 
-        notificationService.createNotification(
+
+
+        createNotification(
 
                 "Supplier Deleted",
 
-                supplierName
-                + " supplier removed",
-
-                "SYSTEM"
+                name
+                +
+                " supplier removed"
 
         );
 
 
+
     }
+
+
+
+
+
+
+
+
+
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
+
+    private void validateSupplier(
+
+            Supplier supplier
+
+    ){
+
+
+
+        if(supplier==null){
+
+            throw new RuntimeException(
+                    "Supplier data required"
+            );
+
+        }
+
+
+
+
+
+        if(
+                supplier.getName()==null
+                ||
+                supplier.getName().isBlank()
+
+        ){
+
+            throw new RuntimeException(
+                    "Supplier name required"
+            );
+
+        }
+
+
+
+
+
+
+
+        if(
+                supplier.getContact()!=null
+                &&
+                !supplier.getContact()
+                .matches("[0-9]{10}")
+
+        ){
+
+            throw new RuntimeException(
+                    "Invalid contact number"
+            );
+
+        }
+
+
+
+
+
+
+
+        if(
+                supplier.getEmail()!=null
+                &&
+                !supplier.getEmail()
+                .matches(
+                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
+                )
+
+        ){
+
+            throw new RuntimeException(
+                    "Invalid email address"
+            );
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =====================================================
+    // NOTIFICATION HELPER
+    // =====================================================
+
+
+    private void createNotification(
+
+            String title,
+
+            String message
+
+    ){
+
+
+        try {
+
+
+            notificationService.createNotification(
+
+                    title,
+
+                    message,
+
+                    "SYSTEM"
+
+            );
+
+
+        }
+        catch(Exception e){
+
+
+            System.out.println(
+                    "Notification failed : "
+                    +
+                    e.getMessage()
+            );
+
+
+        }
+
+
+    }
+
 
 
 

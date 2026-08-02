@@ -17,57 +17,69 @@ import {
     FaCalendarTimes,
     FaWarehouse,
     FaArrowRight,
-    FaSyncAlt
+    FaSyncAlt,
+    FaClipboardList
 } from "react-icons/fa";
 
 
-function StaffDashboard() {
+
+function StaffDashboard(){
+
 
     const navigate = useNavigate();
+
 
     const API = "http://localhost:8080";
 
 
+
     // ==================================================
-    // STATES
+    // DASHBOARD STATE
     // ==================================================
 
-    const [dashboard, setDashboard] = useState({
+    const [dashboard,setDashboard] = useState({
 
-        totalMedicines: 0,
+        totalMedicines:0,
 
-        totalStock: 0,
+        totalStock:0,
 
-        lowStockCount: 0,
+        lowStockCount:0,
 
-        expiredCount: 0,
+        expiredCount:0,
 
-        nearExpiryCount: 0,
+        nearExpiryCount:0,
 
-        notifications: 0
+        notifications:0
 
     });
 
 
-    const [loading, setLoading] = useState(true);
 
-    const [lastUpdated, setLastUpdated] = useState(null);
+    const [loading,setLoading] = useState(true);
+
+
+    const [lastUpdated,setLastUpdated] = useState(null);
+
+
 
 
 
     // ==================================================
-    // FETCH DASHBOARD
+    // FETCH DASHBOARD DATA
     // ==================================================
 
-    const fetchDashboard = async () => {
+    const fetchDashboard = async()=>{
 
-        try {
+
+        try{
+
 
             const token =
                 localStorage.getItem("token");
 
 
-            if (!token) {
+
+            if(!token){
 
                 navigate("/");
 
@@ -76,51 +88,64 @@ function StaffDashboard() {
             }
 
 
-            const response = await axios.get(
 
-                `${API}/api/dashboard/summary`,
 
-                {
+            const response =
+                await axios.get(
 
-                    headers: {
+                    `${API}/api/dashboard/summary`,
 
-                        Authorization:
+                    {
+
+                        headers:{
+
+                            Authorization:
                             `Bearer ${token}`
+
+                        }
 
                     }
 
-                }
+                );
 
-            );
 
 
             console.log(
-                "Staff Dashboard:",
+                "Staff Dashboard Data",
                 response.data
             );
+
+
 
 
             setDashboard({
 
                 totalMedicines:
-                    response.data.totalMedicines || 0,
+                response.data.totalMedicines || 0,
+
 
                 totalStock:
-                    response.data.totalStock || 0,
+                response.data.totalStock || 0,
+
 
                 lowStockCount:
-                    response.data.lowStockCount || 0,
+                response.data.lowStockCount || 0,
+
 
                 expiredCount:
-                    response.data.expiredCount || 0,
+                response.data.expiredCount || 0,
+
 
                 nearExpiryCount:
-                    response.data.nearExpiryCount || 0,
+                response.data.nearExpiryCount || 0,
+
 
                 notifications:
-                    response.data.notifications || 0
+                response.data.notifications || 0
+
 
             });
+
 
 
             setLastUpdated(
@@ -128,15 +153,16 @@ function StaffDashboard() {
             );
 
 
+
         }
 
-        catch (error) {
+
+        catch(error){
+
 
             console.error(
 
-                "Staff Dashboard Error:",
-
-                error.response?.status,
+                "Staff Dashboard Error",
 
                 error.response?.data ||
                 error.message
@@ -144,10 +170,14 @@ function StaffDashboard() {
             );
 
 
-            if (
-                error.response?.status === 401 ||
-                error.response?.status === 403
-            ) {
+
+            if(
+
+                error.response?.status===401 ||
+
+                error.response?.status===403
+
+            ){
 
                 localStorage.removeItem("token");
 
@@ -155,77 +185,97 @@ function StaffDashboard() {
 
             }
 
+
         }
 
-        finally {
+
+        finally{
+
 
             setLoading(false);
 
+
         }
+
 
     };
 
 
 
+
+
+
     // ==================================================
-    // LOAD + AUTO REFRESH
+    // INITIAL LOAD
     // ==================================================
 
-    useEffect(() => {
+    useEffect(()=>{
+
 
         fetchDashboard();
 
 
-        const interval = setInterval(
 
-            fetchDashboard,
+        const interval =
+            setInterval(
 
-            5000
+                fetchDashboard,
 
-        );
+                10000
+
+            );
 
 
-        return () => {
+
+        return()=>{
+
 
             clearInterval(interval);
 
+
         };
 
-    }, []);
+
+    },[]);
+
+
+
 
 
 
     // ==================================================
-    // MANUAL REFRESH
+    // REFRESH
     // ==================================================
 
-    const handleRefresh = () => {
+    const refreshDashboard = ()=>{
+
 
         setLoading(true);
 
+
         fetchDashboard();
 
-    };
-
-
-
-    // ==================================================
-    // UPDATE STOCK
-    // ==================================================
-
-    const openUpdateStock = () => {
-
-        navigate("/staff/update-stock");
 
     };
 
 
 
+
+
+
     // ==================================================
-    // NOTIFICATIONS
+    // NAVIGATION
     // ==================================================
 
-    const openNotifications = () => {
+    const viewMedicines = ()=>{
+
+        navigate("/staff/medicines");
+
+    };
+
+
+
+    const viewNotifications = ()=>{
 
         navigate("/staff/notifications");
 
@@ -233,20 +283,26 @@ function StaffDashboard() {
 
 
 
+
+
+
+
     // ==================================================
-    // LOADING
+    // LOADING UI
     // ==================================================
 
-    if (loading) {
+    if(loading){
 
-        return (
+
+        return(
 
             <div className="
                 min-h-[70vh]
                 flex
-                items-center
                 justify-center
+                items-center
             ">
+
 
                 <div className="
                     bg-white
@@ -254,40 +310,33 @@ function StaffDashboard() {
                     shadow-xl
                     p-10
                     text-center
-                    border
-                    border-gray-100
                 ">
 
-                    <div className="
-                        w-16
-                        h-16
+
+                    <FaWarehouse
+
+                        className="
                         mx-auto
-                        mb-5
-                        rounded-full
-                        bg-blue-100
-                        flex
-                        items-center
-                        justify-center
-                    ">
+                        text-blue-600
+                        text-4xl
+                        animate-pulse
+                        "
 
-                        <FaWarehouse className="
-                            text-blue-600
-                            text-2xl
-                            animate-pulse
-                        " />
+                    />
 
-                    </div>
 
 
                     <h2 className="
+                        mt-5
                         text-2xl
                         font-bold
                         text-blue-800
                     ">
 
-                        Loading Staff Dashboard...
+                        Loading Staff Dashboard
 
                     </h2>
+
 
 
                     <p className="
@@ -295,231 +344,199 @@ function StaffDashboard() {
                         mt-2
                     ">
 
-                        Fetching inventory information
+                        Fetching inventory status
 
                     </p>
 
+
+
                 </div>
+
+
 
             </div>
 
+
         );
+
 
     }
 
 
 
+
+
+
     // ==================================================
-    // UI
+    // MAIN UI
     // ==================================================
 
-    return (
+    return(
+
 
         <div className="w-full">
 
 
-            {/* ==================================================
-                PAGE HEADER
-            ================================================== */}
+
+            {/* HEADER */}
+
 
             <div className="
-                mb-8
                 bg-white
                 rounded-3xl
-                p-6
-                md:p-8
                 shadow-lg
                 border
-                border-gray-100
+                p-6
+                mb-8
             ">
+
+
 
                 <div className="
                     flex
                     flex-col
                     lg:flex-row
-                    lg:items-center
-                    lg:justify-between
-                    gap-6
+                    justify-between
+                    gap-5
                 ">
 
 
-                    {/* LEFT */}
-
-                    <div>
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-4
-                            mb-3
-                        ">
-
-                            <div className="
-                                w-14
-                                h-14
-                                rounded-2xl
-                                bg-blue-100
-                                flex
-                                items-center
-                                justify-center
-                            ">
-
-                                <FaWarehouse className="
-                                    text-blue-600
-                                    text-2xl
-                                " />
-
-                            </div>
-
-
-                            <div>
-
-                                <h1 className="
-                                    text-3xl
-                                    md:text-4xl
-                                    font-bold
-                                    text-blue-800
-                                ">
-
-                                    Staff Dashboard
-
-                                </h1>
-
-
-                                <p className="
-                                    text-gray-500
-                                    mt-1
-                                ">
-
-                                    Manage medicine stock and
-                                    inventory operations
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    {/* RIGHT */}
 
                     <div className="
                         flex
-                        flex-col
-                        sm:flex-row
-                        items-start
-                        sm:items-center
-                        gap-3
+                        items-center
+                        gap-4
                     ">
 
 
-                        {/* STATUS */}
 
                         <div className="
-                            bg-green-50
-                            border
-                            border-green-200
-                            rounded-xl
-                            px-5
-                            py-3
+                            w-16
+                            h-16
+                            rounded-2xl
+                            bg-blue-100
+                            flex
+                            items-center
+                            justify-center
                         ">
 
-                            <div className="
-                                flex
-                                items-center
-                                gap-2
-                            ">
 
-                                <span className="
-                                    w-2.5
-                                    h-2.5
-                                    bg-green-500
-                                    rounded-full
-                                    animate-pulse
-                                " />
+                            <FaWarehouse
 
-                                <span className="
-                                    text-sm
-                                    font-semibold
-                                    text-green-700
-                                ">
+                                className="
+                                text-blue-600
+                                text-3xl
+                                "
 
-                                    Inventory Active
+                            />
 
-                                </span>
-
-                            </div>
 
                         </div>
 
 
 
-                        {/* REFRESH */}
 
-                        <button
+                        <div>
 
-                            onClick={handleRefresh}
 
-                            className="
-                                flex
-                                items-center
-                                gap-2
-                                bg-blue-600
-                                hover:bg-blue-700
-                                text-white
-                                px-5
-                                py-3
-                                rounded-xl
-                                font-semibold
-                                shadow-md
-                                transition
-                            "
+                            <h1 className="
+                                text-4xl
+                                font-bold
+                                text-blue-800
+                            ">
 
-                        >
 
-                            <FaSyncAlt />
+                                Staff Dashboard
 
-                            Refresh
 
-                        </button>
+                            </h1>
+
+
+
+                            <p className="
+                                text-gray-500
+                                mt-1
+                            ">
+
+
+                                View inventory information only
+
+
+                            </p>
+
+
+
+                        </div>
+
+
+
 
                     </div>
+
+
+
+
+
+                    <button
+
+                        onClick={refreshDashboard}
+
+                        className="
+                            flex
+                            items-center
+                            gap-2
+                            bg-blue-600
+                            text-white
+                            px-5
+                            py-3
+                            rounded-xl
+                            font-semibold
+                            hover:bg-blue-700
+                        "
+
+                    >
+
+                        <FaSyncAlt/>
+
+                        Refresh
+
+                    </button>
+
+
+
 
                 </div>
 
 
 
-                {/* LAST UPDATED */}
 
-                {lastUpdated && (
 
-                    <div className="
+                {
+                    lastUpdated &&
+
+                    <p className="
                         mt-5
-                        pt-4
-                        border-t
-                        border-gray-100
                         text-sm
                         text-gray-500
+                        border-t
+                        pt-4
                     ">
 
-                        Last updated:{" "}
-
+                        Last Updated :
+                        {" "}
                         {lastUpdated.toLocaleTimeString()}
 
-                    </div>
+                    </p>
 
-                )}
+                }
+
+
 
             </div>
-
-
-
-            {/* ==================================================
-                DASHBOARD CARDS
+                        {/* ==================================================
+                STATISTICS CARDS
             ================================================== */}
+
 
             <div className="
                 grid
@@ -530,6 +547,8 @@ function StaffDashboard() {
             ">
 
 
+
+
                 {/* TOTAL MEDICINES */}
 
                 <div className="
@@ -538,30 +557,30 @@ function StaffDashboard() {
                     p-6
                     shadow-lg
                     border
-                    border-gray-100
                     hover:shadow-xl
-                    hover:-translate-y-1
-                    transition-all
-                    duration-300
+                    transition
                 ">
+
 
                     <div className="
                         flex
-                        items-center
                         justify-between
+                        items-center
                     ">
 
+
                         <div>
+
 
                             <p className="
                                 text-gray-500
                                 text-sm
-                                font-medium
                             ">
 
                                 Total Medicines
 
                             </p>
+
 
 
                             <h2 className="
@@ -576,17 +595,21 @@ function StaffDashboard() {
                             </h2>
 
 
+
                             <p className="
                                 text-xs
                                 text-gray-400
                                 mt-2
                             ">
 
-                                Medicine types
+                                Available medicine types
 
                             </p>
 
+
                         </div>
+
+
 
 
                         <div className="
@@ -599,20 +622,29 @@ function StaffDashboard() {
                             justify-center
                         ">
 
+
                             <FaPills className="
                                 text-cyan-600
                                 text-2xl
-                            " />
+                            "/>
+
 
                         </div>
 
+
                     </div>
+
 
                 </div>
 
 
 
-                {/* AVAILABLE STOCK */}
+
+
+
+
+                {/* TOTAL STOCK */}
+
 
                 <div className="
                     bg-white
@@ -620,30 +652,31 @@ function StaffDashboard() {
                     p-6
                     shadow-lg
                     border
-                    border-gray-100
                     hover:shadow-xl
-                    hover:-translate-y-1
-                    transition-all
-                    duration-300
+                    transition
                 ">
+
 
                     <div className="
                         flex
-                        items-center
                         justify-between
+                        items-center
                     ">
 
+
+
                         <div>
+
 
                             <p className="
                                 text-gray-500
                                 text-sm
-                                font-medium
                             ">
 
-                                Available Stock
+                                Stock Quantity
 
                             </p>
+
 
 
                             <h2 className="
@@ -658,17 +691,21 @@ function StaffDashboard() {
                             </h2>
 
 
+
                             <p className="
                                 text-xs
                                 text-gray-400
                                 mt-2
                             ">
 
-                                Total units
+                                Total available units
 
                             </p>
 
+
                         </div>
+
+
 
 
                         <div className="
@@ -681,20 +718,29 @@ function StaffDashboard() {
                             justify-center
                         ">
 
+
                             <FaBoxOpen className="
                                 text-blue-600
                                 text-2xl
-                            " />
+                            "/>
+
 
                         </div>
 
+
                     </div>
+
 
                 </div>
 
 
 
+
+
+
+
                 {/* LOW STOCK */}
+
 
                 <div className="
                     bg-white
@@ -702,30 +748,31 @@ function StaffDashboard() {
                     p-6
                     shadow-lg
                     border
-                    border-gray-100
                     hover:shadow-xl
-                    hover:-translate-y-1
-                    transition-all
-                    duration-300
+                    transition
                 ">
+
+
 
                     <div className="
                         flex
-                        items-center
                         justify-between
+                        items-center
                     ">
 
+
                         <div>
+
 
                             <p className="
                                 text-gray-500
                                 text-sm
-                                font-medium
                             ">
 
-                                Low Stock
+                                Low Stock Alerts
 
                             </p>
+
 
 
                             <h2 className="
@@ -740,17 +787,21 @@ function StaffDashboard() {
                             </h2>
 
 
+
                             <p className="
                                 text-xs
                                 text-gray-400
                                 mt-2
                             ">
 
-                                Need restocking
+                                Medicines requiring attention
 
                             </p>
 
+
                         </div>
+
+
 
 
                         <div className="
@@ -759,26 +810,40 @@ function StaffDashboard() {
                             rounded-xl
                             bg-orange-100
                             flex
-                            items-center
                             justify-center
+                            items-center
                         ">
 
+
                             <FaExclamationTriangle
+
                                 className="
-                                    text-orange-600
-                                    text-2xl
+                                text-orange-600
+                                text-2xl
                                 "
+
                             />
+
 
                         </div>
 
+
+
                     </div>
+
+
 
                 </div>
 
 
 
-                {/* EXPIRED */}
+
+
+
+
+
+                {/* EXPIRY */}
+
 
                 <div className="
                     bg-white
@@ -786,30 +851,32 @@ function StaffDashboard() {
                     p-6
                     shadow-lg
                     border
-                    border-gray-100
                     hover:shadow-xl
-                    hover:-translate-y-1
-                    transition-all
-                    duration-300
+                    transition
                 ">
+
 
                     <div className="
                         flex
-                        items-center
                         justify-between
+                        items-center
                     ">
 
+
+
                         <div>
+
 
                             <p className="
                                 text-gray-500
                                 text-sm
-                                font-medium
                             ">
 
-                                Expired Medicines
+                                Expiry Alerts
 
                             </p>
+
+
 
 
                             <h2 className="
@@ -819,9 +886,13 @@ function StaffDashboard() {
                                 mt-2
                             ">
 
+
                                 {dashboard.expiredCount}
 
+
                             </h2>
+
+
 
 
                             <p className="
@@ -830,11 +901,15 @@ function StaffDashboard() {
                                 mt-2
                             ">
 
-                                Require attention
+                                Expired medicines
 
                             </p>
 
+
+
                         </div>
+
+
 
 
                         <div className="
@@ -843,811 +918,121 @@ function StaffDashboard() {
                             rounded-xl
                             bg-red-100
                             flex
-                            items-center
                             justify-center
+                            items-center
                         ">
 
+
+
                             <FaCalendarTimes
+
                                 className="
-                                    text-red-600
-                                    text-2xl
+                                text-red-600
+                                text-2xl
                                 "
+
                             />
+
 
                         </div>
 
+
+
                     </div>
 
+
+
                 </div>
+
+
+
 
             </div>
 
 
 
+
+
+
+
             {/* ==================================================
-                ALERTS
+                ALERT SUMMARY
             ================================================== */}
+
+
 
             <div className="
                 grid
-                grid-cols-1
                 lg:grid-cols-2
                 gap-6
                 mt-8
             ">
 
 
-                {/* LOW STOCK */}
+
+
+
+                {/* LOW STOCK ALERT */}
+
 
                 <div className="
                     bg-white
                     rounded-2xl
-                    p-6
                     shadow-lg
                     border
-                    border-gray-100
-                ">
-
-                    <div className="
-                        flex
-                        items-center
-                        justify-between
-                        mb-5
-                    ">
-
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                        ">
-
-                            <div className="
-                                w-11
-                                h-11
-                                rounded-xl
-                                bg-orange-100
-                                flex
-                                items-center
-                                justify-center
-                            ">
-
-                                <FaExclamationTriangle
-                                    className="
-                                        text-orange-500
-                                    "
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <h2 className="
-                                    text-xl
-                                    font-bold
-                                    text-gray-800
-                                ">
-
-                                    Low Stock Alerts
-
-                                </h2>
-
-
-                                <p className="
-                                    text-sm
-                                    text-gray-500
-                                ">
-
-                                    Medicines that need restocking
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <span className="
-                            bg-orange-100
-                            text-orange-700
-                            px-3
-                            py-1
-                            rounded-full
-                            text-sm
-                            font-semibold
-                        ">
-
-                            {dashboard.lowStockCount}
-
-                        </span>
-
-                    </div>
-
-
-                    {dashboard.lowStockCount > 0 ? (
-
-                        <div className="
-                            p-4
-                            rounded-xl
-                            bg-orange-50
-                            border
-                            border-orange-100
-                        ">
-
-                            <div className="
-                                flex
-                                items-center
-                                justify-between
-                                gap-4
-                            ">
-
-                                <p className="
-                                    text-orange-700
-                                    font-medium
-                                ">
-
-                                    ⚠️ Medicines require
-                                    restocking.
-
-                                </p>
-
-
-                                <button
-
-                                    onClick={openUpdateStock}
-
-                                    className="
-                                        flex
-                                        items-center
-                                        gap-2
-                                        bg-orange-500
-                                        hover:bg-orange-600
-                                        text-white
-                                        px-4
-                                        py-2
-                                        rounded-lg
-                                        text-sm
-                                        font-semibold
-                                        transition
-                                    "
-
-                                >
-
-                                    Update Stock
-
-                                    <FaArrowRight />
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    ) : (
-
-                        <div className="
-                            p-4
-                            rounded-xl
-                            bg-green-50
-                            border
-                            border-green-100
-                            text-green-700
-                            font-medium
-                        ">
-
-                            ✅ No Low Stock Medicines
-
-                        </div>
-
-                    )}
-
-                </div>
-
-
-
-                {/* EXPIRY */}
-
-                <div className="
-                    bg-white
-                    rounded-2xl
                     p-6
-                    shadow-lg
-                    border
-                    border-gray-100
                 ">
 
-                    <div className="
-                        flex
-                        items-center
-                        justify-between
-                        mb-5
-                    ">
-
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                        ">
-
-                            <div className="
-                                w-11
-                                h-11
-                                rounded-xl
-                                bg-red-100
-                                flex
-                                items-center
-                                justify-center
-                            ">
-
-                                <FaCalendarTimes
-                                    className="
-                                        text-red-500
-                                    "
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <h2 className="
-                                    text-xl
-                                    font-bold
-                                    text-gray-800
-                                ">
-
-                                    Expiry Alerts
-
-                                </h2>
-
-
-                                <p className="
-                                    text-sm
-                                    text-gray-500
-                                ">
-
-                                    Medicines requiring attention
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <span className="
-                            bg-red-100
-                            text-red-700
-                            px-3
-                            py-1
-                            rounded-full
-                            text-sm
-                            font-semibold
-                        ">
-
-                            {dashboard.expiredCount}
-
-                        </span>
-
-                    </div>
-
-
-                    {dashboard.expiredCount > 0 ? (
-
-                        <div className="
-                            p-4
-                            rounded-xl
-                            bg-red-50
-                            border
-                            border-red-100
-                        ">
-
-                            <div className="
-                                flex
-                                items-center
-                                justify-between
-                                gap-4
-                            ">
-
-                                <p className="
-                                    text-red-700
-                                    font-medium
-                                ">
-
-                                    ⚠️ Expired medicines
-                                    require attention.
-
-                                </p>
-
-
-                                <button
-
-                                    onClick={() =>
-                                        navigate("/pharmacist/expiry")
-                                    }
-
-                                    className="
-                                        flex
-                                        items-center
-                                        gap-2
-                                        bg-red-500
-                                        hover:bg-red-600
-                                        text-white
-                                        px-4
-                                        py-2
-                                        rounded-lg
-                                        text-sm
-                                        font-semibold
-                                        transition
-                                    "
-
-                                >
-
-                                    Check
-
-                                    <FaArrowRight />
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    ) : (
-
-                        <div className="
-                            p-4
-                            rounded-xl
-                            bg-green-50
-                            border
-                            border-green-100
-                            text-green-700
-                            font-medium
-                        ">
-
-                            ✅ No Expiry Alerts
-
-                        </div>
-
-                    )}
-
-                </div>
-
-            </div>
-
-
-
-            {/* ==================================================
-                STAFF ACTIONS
-            ================================================== */}
-
-            <div className="mt-8">
-
-
-                <div className="
-                    flex
-                    items-center
-                    justify-between
-                    mb-5
-                ">
-
-                    <div>
-
-                        <h2 className="
-                            text-2xl
-                            font-bold
-                            text-gray-800
-                        ">
-
-                            Staff Actions
-
-                        </h2>
-
-
-                        <p className="
-                            text-gray-500
-                            text-sm
-                            mt-1
-                        ">
-
-                            Manage inventory operations
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div className="
-                    grid
-                    grid-cols-1
-                    md:grid-cols-2
-                    xl:grid-cols-3
-                    gap-6
-                ">
-
-
-                    {/* UPDATE STOCK */}
-
-                    <button
-
-                        onClick={openUpdateStock}
-
-                        className="
-                            bg-white
-                            rounded-2xl
-                            p-6
-                            shadow-lg
-                            border
-                            border-gray-100
-                            hover:shadow-xl
-                            hover:-translate-y-1
-                            transition-all
-                            duration-300
-                            text-left
-                            group
-                        "
-
-                    >
-
-                        <div className="
-                            flex
-                            items-center
-                            justify-between
-                        ">
-
-
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                            ">
-
-                                <div className="
-                                    w-14
-                                    h-14
-                                    rounded-xl
-                                    bg-blue-100
-                                    flex
-                                    items-center
-                                    justify-center
-                                ">
-
-                                    <FaWarehouse
-                                        className="
-                                            text-blue-600
-                                            text-2xl
-                                        "
-                                    />
-
-                                </div>
-
-
-                                <div>
-
-                                    <h3 className="
-                                        text-lg
-                                        font-bold
-                                        text-gray-800
-                                    ">
-
-                                        Update Stock
-
-                                    </h3>
-
-
-                                    <p className="
-                                        text-sm
-                                        text-gray-500
-                                        mt-1
-                                    ">
-
-                                        Add or update medicine stock
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <FaArrowRight className="
-                                text-gray-400
-                                group-hover:text-blue-600
-                                group-hover:translate-x-1
-                                transition
-                            " />
-
-                        </div>
-
-                    </button>
-
-
-
-                    {/* NOTIFICATIONS */}
-
-                    <button
-
-                        onClick={openNotifications}
-
-                        className="
-                            bg-white
-                            rounded-2xl
-                            p-6
-                            shadow-lg
-                            border
-                            border-gray-100
-                            hover:shadow-xl
-                            hover:-translate-y-1
-                            transition-all
-                            duration-300
-                            text-left
-                            group
-                        "
-
-                    >
-
-                        <div className="
-                            flex
-                            items-center
-                            justify-between
-                        ">
-
-
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                            ">
-
-                                <div className="
-                                    w-14
-                                    h-14
-                                    rounded-xl
-                                    bg-purple-100
-                                    flex
-                                    items-center
-                                    justify-center
-                                ">
-
-                                    <FaBell className="
-                                        text-purple-600
-                                        text-2xl
-                                    " />
-
-                                </div>
-
-
-                                <div>
-
-                                    <h3 className="
-                                        text-lg
-                                        font-bold
-                                        text-gray-800
-                                    ">
-
-                                        Notifications
-
-                                    </h3>
-
-
-                                    <p className="
-                                        text-sm
-                                        text-gray-500
-                                        mt-1
-                                    ">
-
-                                        View inventory notifications
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="
-                                flex
-                                items-center
-                                gap-3
-                            ">
-
-                                <span className="
-                                    min-w-8
-                                    h-8
-                                    px-2
-                                    rounded-full
-                                    bg-purple-100
-                                    text-purple-700
-                                    flex
-                                    items-center
-                                    justify-center
-                                    font-bold
-                                ">
-
-                                    {dashboard.notifications}
-
-                                </span>
-
-
-                                <FaArrowRight className="
-                                    text-gray-400
-                                    group-hover:text-purple-600
-                                    group-hover:translate-x-1
-                                    transition
-                                " />
-
-                            </div>
-
-                        </div>
-
-                    </button>
-
-
-
-                    {/* STOCK OVERVIEW */}
-
-                    <button
-
-                        onClick={openUpdateStock}
-
-                        className="
-                            bg-white
-                            rounded-2xl
-                            p-6
-                            shadow-lg
-                            border
-                            border-gray-100
-                            hover:shadow-xl
-                            hover:-translate-y-1
-                            transition-all
-                            duration-300
-                            text-left
-                            group
-                        "
-
-                    >
-
-                        <div className="
-                            flex
-                            items-center
-                            justify-between
-                        ">
-
-
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                            ">
-
-                                <div className="
-                                    w-14
-                                    h-14
-                                    rounded-xl
-                                    bg-green-100
-                                    flex
-                                    items-center
-                                    justify-center
-                                ">
-
-                                    <FaBoxOpen className="
-                                        text-green-600
-                                        text-2xl
-                                    " />
-
-                                </div>
-
-
-                                <div>
-
-                                    <h3 className="
-                                        text-lg
-                                        font-bold
-                                        text-gray-800
-                                    ">
-
-                                        Stock Overview
-
-                                    </h3>
-
-
-                                    <p className="
-                                        text-sm
-                                        text-gray-500
-                                        mt-1
-                                    ">
-
-                                        View and manage inventory
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <FaArrowRight className="
-                                text-gray-400
-                                group-hover:text-green-600
-                                group-hover:translate-x-1
-                                transition
-                            " />
-
-                        </div>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-
-            {/* ==================================================
-                NOTIFICATION SUMMARY
-            ================================================== */}
-
-            <div className="
-                mt-8
-                mb-8
-                bg-white
-                rounded-2xl
-                p-6
-                shadow-lg
-                border
-                border-gray-100
-            ">
-
-
-                <div className="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    gap-5
-                ">
 
 
                     <div className="
                         flex
                         items-center
-                        gap-4
+                        gap-3
+                        mb-4
                     ">
+
+
 
                         <div className="
                             w-12
                             h-12
+                            bg-orange-100
                             rounded-xl
-                            bg-purple-100
                             flex
                             items-center
                             justify-center
                         ">
 
-                            <FaBell className="
-                                text-purple-600
-                                text-xl
-                            " />
+
+                            <FaExclamationTriangle
+
+                                className="
+                                text-orange-600
+                                "
+
+                            />
+
 
                         </div>
 
 
+
+
                         <div>
 
+
                             <h2 className="
-                                text-xl
                                 font-bold
-                                text-gray-800
+                                text-xl
                             ">
 
-                                Notifications
+
+                                Low Stock Alerts
+
 
                             </h2>
+
 
 
                             <p className="
@@ -1655,57 +1040,669 @@ function StaffDashboard() {
                                 text-gray-500
                             ">
 
-                                Pending inventory notifications
+
+                                Monitoring required
+
 
                             </p>
 
+
                         </div>
+
+
 
                     </div>
 
 
-                    <button
 
-                        onClick={openNotifications}
 
-                        className="
+
+                    {
+                        dashboard.lowStockCount > 0 ?
+
+                        (
+
+                            <div className="
+                                bg-orange-50
+                                border
+                                border-orange-200
+                                rounded-xl
+                                p-4
+                                text-orange-700
+                                font-medium
+                            ">
+
+
+                                ⚠️ {dashboard.lowStockCount}
+                                medicines have low stock.
+
+
+                            </div>
+
+                        )
+
+                        :
+
+                        (
+
+                            <div className="
+                                bg-green-50
+                                border
+                                border-green-200
+                                rounded-xl
+                                p-4
+                                text-green-700
+                            ">
+
+
+                                ✅ No low stock medicines
+
+
+                            </div>
+
+                        )
+
+                    }
+
+
+                </div>
+                
+
+
+
+                {/* EXPIRY ALERT */}
+
+
+                <div className="
+                    bg-white
+                    rounded-2xl
+                    shadow-lg
+                    border
+                    p-6
+                ">
+
+
+
+                    <div className="
+                        flex
+                        items-center
+                        gap-3
+                        mb-4
+                    ">
+
+
+                        <div className="
+                            w-12
+                            h-12
+                            bg-red-100
+                            rounded-xl
                             flex
                             items-center
                             justify-center
-                            gap-3
-                            bg-purple-600
-                            hover:bg-purple-700
-                            text-white
-                            px-6
-                            py-3
-                            rounded-xl
-                            font-semibold
+                        ">
+
+
+                            <FaCalendarTimes
+
+                                className="
+                                text-red-600
+                                "
+
+                            />
+
+
+                        </div>
+
+
+
+
+                        <div>
+
+
+                            <h2 className="
+                                font-bold
+                                text-xl
+                            ">
+
+
+                                Expiry Alerts
+
+
+                            </h2>
+
+
+
+                            <p className="
+                                text-sm
+                                text-gray-500
+                            ">
+
+
+                                Medicine expiry monitoring
+
+
+                            </p>
+
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+
+
+                    {
+                        dashboard.expiredCount > 0 ?
+
+                        (
+
+                            <div className="
+                                bg-red-50
+                                border
+                                border-red-200
+                                rounded-xl
+                                p-4
+                                text-red-700
+                                font-medium
+                            ">
+
+
+                                ⚠️ {dashboard.expiredCount}
+                                expired medicines detected.
+
+
+                            </div>
+
+                        )
+
+                        :
+
+                        (
+
+                            <div className="
+                                bg-green-50
+                                border
+                                border-green-200
+                                rounded-xl
+                                p-4
+                                text-green-700
+                            ">
+
+
+                                ✅ No expiry alerts
+
+
+                            </div>
+
+                        )
+
+                    }
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            {/* ==================================================
+                STAFF VIEW ONLY MODULES
+            ================================================== */}
+
+
+
+            <div className="mt-8">
+
+
+
+                <div className="mb-5">
+
+
+                    <h2 className="
+                        text-2xl
+                        font-bold
+                        text-gray-800
+                    ">
+
+                        Staff Access
+
+                    </h2>
+
+
+
+                    <p className="
+                        text-gray-500
+                        text-sm
+                        mt-1
+                    ">
+
+                        View inventory information and notifications
+
+                    </p>
+
+
+                </div>
+
+
+
+
+
+
+                <div className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    gap-6
+                ">
+
+
+
+
+
+                    {/* MEDICINES */}
+
+
+                    <button
+
+                        onClick={viewMedicines}
+
+                        className="
+                            bg-white
+                            rounded-2xl
+                            p-6
+                            shadow-lg
+                            border
+                            hover:shadow-xl
+                            hover:-translate-y-1
                             transition
+                            text-left
+                            group
                         "
 
                     >
 
-                        <span>
 
-                            {dashboard.notifications}
 
-                        </span>
+                        <div className="
+                            flex
+                            justify-between
+                            items-center
+                        ">
 
-                        View Notifications
 
-                        <FaArrowRight />
+
+                            <div className="
+                                flex
+                                gap-4
+                                items-center
+                            ">
+
+
+
+                                <div className="
+                                    w-14
+                                    h-14
+                                    rounded-xl
+                                    bg-cyan-100
+                                    flex
+                                    items-center
+                                    justify-center
+                                ">
+
+
+
+                                    <FaPills
+
+                                        className="
+                                        text-cyan-600
+                                        text-2xl
+                                        "
+
+                                    />
+
+
+                                </div>
+
+
+
+
+
+                                <div>
+
+
+                                    <h3 className="
+                                        font-bold
+                                        text-lg
+                                    ">
+
+
+                                        Medicines
+
+
+                                    </h3>
+
+
+
+                                    <p className="
+                                        text-sm
+                                        text-gray-500
+                                    ">
+
+
+                                        View medicine inventory
+
+
+                                    </p>
+
+
+                                </div>
+
+
+
+                            </div>
+
+
+
+
+                            <FaArrowRight
+
+                                className="
+                                text-gray-400
+                                group-hover:text-cyan-600
+                                "
+
+                            />
+
+
+                        </div>
+
 
                     </button>
 
+
+
+
+
+
+
+
+
+                    {/* NOTIFICATIONS */}
+
+
+                    <button
+
+                        onClick={viewNotifications}
+
+                        className="
+                            bg-white
+                            rounded-2xl
+                            p-6
+                            shadow-lg
+                            border
+                            hover:shadow-xl
+                            hover:-translate-y-1
+                            transition
+                            text-left
+                            group
+                        "
+
+                    >
+
+
+
+
+                        <div className="
+                            flex
+                            justify-between
+                            items-center
+                        ">
+
+
+
+
+                            <div className="
+                                flex
+                                gap-4
+                                items-center
+                            ">
+
+
+
+
+                                <div className="
+                                    w-14
+                                    h-14
+                                    rounded-xl
+                                    bg-yellow-100
+                                    flex
+                                    items-center
+                                    justify-center
+                                ">
+
+
+
+                                    <FaBell
+
+                                        className="
+                                        text-yellow-600
+                                        text-2xl
+                                        "
+
+                                    />
+
+
+                                </div>
+
+
+
+
+
+
+                                <div>
+
+
+                                    <h3 className="
+                                        font-bold
+                                        text-lg
+                                    ">
+
+
+                                        Notifications
+
+
+                                    </h3>
+
+
+
+                                    <p className="
+                                        text-sm
+                                        text-gray-500
+                                    ">
+
+
+                                        View system alerts
+
+
+                                    </p>
+
+
+                                </div>
+
+
+
+                            </div>
+
+
+
+
+
+
+                            <span className="
+                                bg-yellow-100
+                                text-yellow-700
+                                px-3
+                                py-1
+                                rounded-full
+                                font-bold
+                            ">
+
+
+                                {dashboard.notifications}
+
+
+                            </span>
+
+
+
+
+                        </div>
+
+
+
+                    </button>
+
+
+
+
+
                 </div>
+
+
 
             </div>
 
+
+
+
+
+
+
+
+
+            {/* ==================================================
+                STAFF PERMISSION
+            ================================================== */}
+
+
+
+            <div className="
+                mt-8
+                mb-8
+                bg-blue-50
+                border
+                border-blue-200
+                rounded-2xl
+                p-6
+            ">
+
+
+
+                <div className="
+                    flex
+                    items-center
+                    gap-4
+                ">
+
+
+
+
+                    <div className="
+                        w-12
+                        h-12
+                        rounded-xl
+                        bg-blue-100
+                        flex
+                        items-center
+                        justify-center
+                    ">
+
+
+
+                        <FaClipboardList
+
+                            className="
+                            text-blue-600
+                            text-xl
+                            "
+
+                        />
+
+
+                    </div>
+
+
+
+
+
+
+                    <div>
+
+
+                        <h3 className="
+                            text-lg
+                            font-bold
+                            text-blue-800
+                        ">
+
+
+                            Staff Permission
+
+
+                        </h3>
+
+
+
+                        <p className="
+                            text-blue-700
+                            text-sm
+                        ">
+
+
+                            Staff users have read-only access.
+                            Adding, editing, deleting medicines,
+                            stock updates and sales are restricted.
+
+
+                        </p>
+
+
+
+                    </div>
+
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
         </div>
+
 
     );
 
+
 }
+
 
 
 export default StaffDashboard;

@@ -1,0 +1,2528 @@
+/* =========================================================
+   MEDISTOCK LOGIN PAGE
+   PROFESSIONAL HEALTHCARE GLASS UI
+   LOGIN.CSS PART 1/3
+========================================================= */
+
+
+/* GOOGLE FONT */
+
+@import url(
+'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap'
+);
+
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+
+*{
+
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+
+}
+
+
+
+html,
+body,
+#root{
+
+    width:100%;
+    min-height:100%;
+
+}
+
+
+
+body{
+
+    overflow-x:hidden;
+
+    background:#021827;
+
+}
+
+
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
+
+.login-page{
+
+    min-height:100vh;
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    padding:30px;
+
+
+    position:relative;
+
+    overflow:hidden;
+
+
+    background-size:cover;
+
+    background-position:center;
+
+}
+
+
+
+/* =========================================================
+   BACKGROUND OVERLAY
+========================================================= */
+
+
+.background-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+
+    background:
+
+
+    radial-gradient(
+
+        circle at 10% 10%,
+
+        rgba(34,211,238,.35),
+
+        transparent 35%
+
+    ),
+
+
+    radial-gradient(
+
+        circle at 90% 90%,
+
+        rgba(16,185,129,.35),
+
+        transparent 35%
+
+    ),
+
+
+    linear-gradient(
+
+        135deg,
+
+        rgba(2,25,55,.88),
+
+        rgba(0,120,170,.75)
+
+    );
+    -webkit-backdrop-filter:blur(12px);
+
+
+    backdrop-filter:blur(12px);
+
+
+    z-index:1;
+
+}
+
+
+
+
+/* =========================================================
+   FLOATING MEDICAL BLOBS
+========================================================= */
+
+
+.floating-circle{
+
+    position:absolute;
+
+
+    border-radius:50%;
+
+
+    background:
+
+    rgba(255,255,255,.08);
+
+
+    border:
+
+    1px solid rgba(255,255,255,.2);
+
+-webkit-backdrop-filter:blur(25px);
+    backdrop-filter:blur(25px);
+
+
+    animation:
+
+    floating 10s infinite ease-in-out;
+
+
+}
+
+
+
+.floating-circle.one{
+
+
+    width:350px;
+
+    height:350px;
+
+
+    top:-160px;
+
+    left:-160px;
+
+
+}
+
+
+
+.floating-circle.two{
+
+
+    width:280px;
+
+    height:280px;
+
+
+    bottom:-80px;
+
+    right:50px;
+
+
+    animation-delay:3s;
+
+
+}
+
+
+
+.floating-circle.three{
+
+
+    width:180px;
+
+    height:180px;
+
+
+    top:15%;
+
+    right:30%;
+
+
+    animation-delay:5s;
+
+
+}
+
+
+
+
+@keyframes floating{
+
+
+    0%{
+
+        transform:
+
+        translateY(0px);
+
+    }
+
+
+
+    50%{
+
+        transform:
+
+        translateY(-35px);
+
+    }
+
+
+
+    100%{
+
+        transform:
+
+        translateY(0px);
+
+    }
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   MAIN GLASS CONTAINER
+========================================================= */
+
+
+.login-wrapper{
+
+
+    position:relative;
+
+    z-index:5;
+
+
+    width:95%;
+
+
+    max-width:1450px;
+
+
+    min-height:780px;
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    1.1fr .9fr;
+
+
+
+    border-radius:40px;
+
+
+    overflow:hidden;
+
+
+
+    background:
+
+    rgba(255,255,255,.10);
+
+
+
+    border:
+
+    1px solid rgba(255,255,255,.25);
+
+-webkit-backdrop-filter:blur(35px);
+
+    backdrop-filter:
+
+    blur(35px);
+
+
+
+    box-shadow:
+
+
+    0 40px 100px
+
+    rgba(0,0,0,.45);
+
+
+
+}
+
+
+
+/* =========================================================
+   LEFT SIDE
+========================================================= */
+
+
+.login-left{
+
+
+    padding:70px;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    justify-content:center;
+
+
+    color:white;
+
+
+
+    animation:
+
+    slideLeft .8s ease;
+
+
+}
+
+
+
+/* =========================================================
+   BRAND LOGO
+========================================================= */
+
+
+.hospital-logo{
+
+
+    width:120px;
+
+
+    height:120px;
+
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    justify-content:center;
+
+
+
+    border-radius:35px;
+
+
+
+    font-size:60px;
+
+
+    color:white;
+
+
+
+    background:
+
+
+    linear-gradient(
+
+        135deg,
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    box-shadow:
+
+
+    0 25px 60px
+
+    rgba(16,185,129,.5);
+
+
+
+    animation:
+
+    glow 3s infinite;
+
+
+}
+
+
+
+
+@keyframes glow{
+
+
+    0%{
+
+        box-shadow:
+
+        0 0 10px
+
+        rgba(16,185,129,.2);
+
+    }
+
+
+
+    50%{
+
+        box-shadow:
+
+        0 0 55px
+
+        rgba(16,185,129,.7);
+
+    }
+
+
+
+    100%{
+
+        box-shadow:
+
+        0 0 10px
+
+        rgba(16,185,129,.2);
+
+    }
+
+
+}
+
+
+
+
+/* =========================================================
+   BRAND TEXT
+========================================================= */
+
+
+.brand-section h1{
+
+
+    margin-top:25px;
+
+
+    font-size:65px;
+
+
+    font-weight:800;
+
+
+    letter-spacing:1px;
+
+
+}
+
+
+
+.brand-section p{
+
+
+    margin-top:15px;
+
+
+    max-width:550px;
+
+
+    font-size:18px;
+
+
+    line-height:1.8;
+
+
+    color:
+
+    rgba(255,255,255,.85);
+
+
+}
+
+
+
+/* =========================================================
+   WELCOME TEXT
+========================================================= */
+
+
+.welcome-content{
+
+
+    margin-top:40px;
+
+
+}
+
+
+
+.welcome-content h2{
+
+
+    font-size:34px;
+
+
+    font-weight:700;
+
+
+}
+
+
+
+.welcome-content p{
+
+
+    margin-top:15px;
+
+
+    max-width:520px;
+
+
+    line-height:1.8;
+
+
+    font-size:15px;
+
+
+    color:
+
+    rgba(255,255,255,.85);
+
+
+}
+
+
+
+/* =========================================================
+   FEATURE GRID
+========================================================= */
+
+
+.feature-grid{
+
+
+    margin-top:45px;
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(2,1fr);
+
+
+
+    gap:20px;
+
+
+}
+
+
+
+.feature-card{
+
+
+    padding:22px;
+
+
+    border-radius:22px;
+
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:18px;
+
+
+
+    background:
+
+    rgba(255,255,255,.12);
+
+
+
+    border:
+
+    1px solid rgba(255,255,255,.25);
+
+
+
+    transition:.35s;
+
+
+}
+
+
+
+.feature-card:hover{
+
+
+    transform:
+
+    translateY(-8px);
+
+
+
+    background:
+
+    rgba(255,255,255,.20);
+
+
+
+}
+
+
+
+.feature-card svg{
+
+
+    font-size:32px;
+
+
+    color:#5eead4;
+
+
+}
+
+
+
+.feature-card h4{
+
+
+    font-size:16px;
+
+
+}
+
+
+
+.feature-card span{
+
+
+    font-size:12px;
+
+
+    opacity:.8;
+
+
+}
+/* =========================================================
+   RIGHT LOGIN SECTION
+========================================================= */
+
+
+.login-right{
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    padding:55px;
+
+
+
+}
+
+
+
+
+
+/* =========================================================
+   LOGIN CARD
+========================================================= */
+
+
+.login-card{
+
+
+    width:100%;
+
+
+    max-width:540px;
+
+
+
+    padding:45px;
+
+
+
+    border-radius:35px;
+
+
+
+    background:
+
+
+    rgba(255,255,255,.15);
+
+
+-webkit-backdrop-filter:blur(35px);
+    backdrop-filter:
+
+    blur(35px);
+
+
+
+    border:
+
+    1px solid rgba(255,255,255,.30);
+
+
+
+    box-shadow:
+
+
+    0 35px 90px
+
+    rgba(0,0,0,.45);
+
+
+
+    animation:
+
+
+    slideRight .8s ease;
+
+
+
+}
+
+
+
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+
+.login-header{
+
+
+    text-align:center;
+
+
+    margin-bottom:35px;
+
+
+}
+
+
+
+
+.avatar{
+
+
+    width:100px;
+
+
+    height:100px;
+
+
+
+    margin:auto;
+
+
+    margin-bottom:20px;
+
+
+
+    border-radius:50%;
+
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    color:white;
+
+
+    font-size:45px;
+
+
+
+    background:
+
+
+    linear-gradient(
+
+        135deg,
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    box-shadow:
+
+
+    0 20px 50px
+
+    rgba(16,185,129,.45);
+
+
+}
+
+
+
+
+.login-header h2{
+
+
+    color:white;
+
+
+    font-size:38px;
+
+
+    font-weight:700;
+
+
+}
+
+
+
+.login-header p{
+
+
+    margin-top:10px;
+
+
+    color:
+
+    rgba(255,255,255,.8);
+
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+
+.login-form{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:22px;
+
+
+}
+
+
+
+
+.section-title{
+
+
+    text-align:center;
+
+
+}
+
+
+
+.section-title span{
+
+
+    color:white;
+
+
+    font-weight:600;
+
+
+    font-size:15px;
+
+
+    padding-bottom:8px;
+
+
+
+    border-bottom:
+
+
+    2px solid rgba(255,255,255,.35);
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   ROLE CARDS
+========================================================= */
+
+
+.role-grid{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(3,1fr);
+
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+.role-card{
+
+
+    height:125px;
+
+
+
+    border-radius:22px;
+
+
+    border:
+
+    1px solid rgba(255,255,255,.25);
+
+
+
+    background:
+
+
+    rgba(255,255,255,.10);
+
+
+
+    color:white;
+
+
+    cursor:pointer;
+
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    gap:8px;
+
+
+
+    transition:.35s;
+
+
+}
+
+
+
+
+.role-card:hover{
+
+
+    transform:
+
+    translateY(-7px);
+
+
+
+    background:
+
+
+    rgba(255,255,255,.22);
+
+
+}
+
+
+
+
+.role-card.active{
+
+
+    background:
+
+
+    linear-gradient(
+
+        135deg,
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    transform:
+
+
+    scale(1.05);
+
+
+
+    box-shadow:
+
+
+    0 20px 45px
+
+    rgba(16,185,129,.45);
+
+
+}
+
+
+
+
+.role-icon{
+
+
+    font-size:32px;
+
+
+}
+
+
+
+
+.role-card h4{
+
+
+    font-size:15px;
+
+
+}
+
+
+
+
+.role-card small{
+
+
+    font-size:12px;
+
+
+    opacity:.85;
+
+
+}
+
+
+
+
+
+/* =========================================================
+   INPUT BOX
+========================================================= */
+
+
+.input-box{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:12px;
+
+
+}
+
+
+
+
+.input-box label{
+
+
+    color:#073b4c;
+
+
+    font-size:15px;
+
+
+    font-weight:700;
+
+    letter-spacing:.3px;
+
+
+}
+
+
+
+
+
+.input-field{
+
+
+    position:relative;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+}
+
+
+
+
+.input-icon{
+
+
+    position:absolute;
+
+
+    left:20px;
+
+
+
+    color:#0284c7;
+
+
+    font-size:20px;
+
+
+    z-index:2;
+
+
+}
+
+
+
+
+
+.input-field input{
+
+
+    width:100%;
+
+
+
+    height:62px;
+
+
+
+    padding-left:55px;
+
+
+    padding-right:55px;
+
+
+
+    border-radius:18px;
+
+
+
+    outline:none;
+
+
+
+    border:
+
+
+    2px solid rgba(14,116,144,.25);
+
+
+
+    background:
+
+
+     rgba(255,255,255,.95);
+
+
+
+    color:#082f49;
+
+
+
+    font-size:16px;
+
+    font-weight:600;
+
+
+    transition:.3s;
+
+
+}
+
+
+
+
+
+.input-field input::placeholder{
+
+
+    color:
+
+#64748b;
+
+
+    font-weight:500;
+}
+
+
+
+
+.input-field input:focus{
+
+
+    border-color:#06b6d4;
+
+    background:white;
+
+
+    box-shadow:
+
+
+    0 0 25px rgba(6,182,212,.35);
+
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   PASSWORD EYE BUTTON
+========================================================= */
+
+
+.eye-btn{
+
+
+    position:absolute;
+
+
+    right:15px;
+
+
+
+    width:42px;
+
+
+    height:42px;
+
+
+
+    border:none;
+
+
+    border-radius:50%;
+
+
+
+    background:
+
+
+    transparent;
+
+
+
+    color:#0284c7;
+
+
+
+    cursor:pointer;
+
+    
+
+
+}
+
+
+
+.eye-btn:hover{
+
+
+    background:
+
+
+    rgba(255,255,255,.15);
+
+
+}
+
+
+
+
+
+/* =========================================================
+   LOGIN OPTIONS
+========================================================= */
+
+
+.login-options{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+}
+
+
+
+.remember{
+
+
+    display:flex;
+
+
+    gap:8px;
+
+
+    align-items:center;
+
+
+
+    color:white;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+.remember input{
+
+
+    accent-color:#10b981;
+
+
+}
+
+
+
+
+
+.forgot-btn{
+
+
+    border:none;
+
+
+    background:none;
+
+
+    cursor:pointer;
+
+
+
+    color:#5eead4;
+
+
+}
+
+
+
+.forgot-btn:hover{
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   MAIN LOGIN BUTTON
+========================================================= */
+
+
+.login-btn{
+
+
+    width:100%;
+
+
+    height:62px;
+
+
+
+    border:none;
+
+
+    border-radius:20px;
+
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    gap:12px;
+
+
+
+    cursor:pointer;
+
+
+
+    color:white;
+
+
+
+    font-size:16px;
+
+
+    font-weight:700;
+
+
+
+    background:
+
+
+    linear-gradient(
+
+        135deg,
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    box-shadow:
+
+
+    0 20px 45px
+
+    rgba(16,185,129,.45);
+
+
+
+    transition:.35s;
+
+
+}
+
+
+
+
+.login-btn:hover{
+
+
+    transform:
+
+
+    translateY(-5px);
+
+
+}
+
+
+
+.login-btn:disabled{
+
+
+    opacity:.6;
+
+
+    cursor:not-allowed;
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+
+.divider{
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:15px;
+
+
+}
+
+
+
+.divider::before,
+
+.divider::after{
+
+
+    content:"";
+
+
+    flex:1;
+
+
+    height:1px;
+
+
+
+    background:
+
+
+    rgba(255,255,255,.30);
+
+
+}
+
+
+
+
+.divider span{
+
+
+    color:white;
+
+
+    font-size:13px;
+
+
+}
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
+
+.google-login-box{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-top:5px;
+
+}
+
+
+
+
+
+.google-login-box > div{
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+
+
+
+
+/* =========================================================
+   OTP LOGIN BUTTON
+========================================================= */
+
+
+.otp-login-btn{
+
+
+    width:100%;
+
+
+    height:60px;
+
+
+
+    border-radius:18px;
+
+
+
+    border:
+
+
+    1px solid rgba(255,255,255,.25);
+
+
+
+    background:
+
+
+    rgba(255,255,255,.12);
+
+
+
+    color:white;
+
+
+
+    cursor:pointer;
+
+
+
+    display:flex;
+
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    gap:12px;
+
+
+
+    font-size:15px;
+
+
+
+    font-weight:600;
+
+
+
+    transition:.35s;
+
+
+}
+
+
+
+
+.otp-login-btn:hover{
+
+
+    transform:
+
+
+    translateY(-5px);
+
+
+
+    background:
+
+
+    rgba(255,255,255,.22);
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   OTP CONTAINER
+========================================================= */
+
+
+.otp-container{
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:22px;
+
+
+}
+
+
+
+
+
+.otp-header{
+
+
+    text-align:center;
+
+
+}
+
+
+
+
+
+.otp-icon{
+
+
+    width:85px;
+
+
+    height:85px;
+
+
+
+    margin:auto;
+
+
+    margin-bottom:18px;
+
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    border-radius:50%;
+
+
+
+    color:white;
+
+
+
+    font-size:35px;
+
+
+
+    background:
+
+
+    linear-gradient(
+
+        135deg,
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    box-shadow:
+
+
+    0 20px 45px
+
+    rgba(16,185,129,.45);
+
+
+}
+
+
+
+
+
+.otp-header h3{
+
+
+    color:white;
+
+
+    font-size:28px;
+
+
+}
+
+
+
+
+
+.otp-header p{
+
+
+    margin-top:10px;
+
+
+
+    color:
+
+
+    rgba(255,255,255,.8);
+
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+
+.back-btn{
+
+
+    width:100%;
+
+
+    height:58px;
+
+
+
+    border:none;
+
+
+    border-radius:18px;
+
+
+
+    background:
+
+
+    rgba(255,255,255,.12);
+
+
+
+    color:white;
+
+
+
+    cursor:pointer;
+
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+
+    gap:12px;
+
+
+
+    font-size:15px;
+
+
+
+    transition:.3s;
+
+
+}
+
+
+
+
+
+.back-btn:hover{
+
+
+    background:
+
+
+    rgba(255,255,255,.25);
+
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+
+.login-footer{
+
+
+    margin-top:30px;
+
+
+    text-align:center;
+
+
+}
+
+
+
+
+
+.login-footer p{
+
+
+    color:
+
+
+    rgba(255,255,255,.85);
+
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+.login-footer a{
+
+
+    margin-left:8px;
+
+
+
+    color:#5eead4;
+
+
+
+    text-decoration:none;
+
+
+
+    font-weight:600;
+
+
+}
+
+
+
+
+
+.login-footer a:hover{
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   LOADER
+========================================================= */
+
+
+.loader{
+
+
+    width:22px;
+
+
+    height:22px;
+
+
+
+    border-radius:50%;
+
+
+
+    border:
+
+
+    3px solid rgba(255,255,255,.35);
+
+
+
+    border-top-color:white;
+
+
+
+    animation:
+
+
+    rotate .8s linear infinite;
+
+
+}
+
+
+
+
+
+@keyframes rotate{
+
+
+    from{
+
+
+        transform:rotate(0deg);
+
+    }
+
+
+    to{
+
+
+        transform:rotate(360deg);
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   PAGE ANIMATIONS
+========================================================= */
+
+
+@keyframes slideLeft{
+
+
+    from{
+
+
+        opacity:0;
+
+
+        transform:
+
+
+        translateX(-60px);
+
+
+    }
+
+
+
+    to{
+
+
+        opacity:1;
+
+
+        transform:
+
+
+        translateX(0);
+
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes slideRight{
+
+
+    from{
+
+
+        opacity:0;
+
+
+        transform:
+
+
+        translateX(60px);
+
+
+    }
+
+
+
+    to{
+
+
+        opacity:1;
+
+
+        transform:
+
+
+        translateX(0);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+========================================================= */
+
+
+
+@media(max-width:1200px){
+
+
+    .login-wrapper{
+
+
+        grid-template-columns:1fr;
+
+
+        max-width:650px;
+
+
+    }
+
+
+
+    .login-left{
+
+
+        display:none;
+
+
+    }
+
+
+
+    .login-right{
+
+
+        padding:35px;
+
+
+    }
+
+
+}
+
+
+
+
+
+@media(max-width:768px){
+
+
+
+    .login-page{
+
+
+        padding:15px;
+
+
+    }
+
+
+
+
+
+    .login-card{
+
+
+        padding:30px;
+
+
+        border-radius:25px;
+
+
+    }
+
+
+
+
+
+    .role-grid{
+
+
+        grid-template-columns:1fr;
+
+
+    }
+
+
+
+
+
+    .role-card{
+
+
+        height:75px;
+
+
+        flex-direction:row;
+
+
+        justify-content:flex-start;
+
+
+        padding-left:25px;
+
+
+    }
+
+
+
+
+
+    .feature-grid{
+
+
+        grid-template-columns:1fr;
+
+
+    }
+
+
+}
+
+
+
+
+
+@media(max-width:480px){
+
+
+
+    .login-card{
+
+
+        padding:22px;
+
+
+    }
+
+
+
+
+
+    .login-header h2{
+
+
+        font-size:26px;
+
+
+    }
+
+
+
+
+
+    .avatar{
+
+
+        width:75px;
+
+
+        height:75px;
+
+
+        font-size:32px;
+
+
+    }
+
+
+
+
+
+    .input-field input{
+
+
+        height:55px;
+
+
+    }
+
+
+
+
+
+    .login-options{
+
+
+        flex-direction:column;
+
+
+        align-items:flex-start;
+
+
+        gap:15px;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+
+::-webkit-scrollbar{
+
+
+    width:8px;
+
+
+}
+
+
+
+::-webkit-scrollbar-track{
+
+
+    background:#021827;
+
+
+}
+
+
+
+
+::-webkit-scrollbar-thumb{
+
+
+    background:
+
+
+    linear-gradient(
+
+        #06b6d4,
+
+        #10b981
+
+    );
+
+
+
+    border-radius:20px;
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+
+button:focus,
+
+input:focus,
+
+a:focus{
+
+
+    outline:
+
+
+    2px solid #5eead4;
+
+
+
+    outline-offset:3px;
+
+
+}

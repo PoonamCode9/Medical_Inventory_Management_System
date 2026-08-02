@@ -23,6 +23,7 @@ import java.util.Locale;
 public class AuthService {
 
 
+
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
@@ -33,7 +34,9 @@ public class AuthService {
 
 
 
-    // ================= SECRET CODES =================
+    // =====================================================
+    // SECRET CODES FROM APPLICATION.PROPERTIES
+    // =====================================================
 
 
     @Value("${admin.secret.id}")
@@ -48,6 +51,12 @@ public class AuthService {
     private String staffSecret;
 
 
+
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
 
     public AuthService(
@@ -76,43 +85,38 @@ public class AuthService {
 
 
 
-    // ================= REGISTER =================
+
+    // =====================================================
+    // REGISTER USER
+    // =====================================================
 
 
-    public AuthResponse register(RegisterRequest req) {
-
-
-        if(req.getEmail()==null || req.getEmail().isBlank()){
-
-            throw new RuntimeException(
-                    "Email is required"
-            );
-
-        }
+    public AuthResponse register(
+            RegisterRequest req
+    ){
 
 
 
-        if(req.getPassword()==null || req.getPassword().isBlank()){
-
-            throw new RuntimeException(
-                    "Password is required"
-            );
-
-        }
+        validateRegisterRequest(req);
 
 
 
-        if(req.getRole()==null || req.getRole().isBlank()){
-
-            throw new RuntimeException(
-                    "Role is required"
-            );
-
-        }
+        String email =
+                req.getEmail()
+                        .trim()
+                        .toLowerCase(Locale.ROOT);
 
 
 
-        if(userRepository.findByEmail(req.getEmail()).isPresent()){
+
+        // CHECK EMAIL
+
+
+        if(
+                userRepository
+                .findByEmail(email)
+                .isPresent()
+        ){
 
             throw new RuntimeException(
                     "Email already registered"
@@ -122,52 +126,95 @@ public class AuthService {
 
 
 
-        Role role = roleRepository.findByRoleName(
-                req.getRole()
+
+        // FIND ROLE
+
+
+        Role role =
+                roleRepository
+                .findByRoleName(
+                        req.getRole()
+                        .trim()
                         .toUpperCase(Locale.ROOT)
-        )
-        .orElseThrow(() ->
-                new RuntimeException(
-                        "Role not found"
                 )
-        );
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Invalid role"
+                        )
+                );
 
 
+
+
+
+
+        // CREATE USER
 
 
         User user = new User();
 
 
-        user.setUsername(req.getUsername());
+        user.setUsername(
+                req.getUsername()
+        );
 
-        user.setFullName(req.getFullName());
 
-        user.setEmail(req.getEmail());
+        user.setFullName(
+                req.getFullName()
+        );
 
-        user.setPhone(req.getPhone());
+
+        user.setEmail(
+                email
+        );
+
+
+        user.setPhone(
+                req.getPhone()
+        );
+
 
 
         user.setPassword(
+
                 passwordEncoder.encode(
                         req.getPassword()
                 )
+
         );
 
 
-        user.setRole(role);
 
-
-
-        userRepository.save(user);
-
-
-
-
-        String token = jwtService.generateToken(
-                user.getEmail(),
-                role.getRoleName()
-                        .toUpperCase(Locale.ROOT)
+        user.setRole(
+                role
         );
+
+
+
+
+
+        User savedUser =
+                userRepository.save(user);
+
+
+
+
+
+
+
+        // CREATE JWT
+
+
+        String token =
+                jwtService.generateToken(
+
+                        savedUser.getEmail(),
+
+                        role.getRoleName()
+                                .toUpperCase(Locale.ROOT)
+
+                );
+
 
 
 
@@ -179,9 +226,11 @@ public class AuthService {
                 role.getRoleName()
                         .toUpperCase(Locale.ROOT),
 
-                user.getId()
+                savedUser.getId()
 
         );
+
+
 
     }
 
@@ -193,29 +242,25 @@ public class AuthService {
 
 
 
-    // ================= LOGIN =================
+    // =====================================================
+    // LOGIN USER
+    // =====================================================
 
 
-    public AuthResponse login(LoginRequest req) {
-
-
-
-        User user = userRepository.findByEmail(
-                req.getEmail()
-        )
-        .orElseThrow(() ->
-                new RuntimeException(
-                        "User not found"
-                )
-        );
+    public AuthResponse login(
+            LoginRequest req
+    ){
 
 
 
-
-        if(user.getRole()==null){
+        if(
+                req.getEmail()==null
+                ||
+                req.getEmail().isBlank()
+        ){
 
             throw new RuntimeException(
-                    "User role missing"
+                    "Email required"
             );
 
         }
@@ -223,7 +268,63 @@ public class AuthService {
 
 
 
-        String userRole = user.getRole()
+        if(
+                req.getPassword()==null
+                ||
+                req.getPassword().isBlank()
+        ){
+
+            throw new RuntimeException(
+                    "Password required"
+            );
+
+        }
+
+
+
+
+
+        User user =
+
+                userRepository
+                .findByEmail(
+                        req.getEmail()
+                        .trim()
+                        .toLowerCase(Locale.ROOT)
+                )
+
+                .orElseThrow(() ->
+
+                        new RuntimeException(
+                                "User not found"
+                        )
+
+                );
+
+
+
+
+
+
+
+        if(user.getRole()==null){
+
+
+            throw new RuntimeException(
+                    "User role not assigned"
+            );
+
+        }
+
+
+
+
+
+
+
+        String role =
+
+                user.getRole()
                 .getRoleName()
                 .trim()
                 .toUpperCase(Locale.ROOT);
@@ -232,11 +333,27 @@ public class AuthService {
 
 
 
-        System.out.println("======================");
-        System.out.println("LOGIN USER : " + user.getEmail());
-        System.out.println("ROLE       : " + userRole);
-        System.out.println("INPUT CODE : " + req.getSecretCode());
-        System.out.println("======================");
+
+
+        System.out.println(
+                "================================"
+        );
+
+        System.out.println(
+                "LOGIN EMAIL : "
+                + user.getEmail()
+        );
+
+
+        System.out.println(
+                "LOGIN ROLE  : "
+                + role
+        );
+
+
+        System.out.println(
+                "================================"
+        );
 
 
 
@@ -244,15 +361,183 @@ public class AuthService {
 
 
 
-        // ================= SECRET VALIDATION =================
 
 
-        if(req.getSecretCode()==null ||
-                req.getSecretCode().isBlank()){
+        // =====================================================
+        // SECRET CODE CHECK
+        // =====================================================
+
+
+        validateSecretCode(
+                role,
+                req.getSecretCode()
+        );
+
+
+
+
+
+
+
+        // =====================================================
+        // PASSWORD CHECK
+        // =====================================================
+
+
+        if(
+                !passwordEncoder.matches(
+
+                        req.getPassword(),
+
+                        user.getPassword()
+
+                )
+        ){
 
 
             throw new RuntimeException(
-                    userRole + " Secret Code required"
+                    "Invalid password"
+            );
+
+
+        }
+
+
+
+
+
+
+
+        // =====================================================
+        // GENERATE TOKEN
+        // =====================================================
+
+
+        String token =
+
+                jwtService.generateToken(
+
+                        user.getEmail(),
+
+                        role
+
+                );
+
+
+
+
+
+
+
+
+        return new AuthResponse(
+
+                token,
+
+                role,
+
+                user.getId()
+
+        );
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =====================================================
+    // VALIDATE REGISTER REQUEST
+    // =====================================================
+
+
+    private void validateRegisterRequest(
+            RegisterRequest req
+    ){
+
+
+        if(
+                req.getEmail()==null
+                ||
+                req.getEmail().isBlank()
+        ){
+
+            throw new RuntimeException(
+                    "Email required"
+            );
+
+        }
+
+
+
+        if(
+                req.getPassword()==null
+                ||
+                req.getPassword().isBlank()
+        ){
+
+            throw new RuntimeException(
+                    "Password required"
+            );
+
+        }
+
+
+
+        if(
+                req.getRole()==null
+                ||
+                req.getRole().isBlank()
+        ){
+
+            throw new RuntimeException(
+                    "Role required"
+            );
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =====================================================
+    // SECRET VALIDATION
+    // =====================================================
+
+
+    private void validateSecretCode(
+
+            String role,
+
+            String secret
+
+    ){
+
+
+
+        if(
+                secret==null
+                ||
+                secret.isBlank()
+        ){
+
+            throw new RuntimeException(
+                    role +
+                    " Secret Code required"
             );
 
         }
@@ -261,17 +546,24 @@ public class AuthService {
 
 
 
-        switch(userRole){
+        String entered =
+                secret.trim();
+
+
+
+
+        switch(role){
 
 
 
             case "ADMIN":
 
 
-                if(!req.getSecretCode()
-                        .trim()
-                        .equals(adminSecretId.trim())){
-
+                if(
+                    !entered.equals(
+                            adminSecretId.trim()
+                    )
+                ){
 
                     throw new RuntimeException(
                             "Invalid Admin Secret Code"
@@ -286,13 +578,15 @@ public class AuthService {
 
 
 
+
             case "PHARMACIST":
 
 
-                if(!req.getSecretCode()
-                        .trim()
-                        .equals(pharmacistSecret.trim())){
-
+                if(
+                    !entered.equals(
+                            pharmacistSecret.trim()
+                    )
+                ){
 
                     throw new RuntimeException(
                             "Invalid Pharmacist Secret Code"
@@ -308,13 +602,15 @@ public class AuthService {
 
 
 
+
             case "STAFF":
 
 
-                if(!req.getSecretCode()
-                        .trim()
-                        .equals(staffSecret.trim())){
-
+                if(
+                    !entered.equals(
+                            staffSecret.trim()
+                    )
+                ){
 
                     throw new RuntimeException(
                             "Invalid Staff Secret Code"
@@ -330,75 +626,17 @@ public class AuthService {
 
 
 
+
             default:
 
 
                 throw new RuntimeException(
-                        "Invalid Role : " + userRole
+                        "Unknown Role"
                 );
 
 
         }
 
-
-
-
-
-
-
-        // ================= PASSWORD CHECK =================
-
-
-
-        if(!passwordEncoder.matches(
-
-                req.getPassword(),
-
-                user.getPassword()
-
-        )){
-
-
-            throw new RuntimeException(
-                    "Invalid Password"
-            );
-
-
-        }
-
-
-
-
-
-
-
-        // ================= JWT GENERATION =================
-
-
-
-        String token = jwtService.generateToken(
-
-                user.getEmail(),
-
-                userRole
-
-        );
-
-
-
-
-
-
-
-        return new AuthResponse(
-
-                token,
-
-                userRole,
-
-                user.getId()
-
-        );
 
 
     }

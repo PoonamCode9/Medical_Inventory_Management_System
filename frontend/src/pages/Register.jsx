@@ -1,121 +1,168 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
-
 import {
     FaEye,
     FaEyeSlash,
     FaUserShield,
     FaUserNurse,
     FaUserTie,
-    FaUser,
+    FaUserCircle,
     FaEnvelope,
     FaPhone,
-    FaLock
+    FaLock,
+    FaHeartbeat,
+    FaHospital,
+    FaBoxes,
+    FaChartLine,
+    FaIdBadge,
+    FaUserPlus,
+    FaKey,
+    FaMobileAlt
 } from "react-icons/fa";
-
 import registerBg from "../assets/register-bg.jpg";
 
+import "./Register.css";
 
 
 function Register(){
 
 
-const [showPassword,setShowPassword]=useState(false);
+    const [showPassword,setShowPassword]=useState(false);
 
-
-const [loading,setLoading]=useState(false);
-
+    const [loading,setLoading]=useState(false);
 
 
 
-const [data,setData]=useState({
+    const [data,setData]=useState({
 
-    fullName:"",
-    username:"",
-    email:"",
-    phone:"",
-    password:"",
-    role:"STAFF"
+        fullName:"",
+        username:"",
+        email:"",
+        phone:"",
+        password:"",
+        role:"STAFF"
 
-});
-
+    });
 
 
 
 
 
+    const handleChange=(e)=>{
 
-const handleSubmit=async(e)=>{
+        setData({
 
+            ...data,
 
-e.preventDefault();
+            [e.target.name]:e.target.value
 
+        });
 
-
-try{
-
-
-setLoading(true);
-
-
-
-const response=await axios.post(
-
-"http://localhost:8080/api/auth/register",
-
-data
-
-);
+    };
 
 
 
-console.log(response.data);
 
 
 
-alert(
-"Registration Successful!"
-);
+
+    const handleRoleChange=(role)=>{
+
+        setData({
+
+            ...data,
+
+            role
+
+        });
+
+    };
 
 
 
-}
-
-
-catch(error){
-
-
-console.log(error);
 
 
 
-alert(
 
-error.response?.data ||
-
-"Registration Failed"
-
-);
+    const handleSubmit=async(e)=>{
 
 
-
-}
-
-
-finally{
+        e.preventDefault();
 
 
-setLoading(false);
+        try{
 
 
-}
+            setLoading(true);
 
 
 
-};
+            const response = await axios.post(
+
+                "http://localhost:8080/api/auth/register",
+
+                data
+
+            );
 
 
+
+            console.log(response.data);
+
+
+
+            alert(
+                "Registration Successful!"
+            );
+
+
+
+            setData({
+
+                fullName:"",
+                username:"",
+                email:"",
+                phone:"",
+                password:"",
+                role:"STAFF"
+
+            });
+
+
+
+        }
+
+
+        catch(error){
+
+
+            console.log(error);
+
+
+
+            alert(
+
+                error.response?.data ||
+
+                "Registration Failed"
+
+            );
+
+
+        }
+
+
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
+    };
 
 
 
@@ -127,11 +174,14 @@ return(
 
 
 
+<div className="register-page">
+
+
+
 <div
 
 
-className="auth-container"
-
+className="register-background"
 
 
 style={{
@@ -145,9 +195,9 @@ linear-gradient(
 
 135deg,
 
-rgba(0,70,120,.85),
+rgba(0,65,120,.90),
 
-rgba(0,180,220,.65)
+rgba(0,190,220,.70)
 
 ),
 
@@ -163,66 +213,98 @@ url(${registerBg})
 
 
 
-<div className="auth-left">
 
 
-<div className="brand">
+
+<div className="register-wrapper">
+
+
+
+
+
+
+
+{/* ================= LEFT SECTION ================= */}
+
+
+
+
+<div className="register-info">
+
+
+
+
+
+<div className="brand-logo">
+
+
+<div className="logo-circle">
+
+<FaHeartbeat/>
+
+</div>
+
 
 
 <h1>
 
-🏥 MediStock
+MediStock
 
 </h1>
+
+
+
+</div>
+
+
+
+
+
+
+
+<h2>
+
+Create Your Medical Account
+
+</h2>
+
+
+
 
 
 <p>
 
-Create your medical inventory account
+Manage medicines, suppliers and inventory
+
+with a secure healthcare platform.
 
 </p>
 
 
-</div>
 
 
 
 
 
-<div className="feature-list">
 
-
-<div>
-
-💊 Medicine Management
-
-</div>
-
-
-<div>
-
-🚚 Supplier Management
-
-</div>
-
-
-<div>
-
-⚠ Expiry Monitoring
-
-</div>
-
-
-<div>
-
-📊 Inventory Analytics
-
-</div>
+<div className="features">
 
 
 
-</div>
 
+
+
+<div className="feature-item">
+
+
+<FaHospital/>
+
+
+<span>
+
+Hospital Inventory Management
+
+</span>
 
 
 </div>
@@ -232,27 +314,108 @@ Create your medical inventory account
 
 
 
+<div className="feature-item">
 
 
-
-<div className="auth-card register-card">
-
+<FaBoxes/>
 
 
-<div className="medical-icon">
+<span>
 
-💊
+Medicine Stock Tracking
+
+</span>
+
 
 </div>
 
 
 
 
-<h1 className="title">
+
+
+
+<div className="feature-item">
+
+
+<FaChartLine/>
+
+
+<span>
+
+Smart Analytics Dashboard
+
+</span>
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* ================= REGISTER CARD ================= */}
+
+
+
+
+<div className="register-card">
+
+
+
+
+
+
+<div className="card-header">
+
+
+
+<div className="medical-symbol">
+
+<FaUserPlus/>
+
+</div>
+
+
+
+
+
+<h1>
 
 Create Account
 
 </h1>
+
+
+
+
+<p>
+
+Join MediStock Healthcare System
+
+</p>
+
+
+
+</div>
+
+
 
 
 
@@ -268,33 +431,36 @@ Create Account
 
 
 
-<div className="input-group">
 
 
-<FaUser/>
+<div className="input-box">
+
+<FaUserCircle/>
 
 
 <input
 
+
 type="text"
+
+
+name="fullName"
+
 
 placeholder="Full Name"
 
+
 value={data.fullName}
 
-onChange={(e)=>
 
-setData({
+onChange={handleChange}
 
-...data,
 
-fullName:e.target.value
+required
 
-})
-
-}
 
 />
+
 
 
 </div>
@@ -307,34 +473,35 @@ fullName:e.target.value
 
 
 
+<div className="input-box">
 
-<div className="input-group">
 
-
-<FaUser/>
+<FaUserCircle/>
 
 
 <input
 
+
 type="text"
+
+
+name="username"
+
 
 placeholder="Username"
 
+
 value={data.username}
 
-onChange={(e)=>
 
-setData({
+onChange={handleChange}
 
-...data,
 
-username:e.target.value
+required
 
-})
-
-}
 
 />
+
 
 
 </div>
@@ -348,8 +515,7 @@ username:e.target.value
 
 
 
-
-<div className="input-group">
+<div className="input-box">
 
 
 <FaEnvelope/>
@@ -357,25 +523,27 @@ username:e.target.value
 
 <input
 
+
 type="email"
+
+
+name="email"
+
 
 placeholder="Email Address"
 
+
 value={data.email}
 
-onChange={(e)=>
 
-setData({
+onChange={handleChange}
 
-...data,
 
-email:e.target.value
+required
 
-})
-
-}
 
 />
+
 
 
 </div>
@@ -388,35 +556,38 @@ email:e.target.value
 
 
 
-<div className="input-group">
+<div className="input-box">
 
 
-<FaPhone/>
+<FaMobileAlt/>
 
 
 <input
+
 
 type="text"
 
+
+name="phone"
+
+
 placeholder="Mobile Number"
+
 
 maxLength="10"
 
+
 value={data.phone}
 
-onChange={(e)=>
 
-setData({
+onChange={handleChange}
 
-...data,
 
-phone:e.target.value
+required
 
-})
-
-}
 
 />
+
 
 
 </div>
@@ -429,45 +600,34 @@ phone:e.target.value
 
 
 
-<div className="input-group password-wrapper">
+<div className="input-box password-box">
 
 
-<FaLock/>
+<FaKey/>
+
+
 
 
 <input
 
 
-type={
+type={showPassword ? "text":"password"}
 
-showPassword
 
-?
-
-"text"
-
-:
-
-"password"
-
-}
+name="password"
 
 
 placeholder="Password"
 
+
 value={data.password}
 
-onChange={(e)=>
 
-setData({
+onChange={handleChange}
 
-...data,
 
-password:e.target.value
+required
 
-})
-
-}
 
 />
 
@@ -477,11 +637,15 @@ password:e.target.value
 
 <button
 
+
 type="button"
 
-className="eye-btn"
+
+className="password-toggle"
+
 
 onClick={()=>setShowPassword(!showPassword)}
+
 
 >
 
@@ -502,9 +666,7 @@ showPassword
 }
 
 
-
 </button>
-
 
 
 
@@ -518,9 +680,9 @@ showPassword
 
 
 
-<h3 className="role-title">
+<h3 className="choose-title">
 
-Choose Account Type
+Select Account Type
 
 </h3>
 
@@ -531,7 +693,8 @@ Choose Account Type
 
 
 
-<div className="role-box">
+<div className="role-container">
+
 
 
 
@@ -539,7 +702,9 @@ Choose Account Type
 
 <button
 
+
 type="button"
+
 
 className={
 
@@ -547,27 +712,25 @@ data.role==="ADMIN"
 
 ?
 
-"role active"
+"role-card selected"
 
 :
 
-"role"
+"role-card"
 
 }
 
 
-onClick={()=>setData({
 
-...data,
+onClick={()=>handleRoleChange("ADMIN")}
 
-role:"ADMIN"
-
-})}
 
 
 >
 
+
 <FaUserShield/>
+
 
 <span>
 
@@ -588,7 +751,9 @@ Admin
 
 <button
 
+
 type="button"
+
 
 className={
 
@@ -596,27 +761,25 @@ data.role==="PHARMACIST"
 
 ?
 
-"role active"
+"role-card selected"
 
 :
 
-"role"
+"role-card"
 
 }
 
 
-onClick={()=>setData({
 
-...data,
+onClick={()=>handleRoleChange("PHARMACIST")}
 
-role:"PHARMACIST"
-
-})}
 
 
 >
 
+
 <FaUserNurse/>
+
 
 <span>
 
@@ -637,7 +800,9 @@ Pharmacist
 
 <button
 
+
 type="button"
+
 
 className={
 
@@ -645,27 +810,25 @@ data.role==="STAFF"
 
 ?
 
-"role active"
+"role-card selected"
 
 :
 
-"role"
+"role-card"
 
 }
 
 
-onClick={()=>setData({
 
-...data,
+onClick={()=>handleRoleChange("STAFF")}
 
-role:"STAFF"
-
-})}
 
 
 >
 
+
 <FaUserTie/>
+
 
 <span>
 
@@ -675,6 +838,8 @@ Staff
 
 
 </button>
+
+
 
 
 
@@ -692,9 +857,16 @@ Staff
 
 <button
 
-className="primary-btn"
+
+className="register-btn"
+
 
 type="submit"
+
+
+disabled={loading}
+
+
 
 >
 
@@ -710,14 +882,12 @@ loading
 
 :
 
-"✅ Create Account"
+"Create Account"
 
 }
 
 
-
 </button>
-
 
 
 
@@ -735,16 +905,41 @@ loading
 
 
 
-<div className="link">
+<div className="login-link">
+
+
+Already have an account?
 
 
 <Link to="/">
 
-Already have an account? Login
+Login
 
 </Link>
 
 
+
+</div>
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
 </div>
 
 
@@ -759,14 +954,10 @@ Already have an account? Login
 
 
 
-
 </div>
-
 
 
 );
-
-
 
 }
 

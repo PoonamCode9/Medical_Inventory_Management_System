@@ -877,118 +877,124 @@ function Sidebar() {
 
                 )}
 
+{/* ==================================================
+    STAFF MENU
+================================================== */}
 
-                {/* ==================================================
-                    STAFF MENU
-                ================================================== */}
+{role === "STAFF" && (
 
-                {role === "STAFF" && (
+    <>
 
-                    <>
+        {/* ==========================================
+            VIEW MEDICINES
+        ========================================== */}
 
-                        {/* ==========================================
-                            STAFF VIEW STOCK ONLY
-                        ========================================== */}
+        <Link
 
-                        <Link
+            to="/staff/medicines"
 
-                            to="/staff/stock"
+            className={`
 
-                            className={`
+                flex
+                items-center
+                gap-3
+                px-4
+                py-3
+                rounded-xl
+                transition
 
-                                flex
-                                items-center
-                                gap-3
-                                px-4
-                                py-3
-                                rounded-xl
-                                transition
-
-                                ${activeMenu(
-                                    "/staff/stock"
-                                )}
-
-                            `}
-
-                        >
-
-                            <FaBoxOpen />
-
-                            View Stock
-
-                        </Link>
-
-
-                        {/* ==========================================
-                            STAFF BILLING
-                        ========================================== */}
-
-                        <Link
-
-                            to="/staff/billing"
-
-                            className={`
-
-                                flex
-                                items-center
-                                gap-3
-                                px-4
-                                py-3
-                                rounded-xl
-                                transition
-
-                                ${activeMenu(
-                                    "/staff/billing"
-                                )}
-
-                            `}
-
-                        >
-
-                            <FaFileInvoiceDollar />
-
-                            Billing
-
-                        </Link>
-
-                    </>
-
+                ${activeMenu(
+                    "/staff/medicines"
                 )}
 
-            </nav>
+            `}
+
+        >
+
+            <FaPills />
+
+            Medicines
+
+        </Link>
 
 
-            {/* ==================================================
-                LOGOUT
-            ================================================== */}
 
-            <button
 
-                onClick={logout}
 
-                className="
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    rounded-xl
-                    text-red-600
-                    hover:bg-red-50
-                    transition
-                    mt-4
-                    flex-shrink-0
-                "
+        {/* ==========================================
+            VIEW STOCK
+        ========================================== */}
 
-            >
+        <Link
 
-                <FaSignOutAlt />
+            to="/staff/stock"
 
-                Logout
+            className={`
 
-            </button>
+                flex
+                items-center
+                gap-3
+                px-4
+                py-3
+                rounded-xl
+                transition
 
-        </aside>
+                ${activeMenu(
+                    "/staff/stock"
+                )}
+
+            `}
+
+        >
+
+            <FaBoxOpen />
+
+            View Stock
+
+        </Link>
+
+
+    </>
+
+)}
+
+
+
+</nav>
+
+
+{/* ==================================================
+    LOGOUT
+================================================== */}
+
+<button
+
+    onClick={logout}
+
+    className="
+        flex
+        items-center
+        gap-3
+        px-4
+        py-3
+        rounded-xl
+        text-red-600
+        hover:bg-red-50
+        transition
+        mt-4
+        flex-shrink-0
+    "
+
+>
+
+    <FaSignOutAlt />
+
+    Logout
+
+</button>
+
+
+</aside>
 
     );
 

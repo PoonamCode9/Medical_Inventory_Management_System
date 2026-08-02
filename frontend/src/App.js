@@ -5,7 +5,10 @@ import {
     Navigate
 } from "react-router-dom";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import "./App.css";
+
 
 
 /* =========================================================
@@ -14,6 +17,9 @@ import "./App.css";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+
+import GoogleCallback from "./pages/GoogleCallback";
+
 
 
 /* =========================================================
@@ -41,6 +47,7 @@ import Settings from "./pages/admin/Settings";
 import NotificationPage from "./pages/admin/NotificationPage";
 
 
+
 /* =========================================================
    STAFF
 ========================================================= */
@@ -49,557 +56,702 @@ import StaffLayout from "./layouts/StaffLayout";
 
 import StaffDashboard from "./pages/StaffDashboard";
 
-
-/*
-    Staff should ONLY VIEW stock.
-
-    We reuse the existing ViewStock component.
-*/
 import ViewStock from "./pages/pharmacist/ViewStock";
+
 
 
 /* =========================================================
    PHARMACIST
 ========================================================= */
 
+
 import PharmacistLayout from "./layouts/PharmacistLayout";
 
-import PharmacistDashboard
-    from "./pages/PharmacistDashboard";
+import PharmacistDashboard 
+from "./pages/PharmacistDashboard";
 
-import SellMedicine
-    from "./pages/pharmacist/SellMedicine";
 
-import ExpiryCheck
-    from "./pages/pharmacist/ExpiryCheck";
+import SellMedicine 
+from "./pages/pharmacist/SellMedicine";
 
-import SalesHistory
-    from "./pages/pharmacist/SalesHistory";
+
+import ExpiryCheck 
+from "./pages/pharmacist/ExpiryCheck";
+
+
+import SalesHistory 
+from "./pages/pharmacist/SalesHistory";
+
+
+
 
 
 /* =========================================================
    PROTECTED ROUTE
 ========================================================= */
 
+
 function ProtectedRoute({
+
     children,
+
     allowedRoles
+
 }) {
+
 
     const token =
         localStorage.getItem("token");
+
 
     const role =
         localStorage.getItem("role");
 
 
-    /* =====================================================
-       NO TOKEN
-    ===================================================== */
 
-    if (!token) {
+    if(!token){
 
         return (
+
             <Navigate
                 to="/"
                 replace
             />
+
         );
 
     }
 
 
-    /* =====================================================
-       WRONG ROLE
-    ===================================================== */
 
-    if (!allowedRoles.includes(role)) {
+    if(!allowedRoles.includes(role)){
+
 
         return (
+
             <Navigate
                 to="/unauthorized"
                 replace
             />
+
         );
+
 
     }
 
 
+
     return children;
 
+
 }
+
+
+
+
 
 
 /* =========================================================
-   UNAUTHORIZED PAGE
+   UNAUTHORIZED
 ========================================================= */
 
-function Unauthorized() {
 
-    return (
-
-        <div className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-            bg-gradient-to-br
-            from-red-100
-            via-white
-            to-red-50
-            p-6
-        ">
-
-            <div className="
-                bg-white
-                rounded-3xl
-                shadow-2xl
-                p-10
-                text-center
-                max-w-md
-                w-full
-                border
-                border-red-100
-            ">
-
-                <div className="
-                    text-6xl
-                    mb-5
-                ">
-                    🚫
-                </div>
+function Unauthorized(){
 
 
-                <h1 className="
-                    text-3xl
-                    font-bold
-                    text-red-600
-                    mb-3
-                ">
-                    Access Denied
-                </h1>
+return(
 
 
-                <p className="
-                    text-gray-600
-                    mb-6
-                ">
-                    You don't have permission
-                    to access this page.
-                </p>
+<div className="
+min-h-screen
+flex
+items-center
+justify-center
+bg-red-50
+">
 
 
-                <button
+<div className="
+bg-white
+p-10
+rounded-3xl
+shadow-xl
+text-center
+">
 
-                    onClick={() =>
-                        window.history.back()
-                    }
 
-                    className="
-                        bg-blue-600
-                        hover:bg-blue-700
-                        text-white
-                        px-6
-                        py-3
-                        rounded-xl
-                        font-semibold
-                        transition
-                    "
-                >
-                    Go Back
-                </button>
+<h1 className="
+text-4xl
+font-bold
+text-red-600
+">
 
-            </div>
+Access Denied
 
-        </div>
+</h1>
 
-    );
+
+
+<p className="
+mt-3
+text-gray-600
+">
+
+You don't have permission.
+
+</p>
+
+
+
+<button
+
+className="
+mt-6
+px-6
+py-3
+bg-blue-600
+text-white
+rounded-xl
+"
+
+onClick={()=>window.history.back()}
+
+>
+
+Go Back
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+);
+
 
 }
+
+
+
+
+
 
 
 /* =========================================================
-   404 PAGE
+   404
 ========================================================= */
 
-function NotFound() {
 
-    return (
-
-        <div className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-            bg-gradient-to-br
-            from-blue-100
-            via-cyan-50
-            to-white
-            p-6
-        ">
-
-            <div className="
-                text-center
-                bg-white
-                rounded-3xl
-                shadow-xl
-                p-10
-            ">
-
-                <h1 className="
-                    text-7xl
-                    font-bold
-                    text-blue-700
-                ">
-                    404
-                </h1>
+function NotFound(){
 
 
-                <p className="
-                    text-xl
-                    text-gray-600
-                    mt-3
-                ">
-                    Page Not Found
-                </p>
+return(
 
-            </div>
 
-        </div>
+<div className="
+min-h-screen
+flex
+items-center
+justify-center
+">
 
-    );
+
+<h1 className="
+text-7xl
+font-bold
+text-blue-600
+">
+
+404
+
+</h1>
+
+
+</div>
+
+
+);
+
 
 }
+
+
+
+
+
 
 
 /* =========================================================
    APP
 ========================================================= */
 
-function App() {
 
-    return (
+function App(){
 
-        <BrowserRouter>
 
-            <Routes>
 
+return(
 
-                {/* =================================================
-                    AUTH
-                ================================================= */}
 
-                <Route
-                    path="/"
-                    element={<Login />}
-                />
+<GoogleOAuthProvider
 
+clientId="478953468894-13dgsudp8csff06megqc50cs1sbcr6q4.apps.googleusercontent.com"
 
-                <Route
-                    path="/register"
-                    element={<Register />}
-                />
+>
 
 
+<BrowserRouter>
 
-                {/* =================================================
-                    ADMIN
-                ================================================= */}
 
-                <Route
+<Routes>
 
-                    path="/admin"
 
-                    element={
 
-                        <ProtectedRoute
-                            allowedRoles={["ADMIN"]}
-                        >
+{/* ================= AUTH ================= */}
 
-                            <AdminLayout />
 
-                        </ProtectedRoute>
 
-                    }
+<Route
 
-                >
+path="/"
 
-                    {/* ================= DASHBOARD ================= */}
+element={<Login/>}
 
-                    <Route
-                        path="dashboard"
-                        element={
-                            <AdminDashboard />
-                        }
-                    />
+/>
 
 
-                    {/* ================= MEDICINES ================= */}
 
-                    <Route
-                        path="add-medicine"
-                        element={
-                            <AddMedicine />
-                        }
-                    />
+<Route
 
+path="/register"
 
-                    <Route
-                        path="view-medicines"
-                        element={
-                            <ViewMedicines />
-                        }
-                    />
+element={<Register/>}
 
+/>
 
-                    <Route
-                        path="edit-medicine/:id"
-                        element={
-                            <EditMedicine />
-                        }
-                    />
 
 
-                    {/* ================= UPDATE STOCK ================= */}
+{/* Google callback */}
 
-                    <Route
-                        path="update-stock"
-                        element={
-                            <UpdateStock />
-                        }
-                    />
+<Route
 
+path="/google/callback"
 
-                    {/* ================= SUPPLIERS ================= */}
+element={<GoogleCallback/>}
 
-                    <Route
-                        path="add-supplier"
-                        element={
-                            <AddSupplier />
-                        }
-                    />
+/>
 
 
-                    <Route
-                        path="view-suppliers"
-                        element={
-                            <ViewSuppliers />
-                        }
-                    />
 
 
-                    {/* ================= USERS ================= */}
 
-                    <Route
-                        path="users"
-                        element={
-                            <ManageUsers />
-                        }
-                    />
 
+{/* ================= ADMIN ================= */}
 
-                    {/* ================= REPORTS ================= */}
 
-                    <Route
-                        path="reports"
-                        element={
-                            <Reports />
-                        }
-                    />
 
+<Route
 
-                    {/* ================= SETTINGS ================= */}
 
-                    <Route
-                        path="settings"
-                        element={
-                            <Settings />
-                        }
-                    />
+path="/admin"
 
 
-                    {/* ================= NOTIFICATIONS ================= */}
+element={
 
-                    <Route
-                        path="notifications"
-                        element={
-                            <NotificationPage />
-                        }
-                    />
 
-                </Route>
+<ProtectedRoute
 
+allowedRoles={[
+"ADMIN"
+]}
 
+>
 
-                {/* =================================================
-                    STAFF
-                ================================================= */}
 
-                <Route
+<AdminLayout/>
 
-                    path="/staff"
 
-                    element={
+</ProtectedRoute>
 
-                        <ProtectedRoute
-                            allowedRoles={["STAFF"]}
-                        >
 
-                            <StaffLayout />
+}
 
-                        </ProtectedRoute>
 
-                    }
 
-                >
+>
 
-                    {/* ================= STAFF DASHBOARD ================= */}
 
-                    <Route
-                        path="dashboard"
-                        element={
-                            <StaffDashboard />
-                        }
-                    />
+<Route
 
+path="dashboard"
 
-                    {/* ================= STAFF VIEW STOCK ================= */}
+element={<AdminDashboard/>}
 
-                    <Route
-                        path="stock"
-                        element={
-                            <ViewStock />
-                        }
-                    />
+/>
 
 
-                    {/* ================= STAFF NOTIFICATIONS ================= */}
 
-                    <Route
-                        path="notifications"
-                        element={
-                            <NotificationPage />
-                        }
-                    />
+<Route
 
-                </Route>
+path="add-medicine"
 
+element={<AddMedicine/>}
 
+/>
 
-                {/* =================================================
-                    PHARMACIST
-                ================================================= */}
 
-                <Route
 
-                    path="/pharmacist"
+<Route
 
-                    element={
+path="view-medicines"
 
-                        <ProtectedRoute
-                            allowedRoles={["PHARMACIST"]}
-                        >
+element={<ViewMedicines/>}
 
-                            <PharmacistLayout />
+/>
 
-                        </ProtectedRoute>
 
-                    }
 
-                >
+<Route
 
-                    {/* ================= DASHBOARD ================= */}
+path="edit-medicine/:id"
 
-                    <Route
-                        path="dashboard"
-                        element={
-                            <PharmacistDashboard />
-                        }
-                    />
+element={<EditMedicine/>}
 
+/>
 
-                    {/* ================= SELL MEDICINE ================= */}
 
-                    <Route
-                        path="sell"
-                        element={
-                            <SellMedicine />
-                        }
-                    />
 
+<Route
 
-                    {/* ================= VIEW STOCK ================= */}
+path="update-stock"
 
-                    <Route
-                        path="stock"
-                        element={
-                            <ViewStock />
-                        }
-                    />
+element={<UpdateStock/>}
 
+/>
 
-                    {/* ================= EXPIRY ================= */}
 
-                    <Route
-                        path="expiry"
-                        element={
-                            <ExpiryCheck />
-                        }
-                    />
 
+<Route
 
-                    {/* ================= SALES HISTORY ================= */}
+path="add-supplier"
 
-                    <Route
-                        path="sales"
-                        element={
-                            <SalesHistory />
-                        }
-                    />
+element={<AddSupplier/>}
 
+/>
 
-                    {/* ================= NOTIFICATIONS ================= */}
 
-                    <Route
-                        path="notifications"
-                        element={
-                            <NotificationPage />
-                        }
-                    />
 
-                </Route>
+<Route
 
+path="view-suppliers"
 
+element={<ViewSuppliers/>}
 
-                {/* =================================================
-                    UNAUTHORIZED
-                ================================================= */}
+/>
 
-                <Route
-                    path="/unauthorized"
-                    element={
-                        <Unauthorized />
-                    }
-                />
 
 
+<Route
 
-                {/* =================================================
-                    404
-                ================================================= */}
+path="users"
 
-                <Route
-                    path="*"
-                    element={
-                        <NotFound />
-                    }
-                />
+element={<ManageUsers/>}
 
-            </Routes>
+/>
 
-        </BrowserRouter>
 
-    );
+
+<Route
+
+path="reports"
+
+element={<Reports/>}
+
+/>
+
+
+
+<Route
+
+path="settings"
+
+element={<Settings/>}
+
+/>
+
+
+
+<Route
+
+path="notifications"
+
+element={<NotificationPage/>}
+
+/>
+
+
+
+</Route>
+
+
+
+
+
+
+/* ================= STAFF ================= */
+
+
+
+<Route
+
+
+path="/staff"
+
+
+element={
+
+
+<ProtectedRoute
+
+allowedRoles={[
+    "STAFF"
+]}
+
+>
+
+
+<StaffLayout/>
+
+
+</ProtectedRoute>
+
+
+}
+
+
+>
+
+
+<Route
+
+path="dashboard"
+
+element={<StaffDashboard/>}
+
+/>
+
+
+
+{/* VIEW ONLY MEDICINES */}
+
+<Route
+
+path="medicines"
+
+element={<ViewMedicines/>}
+
+/>
+
+
+
+
+
+{/* VIEW ONLY SUPPLIERS */}
+
+<Route
+
+path="suppliers"
+
+element={<ViewSuppliers/>}
+
+/>
+
+
+
+
+
+{/* VIEW ONLY REPORTS */}
+
+<Route
+
+path="reports"
+
+element={<Reports/>}
+
+/>
+
+
+
+
+
+{/* STOCK VIEW ONLY */}
+
+<Route
+
+path="stock"
+
+element={<ViewStock/>}
+
+/>
+
+
+
+
+
+{/* NOTIFICATIONS */}
+
+<Route
+
+path="notifications"
+
+element={<NotificationPage/>}
+
+/>
+
+
+</Route>
+
+{/* ================= PHARMACIST ================= */}
+
+
+
+
+<Route
+
+
+path="/pharmacist"
+
+
+element={
+
+
+<ProtectedRoute
+
+allowedRoles={[
+"PHARMACIST"
+]}
+
+>
+
+
+<PharmacistLayout/>
+
+
+</ProtectedRoute>
+
+
+}
+
+
+
+>
+
+
+
+<Route
+
+path="dashboard"
+
+element={<PharmacistDashboard/>}
+
+/>
+
+
+
+<Route
+
+path="sell"
+
+element={<SellMedicine/>}
+
+/>
+
+
+
+<Route
+
+path="stock"
+
+element={<ViewStock/>}
+
+/>
+
+
+
+<Route
+
+path="expiry"
+
+element={<ExpiryCheck/>}
+
+/>
+
+
+
+<Route
+
+path="sales"
+
+element={<SalesHistory/>}
+
+/>
+
+
+
+<Route
+
+path="notifications"
+
+element={<NotificationPage/>}
+
+/>
+
+
+
+</Route>
+
+
+
+
+
+
+
+<Route
+
+path="/unauthorized"
+
+element={<Unauthorized/>}
+
+/>
+
+
+
+
+<Route
+
+path="*"
+
+element={<NotFound/>}
+
+/>
+
+
+
+</Routes>
+
+
+</BrowserRouter>
+
+
+</GoogleOAuthProvider>
+
+
+);
+
+
 
 }
 

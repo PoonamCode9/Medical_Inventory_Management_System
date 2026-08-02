@@ -15,58 +15,104 @@ public interface UserRepository
 
 
 
-
-    // =====================================
+    // =====================================================
     // LOGIN USING EMAIL
-    // =====================================
+    // =====================================================
 
-    Optional<User> findByEmail(String email);
-
- List<User> findAllByOrderByIdAsc();
-
-
-    // =====================================
-    // OTP LOGIN USING PHONE NUMBER
-    // =====================================
-
-    Optional<User> findByPhone(String phone);
+    Optional<User> findByEmail(
+            String email
+    );
 
 
 
 
-    // =====================================
+
+    // =====================================================
     // ADMIN USER MANAGEMENT
-    // CHECK DUPLICATE USERNAME
-    // =====================================
+    // =====================================================
 
-    Optional<User> findByUsername(String username);
-
-
-
-
-    // =====================================
-    // CHECK DUPLICATE EMAIL
-    // =====================================
-
-    boolean existsByEmail(String email);
+    List<User> findAllByOrderByIdAsc();
 
 
 
 
-    // =====================================
-    // CHECK DUPLICATE PHONE
-    // =====================================
 
-    boolean existsByPhone(String phone);
+    // =====================================================
+    // OTP LOGIN USING PHONE NUMBER
+    // =====================================================
+
+    Optional<User> findByPhone(
+            String phone
+    );
 
 
 
 
-    // =====================================
-    // CHECK DUPLICATE USERNAME
-    // =====================================
 
-    boolean existsByUsername(String username);
+    // =====================================================
+    // USERNAME SEARCH
+    // =====================================================
+
+    Optional<User> findByUsername(
+            String username
+    );
+
+
+
+
+
+    // =====================================================
+    // DUPLICATE EMAIL
+    // =====================================================
+
+    boolean existsByEmail(
+            String email
+    );
+
+
+
+
+
+    // =====================================================
+    // DUPLICATE PHONE
+    // =====================================================
+
+    boolean existsByPhone(
+            String phone
+    );
+
+
+
+
+
+    // =====================================================
+    // DUPLICATE USERNAME
+    // =====================================================
+
+    boolean existsByUsername(
+            String username
+    );
+
+
+
+
+
+    // =====================================================
+    // EMAIL ALERT USERS
+    // ADMIN + PHARMACIST
+    //
+    // User entity:
+    // User -> Role
+    // Role -> roleName
+    //
+    // Correct JPA path:
+    // role.roleName
+    // =====================================================
+
+
+    List<User> findByRoleRoleName(
+            String roleName
+    );
 
 
 

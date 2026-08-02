@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import InputField from "../../../components/InputField";
 
 import {
     FaPills,
@@ -18,6 +19,7 @@ import {
 
 function AddMedicine() {
 
+
     const initialState = {
 
         name: "",
@@ -35,59 +37,77 @@ function AddMedicine() {
     };
 
 
-    const [medicine, setMedicine] =
+    const [medicine,setMedicine] =
         useState(initialState);
 
-    const [loading, setLoading] =
+
+    const [loading,setLoading] =
         useState(false);
 
-    const [errorMessage, setErrorMessage] =
+
+    const [errorMessage,setErrorMessage] =
         useState("");
 
-    const [successMessage, setSuccessMessage] =
+
+    const [successMessage,setSuccessMessage] =
         useState("");
 
 
-    // =========================================================
+
+    // ================================
     // HANDLE INPUT
-    // =========================================================
+    // ================================
 
-    const handleChange = (e) => {
+    const handleChange = (e)=>{
 
-        setMedicine({
 
-            ...medicine,
+        const {
+            name,
+            value
+        } = e.target;
 
-            [e.target.name]: e.target.value
 
-        });
+        setMedicine(prev=>({
+
+            ...prev,
+
+            [name]:value
+
+        }));
+
 
         setErrorMessage("");
+
         setSuccessMessage("");
 
     };
 
 
-    // =========================================================
-    // SUBMIT
-    // =========================================================
 
-    const handleSubmit = async (e) => {
+
+
+    // ================================
+    // SUBMIT
+    // ================================
+
+    const handleSubmit = async(e)=>{
+
 
         e.preventDefault();
 
+
         setErrorMessage("");
+
         setSuccessMessage("");
 
 
-        // DATE VALIDATION
 
-        if (
+        if(
             medicine.manufactureDate &&
             medicine.expiryDate &&
             medicine.manufactureDate >
             medicine.expiryDate
-        ) {
+        ){
 
             setErrorMessage(
                 "Manufacture date cannot be after expiry date."
@@ -98,15 +118,14 @@ function AddMedicine() {
         }
 
 
-        // QUANTITY VALIDATION
 
-        if (
+        if(
             medicine.quantity === "" ||
-            Number(medicine.quantity) < 0
-        ) {
+            Number(medicine.quantity)<0
+        ){
 
             setErrorMessage(
-                "Please enter a valid quantity."
+                "Please enter valid quantity."
             );
 
             return;
@@ -114,15 +133,15 @@ function AddMedicine() {
         }
 
 
-        // PRICE VALIDATION
 
-        if (
+
+        if(
             medicine.price === "" ||
-            Number(medicine.price) < 0
-        ) {
+            Number(medicine.price)<0
+        ){
 
             setErrorMessage(
-                "Please enter a valid purchase price."
+                "Please enter valid purchase price."
             );
 
             return;
@@ -130,52 +149,46 @@ function AddMedicine() {
         }
 
 
-        // SELLING PRICE VALIDATION
-
-        if (
-            medicine.sellingPrice !== "" &&
-            Number(medicine.sellingPrice) < 0
-        ) {
-
-            setErrorMessage(
-                "Selling price cannot be negative."
-            );
-
-            return;
-
-        }
 
 
-        try {
+        try{
+
 
             setLoading(true);
+
 
 
             const token =
                 localStorage.getItem("token");
 
 
-            const payload = {
+
+            const payload={
 
                 ...medicine,
 
-                quantity:
-                    Number(medicine.quantity),
+                quantity:Number(
+                    medicine.quantity
+                ),
 
-                price:
-                    Number(medicine.price),
 
-                sellingPrice:
-                    Number(
-                        medicine.sellingPrice || 0
-                    ),
+                price:Number(
+                    medicine.price
+                ),
 
-                minStockLevel:
-                    Number(
-                        medicine.minStockLevel
-                    )
+
+                sellingPrice:Number(
+                    medicine.sellingPrice || 0
+                ),
+
+
+                minStockLevel:Number(
+                    medicine.minStockLevel
+                )
 
             };
+
+
 
 
             await axios.post(
@@ -186,10 +199,10 @@ function AddMedicine() {
 
                 {
 
-                    headers: {
+                    headers:{
 
                         Authorization:
-                            `Bearer ${token}`
+                        `Bearer ${token}`
 
                     }
 
@@ -198,37 +211,41 @@ function AddMedicine() {
             );
 
 
+
+
             setSuccessMessage(
-                "Medicine has been added successfully."
+                "Medicine added successfully."
             );
+
 
 
             setMedicine(initialState);
 
+
+
         }
+        catch(error){
 
 
-        catch (error) {
-
-            console.error(
-                "Add medicine error:",
-                error
-            );
+            console.error(error);
 
 
-            if (error.response) {
+
+            if(error.response){
+
 
                 const data =
                     error.response.data;
 
 
-                if (typeof data === "string") {
+
+                if(typeof data==="string"){
 
                     setErrorMessage(data);
 
                 }
 
-                else if (data?.message) {
+                else if(data?.message){
 
                     setErrorMessage(
                         data.message
@@ -236,937 +253,822 @@ function AddMedicine() {
 
                 }
 
-                else if (data?.error) {
+                else{
 
                     setErrorMessage(
-                        data.error
+                        "Unable to add medicine."
                     );
 
                 }
 
-                else {
-
-                    setErrorMessage(
-                        "Unable to add medicine. Please check the entered details."
-                    );
-
-                }
 
             }
+            else{
 
-            else {
 
                 setErrorMessage(
-                    "Server is not reachable. Please make sure Spring Boot is running."
+                    "Server not reachable."
                 );
+
 
             }
 
+
+
         }
-
-
-        finally {
+        finally{
 
             setLoading(false);
 
         }
 
+
     };
 
 
-    // =========================================================
-    // INPUT COMPONENT
-    // =========================================================
 
-    const InputField = ({
-        name,
-        label,
-        icon,
-        type = "text",
-        required = false,
-        min,
-        step,
-        placeholder
-    }) => (
 
-        <div>
+return (
 
-            <label
-                className="
-                    block
-                    text-sm
-                    font-semibold
-                    text-slate-700
-                    mb-2
-                "
-            >
-
-                <span className="
-                    inline-flex
-                    items-center
-                    gap-2
-                ">
-
-                    <span className="text-blue-600">
-                        {icon}
-                    </span>
-
-                    {label}
-
-                    {required && (
-                        <span className="text-red-500">
-                            *
-                        </span>
-                    )}
-
-                </span>
-
-            </label>
-
-
-            <input
-
-                name={name}
-
-                type={type}
-
-                value={medicine[name]}
-
-                onChange={handleChange}
-
-                required={required}
-
-                min={min}
-
-                step={step}
-
-                placeholder={placeholder}
-
-                className="
-                    w-full
-                    h-12
-                    px-4
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-slate-50
-                    text-slate-800
-                    placeholder:text-slate-400
-                    outline-none
-                    transition
-                    focus:bg-white
-                    focus:border-blue-500
-                    focus:ring-4
-                    focus:ring-blue-100
-                    hover:border-slate-300
-                "
-
-            />
-
-        </div>
-
-    );
-
-
-    return (
-
-        <div className="
-            min-h-screen
-            bg-gradient-to-br
-            from-slate-50
-            via-blue-50
-            to-white
-            p-4
-            md:p-8
-        ">
-
-            <div className="
-                max-w-6xl
-                mx-auto
-            ">
-
-
-                {/* =====================================================
-                    PAGE HEADER
-                ===================================================== */}
-
-                <div className="
-                    bg-white
-                    rounded-3xl
-                    border
-                    border-slate-200
-                    shadow-sm
-                    p-6
-                    md:p-8
-                    mb-6
-                ">
-
-                    <div className="
-                        flex
-                        flex-col
-                        md:flex-row
-                        md:items-center
-                        md:justify-between
-                        gap-5
-                    ">
+<div
+className="
+min-h-screen
+bg-gradient-to-br
+from-slate-50
+via-blue-50
+to-white
+p-4
+md:p-8
+"
+>
 
-                        <div className="
-                            flex
-                            items-center
-                            gap-4
-                        ">
 
-                            <div className="
-                                w-14
-                                h-14
-                                rounded-2xl
-                                bg-blue-600
-                                text-white
-                                flex
-                                items-center
-                                justify-center
-                                shadow-lg
-                                shadow-blue-200
-                            ">
-
-                                <FaPills size={26} />
-
-                            </div>
-
-
-                            <div>
-
-                                <p className="
-                                    text-xs
-                                    font-bold
-                                    uppercase
-                                    tracking-wider
-                                    text-blue-600
-                                    mb-1
-                                ">
+<div
+className="
+max-w-6xl
+mx-auto
+"
+>
 
-                                    Inventory Management
 
-                                </p>
-
-
-                                <h1 className="
-                                    text-2xl
-                                    md:text-3xl
-                                    font-extrabold
-                                    text-slate-800
-                                ">
-
-                                    Add Medicine
-
-                                </h1>
-
-
-                                <p className="
-                                    text-sm
-                                    text-slate-500
-                                    mt-1
-                                ">
-
-                                    Add a new medicine and its
-                                    inventory details.
-
-                                </p>
 
-                            </div>
+{/* HEADER */}
 
-                        </div>
+<div
+className="
+bg-white
+rounded-3xl
+border
+border-slate-200
+shadow-sm
+p-6
+mb-6
+"
+>
 
 
-                        <div className="
-                            hidden
-                            md:flex
-                            items-center
-                            gap-2
-                            px-4
-                            py-2
-                            rounded-xl
-                            bg-emerald-50
-                            border
-                            border-emerald-100
-                            text-emerald-700
-                            text-sm
-                            font-semibold
-                        ">
-
-                            <FaCheckCircle />
-
-                            Inventory Ready
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                {/* =====================================================
-                    ALERTS
-                ===================================================== */}
-
-                {successMessage && (
-
-                    <div className="
-                        mb-6
-                        flex
-                        items-center
-                        gap-3
-                        rounded-2xl
-                        border
-                        border-emerald-200
-                        bg-emerald-50
-                        px-5
-                        py-4
-                        text-emerald-700
-                        font-semibold
-                    ">
-
-                        <FaCheckCircle
-                            className="text-emerald-600"
-                        />
-
-                        {successMessage}
-
-                    </div>
-
-                )}
-
-
-                {errorMessage && (
-
-                    <div className="
-                        mb-6
-                        flex
-                        items-start
-                        gap-3
-                        rounded-2xl
-                        border
-                        border-red-200
-                        bg-red-50
-                        px-5
-                        py-4
-                        text-red-700
-                        font-medium
-                    ">
+<div
+className="
+flex
+items-center
+gap-4
+"
+>
 
-                        <FaExclamationTriangle
-                            className="
-                                mt-0.5
-                                flex-shrink-0
-                            "
-                        />
 
-                        <span>
-                            {errorMessage}
-                        </span>
+<div
+className="
+w-14
+h-14
+rounded-2xl
+bg-blue-600
+text-white
+flex
+items-center
+justify-center
+"
+>
 
-                    </div>
-
-                )}
+<FaPills size={26}/>
 
+</div>
 
 
-                {/* =====================================================
-                    FORM
-                ===================================================== */}
-
-                <form
-                    onSubmit={handleSubmit}
-                    className="
-                        bg-white
-                        rounded-3xl
-                        border
-                        border-slate-200
-                        shadow-sm
-                        overflow-hidden
-                    "
-                >
-
+<div>
 
-                    {/* =================================================
-                        BASIC INFORMATION
-                    ================================================= */}
-
-                    <div className="
-                        px-6
-                        md:px-8
-                        py-6
-                        border-b
-                        border-slate-100
-                    ">
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                            mb-6
-                        ">
 
-                            <div className="
-                                w-10
-                                h-10
-                                rounded-xl
-                                bg-blue-50
-                                text-blue-600
-                                flex
-                                items-center
-                                justify-center
-                            ">
+<p
+className="
+text-xs
+font-bold
+uppercase
+text-blue-600
+"
+>
 
-                                <FaPills />
+Inventory Management
 
-                            </div>
+</p>
 
 
-                            <div>
+<h1
+className="
+text-3xl
+font-extrabold
+text-slate-800
+"
+>
 
-                                <h2 className="
-                                    text-lg
-                                    font-bold
-                                    text-slate-800
-                                ">
-
-                                    Medicine Information
-
-                                </h2>
-
-
-                                <p className="
-                                    text-xs
-                                    text-slate-500
-                                ">
-
-                                    Enter the basic details
-                                    of the medicine.
-
-                                </p>
+Add Medicine
 
-                            </div>
+</h1>
 
-                        </div>
 
-
-                        <div className="
-                            grid
-                            grid-cols-1
-                            md:grid-cols-2
-                            lg:grid-cols-3
-                            gap-5
-                        ">
+</div>
 
 
-                            <InputField
-                                name="name"
-                                label="Medicine Name"
-                                icon={<FaPills />}
-                                placeholder="e.g. Paracetamol"
-                                required
-                            />
+</div>
 
 
-                            <InputField
-                                name="batchNumber"
-                                label="Batch Number"
-                                icon={<FaHashtag />}
-                                placeholder="e.g. BTH-2026-001"
-                                required
-                            />
+</div>
+{/* ================================
+    ALERT MESSAGES
+================================ */}
 
 
-                            <InputField
-                                name="category"
-                                label="Category"
-                                icon={<FaTag />}
-                                placeholder="e.g. Tablets"
-                                required
-                            />
+{
+successMessage &&
 
+<div
+className="
+mb-6
+flex
+items-center
+gap-3
+rounded-2xl
+bg-emerald-50
+border
+border-emerald-200
+px-5
+py-4
+text-emerald-700
+font-semibold
+"
+>
 
-                            <InputField
-                                name="supplier"
-                                label="Supplier Name"
-                                icon={<FaTruck />}
-                                placeholder="Supplier name"
-                            />
+<FaCheckCircle/>
 
+{successMessage}
 
-                            <InputField
-                                name="manufacturer"
-                                label="Manufacturer"
-                                icon={<FaIndustry />}
-                                placeholder="Manufacturer name"
-                            />
+</div>
 
-                        </div>
+}
 
-                    </div>
 
 
+{
+errorMessage &&
 
-                    {/* =================================================
-                        STOCK INFORMATION
-                    ================================================= */}
+<div
+className="
+mb-6
+flex
+items-center
+gap-3
+rounded-2xl
+bg-red-50
+border
+border-red-200
+px-5
+py-4
+text-red-700
+"
+>
 
-                    <div className="
-                        px-6
-                        md:px-8
-                        py-6
-                        border-b
-                        border-slate-100
-                        bg-slate-50/40
-                    ">
+<FaExclamationTriangle/>
 
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                            mb-6
-                        ">
-
-                            <div className="
-                                w-10
-                                h-10
-                                rounded-xl
-                                bg-indigo-50
-                                text-indigo-600
-                                flex
-                                items-center
-                                justify-center
-                            ">
+{errorMessage}
 
-                                <FaBoxOpen />
+</div>
 
-                            </div>
+}
 
 
-                            <div>
 
-                                <h2 className="
-                                    text-lg
-                                    font-bold
-                                    text-slate-800
-                                ">
 
-                                    Stock & Pricing
+{/* ================================
+    FORM
+================================ */}
 
-                                </h2>
-
-
-                                <p className="
-                                    text-xs
-                                    text-slate-500
-                                ">
-
-                                    Configure quantity,
-                                    prices and stock limits.
-
-                                </p>
 
-                            </div>
+<form
 
-                        </div>
+onSubmit={handleSubmit}
 
+className="
+bg-white
+rounded-3xl
+border
+border-slate-200
+shadow-sm
+overflow-hidden
+"
 
-                        <div className="
-                            grid
-                            grid-cols-1
-                            md:grid-cols-2
-                            lg:grid-cols-4
-                            gap-5
-                        ">
+>
 
 
-                            <InputField
-                                name="quantity"
-                                label="Initial Quantity"
-                                icon={<FaBoxOpen />}
-                                type="number"
-                                min="0"
-                                step="1"
-                                placeholder="0"
-                                required
-                            />
 
+{/* ================================
+    MEDICINE INFORMATION
+================================ */}
 
-                            <InputField
-                                name="price"
-                                label="Purchase Price"
-                                icon={<FaRupeeSign />}
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                                required
-                            />
 
 
-                            <InputField
-                                name="sellingPrice"
-                                label="Selling Price"
-                                icon={<FaRupeeSign />}
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                            />
+<div
+className="
+p-6
+md:p-8
+border-b
+border-slate-100
+"
+>
 
 
-                            <InputField
-                                name="minStockLevel"
-                                label="Minimum Stock Level"
-                                icon={<FaExclamationTriangle />}
-                                type="number"
-                                min="0"
-                                step="1"
-                                placeholder="10"
-                                required
-                            />
+<h2
+className="
+text-xl
+font-bold
+text-slate-800
+mb-6
+"
+>
 
-                        </div>
+Medicine Information
 
-                    </div>
+</h2>
 
 
 
-                    {/* =================================================
-                        DATE INFORMATION
-                    ================================================= */}
+<div
+className="
+grid
+grid-cols-1
+md:grid-cols-2
+lg:grid-cols-3
+gap-5
+"
+>
 
-                    <div className="
-                        px-6
-                        md:px-8
-                        py-6
-                    ">
 
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                            mb-6
-                        ">
 
-                            <div className="
-                                w-10
-                                h-10
-                                rounded-xl
-                                bg-amber-50
-                                text-amber-600
-                                flex
-                                items-center
-                                justify-center
-                            ">
+<InputField
 
-                                <FaCalendarAlt />
+name="name"
 
-                            </div>
+label="Medicine Name"
 
+icon={<FaPills/>}
 
-                            <div>
+value={medicine.name}
 
-                                <h2 className="
-                                    text-lg
-                                    font-bold
-                                    text-slate-800
-                                ">
+onChange={handleChange}
 
-                                    Medicine Dates
+placeholder="e.g. Paracetamol"
 
-                                </h2>
+required
 
+/>
 
-                                <p className="
-                                    text-xs
-                                    text-slate-500
-                                ">
 
-                                    Important dates for
-                                    expiry monitoring.
 
-                                </p>
+<InputField
 
-                            </div>
+name="batchNumber"
 
-                        </div>
+label="Batch Number"
 
+icon={<FaHashtag/>}
 
-                        <div className="
-                            grid
-                            grid-cols-1
-                            md:grid-cols-2
-                            gap-5
-                        ">
+value={medicine.batchNumber}
 
+onChange={handleChange}
 
-                            {/* MANUFACTURE DATE */}
+placeholder="e.g. BTH-2026-001"
 
-                            <div>
+required
 
-                                <label className="
-                                    block
-                                    text-sm
-                                    font-semibold
-                                    text-slate-700
-                                    mb-2
-                                ">
+/>
 
-                                    <span className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                    ">
 
-                                        <FaCalendarAlt
-                                            className="text-blue-600"
-                                        />
 
-                                        Manufacture Date
+<InputField
 
-                                        <span className="
-                                            text-red-500
-                                        ">
+name="category"
 
-                                            *
+label="Category"
 
-                                        </span>
+icon={<FaTag/>}
 
-                                    </span>
+value={medicine.category}
 
-                                </label>
+onChange={handleChange}
 
+placeholder="e.g. Tablets"
 
-                                <input
+required
 
-                                    name="manufactureDate"
+/>
 
-                                    type="date"
 
-                                    value={
-                                        medicine.manufactureDate
-                                    }
 
-                                    onChange={handleChange}
+<InputField
 
-                                    required
+name="supplier"
 
-                                    className="
-                                        w-full
-                                        h-12
-                                        px-4
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        bg-slate-50
-                                        text-slate-800
-                                        outline-none
-                                        transition
-                                        focus:bg-white
-                                        focus:border-blue-500
-                                        focus:ring-4
-                                        focus:ring-blue-100
-                                    "
+label="Supplier Name"
 
-                                />
+icon={<FaTruck/>}
 
-                            </div>
+value={medicine.supplier}
 
+onChange={handleChange}
 
+placeholder="Supplier Name"
 
-                            {/* EXPIRY DATE */}
+/>
 
-                            <div>
 
-                                <label className="
-                                    block
-                                    text-sm
-                                    font-semibold
-                                    text-slate-700
-                                    mb-2
-                                ">
 
-                                    <span className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                    ">
+<InputField
 
-                                        <FaExclamationTriangle
-                                            className="text-red-500"
-                                        />
+name="manufacturer"
 
-                                        Expiry Date
+label="Manufacturer"
 
-                                        <span className="
-                                            text-red-500
-                                        ">
+icon={<FaIndustry/>}
 
-                                            *
+value={medicine.manufacturer}
 
-                                        </span>
+onChange={handleChange}
 
-                                    </span>
+placeholder="Manufacturer Name"
 
-                                </label>
+/>
 
 
-                                <input
 
-                                    name="expiryDate"
+</div>
 
-                                    type="date"
 
-                                    value={
-                                        medicine.expiryDate
-                                    }
+</div>
 
-                                    onChange={handleChange}
 
-                                    required
 
-                                    className="
-                                        w-full
-                                        h-12
-                                        px-4
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        bg-slate-50
-                                        text-slate-800
-                                        outline-none
-                                        transition
-                                        focus:bg-white
-                                        focus:border-blue-500
-                                        focus:ring-4
-                                        focus:ring-blue-100
-                                    "
 
-                                />
 
-                            </div>
+{/* ================================
+    STOCK INFORMATION
+================================ */}
 
-                        </div>
 
-                    </div>
 
+<div
 
+className="
+p-6
+md:p-8
+bg-slate-50/40
+border-b
+border-slate-100
+"
 
-                    {/* =================================================
-                        FOOTER
-                    ================================================= */}
+>
 
-                    <div className="
-                        px-6
-                        md:px-8
-                        py-5
-                        bg-slate-50
-                        border-t
-                        border-slate-100
-                        flex
-                        flex-col-reverse
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        gap-4
-                    ">
 
+<h2
 
-                        <p className="
-                            text-xs
-                            text-slate-500
-                        ">
+className="
+text-xl
+font-bold
+text-slate-800
+mb-6
+"
 
-                            <span className="
-                                text-red-500
-                                font-bold
-                            ">
+>
 
-                                *
+Stock & Pricing
 
-                            </span>
+</h2>
 
-                            &nbsp; Required fields
 
-                        </p>
 
 
-                        <button
+<div
 
-                            type="submit"
+className="
+grid
+grid-cols-1
+md:grid-cols-2
+lg:grid-cols-4
+gap-5
+"
 
-                            disabled={loading}
+>
 
-                            className="
-                                w-full
-                                sm:w-auto
-                                min-w-[190px]
-                                h-12
-                                px-7
-                                rounded-xl
-                                bg-blue-600
-                                hover:bg-blue-700
-                                active:bg-blue-800
-                                text-white
-                                font-bold
-                                flex
-                                items-center
-                                justify-center
-                                gap-3
-                                shadow-lg
-                                shadow-blue-200
-                                transition-all
-                                duration-200
-                                disabled:opacity-60
-                                disabled:cursor-not-allowed
-                            "
 
-                        >
 
-                            {loading ? (
+<InputField
 
-                                <>
+name="quantity"
 
-                                    <span className="
-                                        w-5
-                                        h-5
-                                        border-2
-                                        border-white/40
-                                        border-t-white
-                                        rounded-full
-                                        animate-spin
-                                    " />
+label="Quantity"
 
-                                    Saving Medicine...
+icon={<FaBoxOpen/>}
 
-                                </>
+type="number"
 
-                            ) : (
+min="0"
 
-                                <>
+step="1"
 
-                                    <FaSave />
+value={medicine.quantity}
 
-                                    Add Medicine
+onChange={handleChange}
 
-                                </>
+placeholder="0"
 
-                            )}
+required
 
-                        </button>
+/>
 
-                    </div>
 
-                </form>
 
-            </div>
+<InputField
 
-        </div>
+name="price"
 
-    );
+label="Purchase Price"
+
+icon={<FaRupeeSign/>}
+
+type="number"
+
+min="0"
+
+step="0.01"
+
+value={medicine.price}
+
+onChange={handleChange}
+
+placeholder="0.00"
+
+required
+
+/>
+
+
+
+<InputField
+
+name="sellingPrice"
+
+label="Selling Price"
+
+icon={<FaRupeeSign/>}
+
+type="number"
+
+min="0"
+
+step="0.01"
+
+value={medicine.sellingPrice}
+
+onChange={handleChange}
+
+placeholder="0.00"
+
+/>
+
+
+
+<InputField
+
+name="minStockLevel"
+
+label="Minimum Stock Level"
+
+icon={<FaExclamationTriangle/>}
+
+type="number"
+
+min="0"
+
+step="1"
+
+value={medicine.minStockLevel}
+
+onChange={handleChange}
+
+required
+
+/>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+{/* ================================
+    DATE INFORMATION
+================================ */}
+
+
+
+<div
+
+className="
+p-6
+md:p-8
+"
+
+>
+
+
+<h2
+
+className="
+text-xl
+font-bold
+text-slate-800
+mb-6
+"
+
+>
+
+Medicine Dates
+
+</h2>
+
+
+
+<div
+
+className="
+grid
+grid-cols-1
+md:grid-cols-2
+gap-5
+"
+
+>
+
+
+
+<div>
+
+
+<label
+
+className="
+block
+text-sm
+font-semibold
+mb-2
+text-slate-700
+"
+
+>
+
+<FaCalendarAlt
+className="inline mr-2 text-blue-600"
+/>
+
+Manufacture Date *
+
+</label>
+
+
+
+<input
+
+type="date"
+
+name="manufactureDate"
+
+value={
+medicine.manufactureDate
+}
+
+onChange={handleChange}
+
+required
+
+className="
+w-full
+h-12
+px-4
+rounded-xl
+border
+border-slate-200
+bg-slate-50
+outline-none
+focus:ring-4
+focus:ring-blue-100
+focus:border-blue-500
+"
+
+/>
+
+
+</div>
+
+
+
+
+
+<div>
+
+
+<label
+
+className="
+block
+text-sm
+font-semibold
+mb-2
+text-slate-700
+"
+
+>
+
+
+<FaExclamationTriangle
+
+className="
+inline
+mr-2
+text-red-500
+"
+
+/>
+
+
+Expiry Date *
+
+</label>
+
+
+
+<input
+
+type="date"
+
+name="expiryDate"
+
+value={
+medicine.expiryDate
+}
+
+onChange={handleChange}
+
+required
+
+className="
+w-full
+h-12
+px-4
+rounded-xl
+border
+border-slate-200
+bg-slate-50
+outline-none
+focus:ring-4
+focus:ring-blue-100
+focus:border-blue-500
+"
+
+/>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+{/* ================================
+    BUTTON
+================================ */}
+
+
+
+<div
+
+className="
+p-6
+bg-slate-50
+border-t
+flex
+justify-end
+"
+
+>
+
+
+
+<button
+
+type="submit"
+
+disabled={loading}
+
+className="
+px-8
+h-12
+rounded-xl
+bg-blue-600
+hover:bg-blue-700
+text-white
+font-bold
+flex
+items-center
+gap-3
+shadow-lg
+disabled:opacity-60
+"
+
+>
+
+
+{
+loading ?
+
+<>
+
+<span
+className="
+w-5
+h-5
+border-2
+border-white/40
+border-t-white
+rounded-full
+animate-spin
+"
+/>
+
+Saving...
+
+</>
+
+:
+
+<>
+
+<FaSave/>
+
+Add Medicine
+
+</>
+
+}
+
+
+
+</button>
+
+
+
+</div>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+
+);
+
 
 }
 

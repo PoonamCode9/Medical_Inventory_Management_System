@@ -2,548 +2,719 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 
+import { GoogleLogin } from "@react-oauth/google";
+
 import {
-    FaEye,
-    FaEyeSlash,
-    FaLock,
-    FaArrowLeft,
-    FaUserShield,
-    FaUserNurse,
-    FaUserTie,
-    FaEnvelope,
-    FaMobileAlt,
-    FaKey
+  FaEye,
+  FaEyeSlash,
+  FaLock,
+  FaArrowLeft,
+  FaUserShield,
+  FaUserNurse,
+  FaUserTie,
+  FaEnvelope,
+  FaMobileAlt,
+  FaKey,
+  FaHeartbeat,
+  FaShieldAlt,
+  FaCapsules,
+  FaChartLine,
+  FaHospital,
+  FaUserMd,
+  FaSignInAlt,
+  FaGoogle,
 } from "react-icons/fa";
 
 import loginBg from "../assets/login-bg.jpg";
+import "../styles/Login.css";
 
 function Login() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const [mode, setMode] = useState("LOGIN");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const [mode, setMode] = useState("LOGIN");
+  const [data, setData] = useState({
+    email: "",
+    password: "",
+    role: "STAFF",
+    secretCode: "",
+  });
 
-    const [showPassword, setShowPassword] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
 
-    const [loading, setLoading] = useState(false);
+  // ==========================================
+  // Save Login
+  // ==========================================
 
-    const [data, setData] = useState({
-        email: "",
-        password: "",
-        role: "STAFF",
-        secretCode: ""
-    });
+  const saveLoginData = (response) => {
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("role", response.data.role);
+    localStorage.setItem("userId", response.data.userId);
 
-    const [phone, setPhone] = useState("");
+    redirectUser(response.data.role);
+  };
 
-    const [otp, setOtp] = useState("");
+  // ==========================================
+  // Google Login
+  // ==========================================
 
-
-
-    // ================= LOGIN =================
-
-    const handleLogin = async (e) => {
-
-        e.preventDefault();
-
-        try {
-
-            setLoading(true);
-
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: data.email,
-                    password: data.password,
-                    role: data.role,
-                    secretCode: data.secretCode
-                }
-            );
-
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
-
-            localStorage.setItem(
-                "role",
-                response.data.role
-            );
-
-            localStorage.setItem(
-                "userId",
-                response.data.userId
-            );
-
-            alert("Login Successful");
-
-            redirectUser(
-                response.data.role
-            );
-
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/google",
+        {
+          token: credentialResponse.credential,
         }
-        catch (error) {
+      );
 
-            console.error(error);
+      alert("Google Login Successful");
 
-            if (error.response) {
+      saveLoginData(response);
+    } catch (error) {
+      console.log(error);
 
-                alert(
-                    error.response.data
-                );
+      alert("Google Authentication Failed");
+    }
+  };
 
-            } else {
+  // ==========================================
+  // Login
+  // ==========================================
 
-                alert(
-                    "Unable to connect to server."
-                );
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-            }
+    try {
+      setLoading(true);
 
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          email: data.email,
+          password: data.password,
+          role: data.role,
+          secretCode: data.secretCode,
         }
-        finally {
+      );
 
-            setLoading(false);
+      alert("Login Successful");
 
+      saveLoginData(response);
+    } catch (error) {
+      console.log(error);
+
+      alert(error.response?.data || "Login Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // Send OTP
+  // ==========================================
+
+  const sendOtp = async () => {
+    try {
+      await axios.post("http://localhost:8080/api/auth/send-otp", {
+        phone,
+      });
+
+      alert("OTP Sent Successfully");
+    } catch (error) {
+      console.log(error);
+
+      alert("OTP Failed");
+    }
+  };
+
+  // ==========================================
+  // Verify OTP
+  // ==========================================
+
+  const verifyOtp = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/verify-otp",
+        {
+          phone,
+          otp,
         }
+      );
 
-    };
+      alert("OTP Login Successful");
 
+      saveLoginData(response);
+    } catch (error) {
+      console.log(error);
 
+      alert("Invalid OTP");
+    }
+  };
 
+  // ==========================================
+  // Redirect
+  // ==========================================
 
+  const redirectUser = (role) => {
+    switch (role) {
+      case "ADMIN":
+        navigate("/admin/dashboard");
+        break;
 
-    // ================= SEND OTP =================
+      case "PHARMACIST":
+        navigate("/pharmacist/dashboard");
+        break;
 
-    const sendOtp = async () => {
+      case "STAFF":
+        navigate("/staff/dashboard");
+        break;
 
-        try {
+      default:
+        navigate("/");
+    }
+  };
 
-            await axios.post(
-                "http://localhost:8080/api/auth/send-otp",
-                {
-                    phone: phone
-                }
-            );
-
-            alert(
-                "OTP Sent Successfully"
-            );
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            alert(
-                "OTP Sending Failed"
-            );
-
-        }
-
-    };
-
-
-
-
-
-
-    // ================= VERIFY OTP =================
-
-    const verifyOtp = async () => {
-
-        try {
-
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/verify-otp",
-                {
-                    phone: phone,
-                    otp: otp
-                }
-            );
-
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
-
-            localStorage.setItem(
-                "role",
-                response.data.role
-            );
-
-            localStorage.setItem(
-                "userId",
-                response.data.userId
-            );
-
-            alert(
-                "OTP Login Successful"
-            );
-
-            redirectUser(
-                response.data.role
-            );
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Invalid OTP"
-            );
-
-        }
-
-    };
-
-
-
-
-
-
-    // ================= REDIRECT =================
-
-    const redirectUser = (role) => {
-
-        switch (role) {
-
-            case "ADMIN":
-
-                navigate("/admin/dashboard");
-                break;
-
-            case "PHARMACIST":
-
-                navigate("/pharmacist/dashboard");
-                break;
-
-            case "STAFF":
-
-                navigate("/staff/dashboard");
-                break;
-
-            default:
-
-                navigate("/");
-
-        }
-
-    };
-
-
-
-    return (
+  return (
 
         <div
-            className="auth-container"
+            className="login-page"
             style={{
                 backgroundImage: `
-                linear-gradient(
-                    135deg,
-                    rgba(0,70,120,.85),
-                    rgba(0,180,220,.65)
-                ),
-                url(${loginBg})
+                    linear-gradient(
+                        135deg,
+                        rgba(2,25,55,.92),
+                        rgba(0,120,170,.75)
+                    ),
+                    url(${loginBg})
                 `
             }}
         >
 
-            <div className="auth-overlay"></div>
+            <div className="background-overlay"></div>
 
-            <div className="auth-left">
+            <div className="floating-circle one"></div>
+            <div className="floating-circle two"></div>
+            <div className="floating-circle three"></div>
 
-                <div className="brand">
+            <div className="login-wrapper">
 
-                    <h1>
-                        🏥 MediStock
-                    </h1>
+                {/* ==========================================
+                        LEFT PANEL
+                =========================================== */}
 
-                    <p>
-                        Smart Medical Inventory Management System
-                    </p>
+                <div className="login-left">
+
+                    <div className="brand-section">
+
+                        <div className="hospital-logo">
+                            <FaHospital />
+                        </div>
+
+                        <h1>MediStock</h1>
+
+                        <p>
+                            Smart Healthcare Inventory
+                            Management Platform
+                        </p>
+
+                    </div>
+
+                    <div className="welcome-content">
+
+                        <h2>Welcome Back</h2>
+
+                        <p>
+                            Securely manage medicines,
+                            stock levels, suppliers,
+                            expiry tracking and healthcare
+                            analytics from one place.
+                        </p>
+
+                    </div>
+
+                    <div className="feature-grid">
+
+                        <div className="feature-card">
+                            <FaCapsules />
+                            <div>
+                                <h4>Medicine Tracking</h4>
+                                <span>
+                                    Real-time inventory monitoring
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="feature-card">
+                            <FaHeartbeat />
+                            <div>
+                                <h4>Expiry Management</h4>
+                                <span>
+                                    Smart expiry alerts
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="feature-card">
+                            <FaShieldAlt />
+                            <div>
+                                <h4>Secure Login</h4>
+                                <span>
+                                    Role based authentication
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="feature-card">
+                            <FaChartLine />
+                            <div>
+                                <h4>Analytics Reports</h4>
+                                <span>
+                                    Sales and stock insights
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <div className="feature-list">
+                {/* ==========================================
+                        RIGHT PANEL
+                =========================================== */}
 
-                    <div>💊 Medicine Management</div>
+                <div className="login-right">
 
-                    <div>🚚 Supplier Tracking</div>
+                    <div className="login-card">
 
-                    <div>⚠ Expiry Notifications</div>
+                        <div className="login-header">
 
-                    <div>📊 Smart Analytics Reports</div>
+                            <div className="avatar">
+                                <FaUserMd />
+                            </div>
+
+                            <h2>Sign In</h2>
+
+                            <p>
+                                Access your MediStock dashboard
+                            </p>
+
+                        </div>
+
+                        {
+
+                            mode === "LOGIN"
+
+                                ?
+
+                                <form
+                                    className="login-form"
+                                    onSubmit={handleLogin}
+                                >
+
+                                    <div className="section-title">
+                                        <span>
+                                            Choose Account Type
+                                        </span>
+                                    </div>
+
+                                    <div className="role-grid">
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                data.role === "ADMIN"
+                                                    ? "role-card active"
+                                                    : "role-card"
+                                            }
+                                            onClick={() =>
+                                                setData({
+                                                    ...data,
+                                                    role: "ADMIN"
+                                                })
+                                            }
+                                        >
+                                            <FaUserShield className="role-icon" />
+                                            <h4>Admin</h4>
+                                            <small>Control Panel</small>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                data.role === "PHARMACIST"
+                                                    ? "role-card active"
+                                                    : "role-card"
+                                            }
+                                            onClick={() =>
+                                                setData({
+                                                    ...data,
+                                                    role: "PHARMACIST"
+                                                })
+                                            }
+                                        >
+                                            <FaUserNurse className="role-icon" />
+                                            <h4>Pharmacist</h4>
+                                            <small>Medicine Stock</small>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                data.role === "STAFF"
+                                                    ? "role-card active"
+                                                    : "role-card"
+                                            }
+                                            onClick={() =>
+                                                setData({
+                                                    ...data,
+                                                    role: "STAFF"
+                                                })
+                                            }
+                                        >
+                                            <FaUserTie className="role-icon" />
+                                            <h4>Staff</h4>
+                                            <small>Operations</small>
+                                        </button>
+
+                                    </div>
+
+                                    {/* Secret Code */}
+
+                                    <div className="input-box">
+
+                                        <label>
+
+                                            {
+                                                data.role === "ADMIN"
+
+                                                    ? "Admin Secret Code"
+
+                                                    : data.role === "PHARMACIST"
+
+                                                        ? "Pharmacist Secret Code"
+
+                                                        : "Staff Secret Code"
+                                            }
+
+                                        </label>
+
+                                        <div className="input-field">
+
+                                            <FaKey className="input-icon" />
+
+                                            <input
+                                                type="password"
+                                                placeholder="Enter secret code"
+                                                value={data.secretCode}
+                                                onChange={(e) =>
+                                                    setData({
+                                                        ...data,
+                                                        secretCode: e.target.value
+                                                    })
+                                                }
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                    {/* Email */}
+
+                                    <div className="input-box">
+
+                                        <label>Email Address</label>
+
+                                        <div className="input-field">
+
+                                            <FaEnvelope className="input-icon" />
+
+                                            <input
+                                                type="email"
+                                                placeholder="Enter email"
+                                                value={data.email}
+                                                onChange={(e) =>
+                                                    setData({
+                                                        ...data,
+                                                        email: e.target.value
+                                                    })
+                                                }
+                                                required
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                    {/* Password */}
+
+                                    <div className="input-box">
+
+                                        <label>Password</label>
+
+                                        <div className="input-field">
+
+                                            <FaLock className="input-icon" />
+
+                                            <input
+                                                type={
+                                                    showPassword
+                                                        ? "text"
+                                                        : "password"
+                                                }
+                                                placeholder="Enter password"
+                                                value={data.password}
+                                                onChange={(e) =>
+                                                    setData({
+                                                        ...data,
+                                                        password: e.target.value
+                                                    })
+                                                }
+                                            />
+
+                                            <button
+                                                type="button"
+                                                className="eye-btn"
+                                                onClick={() =>
+                                                    setShowPassword(
+                                                        !showPassword
+                                                    )
+                                                }
+                                            >
+                                                {
+                                                    showPassword
+                                                        ? <FaEyeSlash />
+                                                        : <FaEye />
+                                                }
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+                                                                        <div className="login-options">
+
+                                        <label className="remember">
+
+                                            <input type="checkbox" />
+
+                                            <span>Remember Me</span>
+
+                                        </label>
+
+                                        <button
+                                            type="button"
+                                            className="forgot-btn"
+                                        >
+                                            Forgot Password?
+                                        </button>
+
+                                    </div>
+
+                                    <button
+                                        className="login-btn"
+                                        disabled={loading}
+                                    >
+
+                                        {
+                                            loading
+                                                ?
+                                                <>
+                                                    <span className="loader"></span>
+                                                    Logging In...
+                                                </>
+                                                :
+                                                <>
+                                                    <FaSignInAlt />
+                                                    Login Securely
+                                                </>
+                                        }
+
+                                    </button>
+
+                                    <div className="divider">
+
+                                        <span>OR</span>
+
+                                    </div>
+
+                                    <div className="google-login-box">
+
+                                        <GoogleLogin
+                                            onSuccess={handleGoogleLogin}
+                                            onError={() =>
+                                                alert("Google Login Failed")
+                                            }
+                                        />
+
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="otp-login-btn"
+                                        onClick={() =>
+                                            setMode("OTP")
+                                        }
+                                    >
+
+                                        <FaMobileAlt />
+
+                                        Login With OTP
+
+                                    </button>
+
+                                </form>
+
+                                :
+
+                                /* ==========================================
+                                        OTP LOGIN
+                                ========================================== */
+
+                                <div className="otp-container">
+
+                                    <div className="otp-header">
+
+                                        <div className="otp-icon">
+
+                                            <FaMobileAlt />
+
+                                        </div>
+
+                                        <h3>OTP Login</h3>
+
+                                        <p>
+
+                                            Verify your registered
+                                            mobile number
+
+                                        </p>
+
+                                    </div>
+
+                                    <div className="input-box">
+
+                                        <label>
+
+                                            Mobile Number
+
+                                        </label>
+
+                                        <div className="input-field">
+
+                                            <FaMobileAlt
+                                                className="input-icon"
+                                            />
+
+                                            <input
+                                                type="text"
+                                                placeholder="Enter mobile number"
+                                                value={phone}
+                                                onChange={(e) =>
+                                                    setPhone(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                    <button
+                                        className="login-btn"
+                                        onClick={sendOtp}
+                                    >
+
+                                        <FaMobileAlt />
+
+                                        Send OTP
+
+                                    </button>
+
+                                    <div className="input-box">
+
+                                        <label>
+
+                                            Verification OTP
+
+                                        </label>
+
+                                        <div className="input-field">
+
+                                            <FaKey
+                                                className="input-icon"
+                                            />
+
+                                            <input
+                                                type="text"
+                                                placeholder="Enter OTP"
+                                                value={otp}
+                                                onChange={(e) =>
+                                                    setOtp(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                    <button
+                                        className="login-btn"
+                                        onClick={verifyOtp}
+                                    >
+
+                                        <FaShieldAlt />
+
+                                        Verify OTP
+
+                                    </button>
+
+                                    <button
+                                        className="back-btn"
+                                        onClick={() =>
+                                            setMode("LOGIN")
+                                        }
+                                    >
+
+                                        <FaArrowLeft />
+
+                                        Back To Login
+
+                                    </button>
+
+                                </div>
+
+                        }
+
+                        <div className="login-footer">
+
+                            <p>
+
+                                Don't have an account?
+
+                                <Link to="/register">
+
+                                    Register Now
+
+                                </Link>
+
+                            </p>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
-            <div className="auth-card">
+        </div>
 
-                <div className="medical-icon">
-                    🩺
-                </div>
-
-                <h1 className="title">
-                    MediStock Login
-                </h1>
-
-                {
-                    mode === "LOGIN"
-                        ?
-                        <form onSubmit={handleLogin}>
-
-    <h3 className="role-title">
-        Select Account Type
-    </h3>
-
-    {/* ================= ROLE SELECTION ================= */}
-
-    <div className="role-box">
-
-        <button
-            type="button"
-            className={data.role === "ADMIN" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "ADMIN",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserShield />
-            <span>Admin</span>
-        </button>
-
-        <button
-            type="button"
-            className={data.role === "PHARMACIST" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "PHARMACIST",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserNurse />
-            <span>Pharmacist</span>
-        </button>
-
-        <button
-            type="button"
-            className={data.role === "STAFF" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "STAFF",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserTie />
-            <span>Staff</span>
-        </button>
-
-    </div>
-
-
-    {/* ================= SECRET CODE ================= */}
-
-    <div className="input-group">
-
-        <FaKey />
-
-        <input
-            type="password"
-            placeholder={`${data.role} Secret Code`}
-            value={data.secretCode}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    secretCode: e.target.value
-                })
-            }
-            required
-        />
-
-    </div>
-
-
-    {/* ================= EMAIL ================= */}
-
-    <div className="input-group">
-
-        <FaEnvelope />
-
-        <input
-            type="email"
-            placeholder="Email Address"
-            value={data.email}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    email: e.target.value
-                })
-            }
-            required
-        />
-
-    </div>
-
-
-    {/* ================= PASSWORD ================= */}
-
-    <div className="input-group password-wrapper">
-
-        <FaLock />
-
-        <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={data.password}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    password: e.target.value
-                })
-            }
-            required
-        />
-
-        <button
-            type="button"
-            className="eye-btn"
-            onClick={() =>
-                setShowPassword(!showPassword)
-            }
-        >
-            {
-                showPassword
-                    ? <FaEyeSlash />
-                    : <FaEye />
-            }
-        </button>
-
-    </div>
-
-
-    {/* ================= LOGIN BUTTON ================= */}
-
-    <button
-        className="primary-btn"
-        type="submit"
-        disabled={loading}
-    >
-        {
-            loading
-                ? "Logging in..."
-                : "🔐 Login"
-        }
-    </button>
-
-
-    {/* ================= OTP BUTTON ================= */}
-
-    <button
-        type="button"
-        className="otp-btn"
-        onClick={() =>
-            setMode("OTP")
-        }
-    >
-        📱 Login With OTP
-    </button>
-
-</form>
-
-:
-<div className="otp-section">
-
-    <h2>
-        📱 OTP Login
-    </h2>
-
-    {/* ================= PHONE ================= */}
-
-    <div className="input-group">
-
-        <FaMobileAlt />
-
-        <input
-            type="text"
-            placeholder="Mobile Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-        />
-
-    </div>
-
-    {/* ================= SEND OTP ================= */}
-
-    <button
-        className="primary-btn"
-        onClick={sendOtp}
-    >
-        Send OTP
-    </button>
-
-    {/* ================= OTP INPUT ================= */}
-
-    <div className="input-group">
-
-        <FaKey />
-
-        <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-        />
-
-    </div>
-
-    {/* ================= VERIFY OTP ================= */}
-
-    <button
-        className="primary-btn"
-        onClick={verifyOtp}
-    >
-        Verify OTP
-    </button>
-
-    {/* ================= BACK ================= */}
-
-    <button
-        className="back-btn"
-        onClick={() => setMode("LOGIN")}
-    >
-        <FaArrowLeft />
-        <span>Back</span>
-    </button>
-
-</div>
-
-}
-
-<div className="link">
-
-    <Link to="/register">
-        Don't have an account? Register
-    </Link>
-
-</div>
-
-</div>
-
-</div>
-
-);
+    );
 
 }
 
