@@ -88,12 +88,18 @@ function Suppliers() {
     { icon: "🛒", label: "Purchase Orders", path: "/purchase-orders" },
     { icon: "📋", label: "Stock History", path: "/stock-history" },
     { icon: "👥", label: "User Management", path: "/user-management" },
+    { icon: "📈", label: "Analytics", path: "/analytics" },
+    { icon: "📄", label: "Reports", path: "/reports" },
+    { icon: "🔔", label: "Notifications", path: "/notifications" },
   ] : [
     { icon: "📊", label: "Dashboard", path: "/pharmacist-dashboard" },
     { icon: "💊", label: "Inventory", path: "/inventory" },
     { icon: "🏢", label: "Suppliers", path: "/suppliers" },
     { icon: "🛒", label: "Purchase Orders", path: "/purchase-orders" },
     { icon: "📋", label: "Stock History", path: "/stock-history" },
+    { icon: "📈", label: "Analytics", path: "/analytics" },
+    { icon: "📄", label: "Reports", path: "/reports" },
+    { icon: "🔔", label: "Notifications", path: "/notifications" },
   ];
 
   return (

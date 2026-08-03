@@ -12,6 +12,9 @@ import StaffMedicines from './pages/StaffMedicines';
 import StaffStockLevels from './pages/StaffStockLevels';
 import StaffExpiry from './pages/StaffExpiry';
 import UserManagement from './pages/UserManagement';
+import Analytics from './pages/Analytics';
+import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
 
 function ProtectedRoute({ children, allowedRoles }) {
   const role = localStorage.getItem("role");
@@ -106,6 +109,24 @@ function App() {
         <Route path="/staff-expiry" element={
         <ProtectedRoute allowedRoles={["STAFF"]}>
            <StaffExpiry />
+        </ProtectedRoute>
+        } />
+
+        <Route path="/analytics" element={
+        <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+          <Analytics />
+        </ProtectedRoute>
+        } />
+
+        <Route path="/reports" element={
+        <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+          <Reports />
+        </ProtectedRoute>
+        } />
+
+        <Route path="/notifications" element={
+        <ProtectedRoute allowedRoles={["ADMIN", "PHARMACIST"]}>
+          <Notifications />
         </ProtectedRoute>
         } />
 

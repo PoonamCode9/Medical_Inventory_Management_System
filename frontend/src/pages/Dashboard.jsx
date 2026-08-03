@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from '../components/NotificationBell';
 import axios from "axios";
 
 function Dashboard() {
@@ -83,6 +84,9 @@ function Dashboard() {
   { icon: "🛒", label: "Purchase Orders", path: "/purchase-orders" },
   { icon: "📋", label: "Stock History", path: "/stock-history" },
   { icon: "👥", label: "User Management", path: "/user-management" },
+  { icon: "📈", label: "Analytics", path: "/analytics" },
+  { icon: "📄", label: "Reports", path: "/reports" },
+  { icon: "🔔", label: "Notifications", path: "/notifications" },
 ];
 
   return (
@@ -184,24 +188,25 @@ function Dashboard() {
 
       {/* Main Content */}
       <div style={{ flex: 1, padding: "30px" }}>
-        {/* Header */}
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          alignItems: "center", marginBottom: "30px"
-        }}>
-          <div>
-            <h1 style={{
-              color: "#1a1a2e", fontSize: "26px",
-              fontWeight: "700", margin: "0 0 5px 0"
-            }}>
-              Welcome back, {name || "User"}! 👋
-            </h1>
-            <p style={{
-              color: "#718096", margin: 0, fontSize: "14px"
-            }}>
-              Here is your inventory overview for today
-            </p>
-          </div>
+      {/* Header */}
+      <div style={{
+        display: "flex", justifyContent: "space-between",
+        alignItems: "center", marginBottom: "30px"
+      }}>
+        <div>
+          <h1 style={{
+            color: "#1a1a2e", fontSize: "26px",
+            fontWeight: "700", margin: "0 0 5px 0"
+          }}>
+          Welcome back, {name || "User"}! 👋
+        </h1>
+        <p style={{ color: "#718096", margin: 0, fontSize: "14px" }}>
+          Here is your inventory overview for today
+        </p>
+        </div>
+        <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+        {/* Add Bell here! */}
+        <NotificationBell />
           <div style={{
             background: "white", padding: "10px 20px",
             borderRadius: "10px",
@@ -211,7 +216,8 @@ function Dashboard() {
             📅 {new Date().toDateString()}
           </div>
         </div>
-
+      </div>
+      
         {/* Stats Cards */}
         <div style={{
           display: "grid",

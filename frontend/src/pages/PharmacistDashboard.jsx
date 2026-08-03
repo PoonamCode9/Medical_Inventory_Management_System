@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from '../components/NotificationBell';
 
 function PharmacistDashboard() {
   const navigate = useNavigate();
@@ -56,6 +57,9 @@ function PharmacistDashboard() {
   { icon: "🏢", label: "Suppliers", path: "/suppliers" },
   { icon: "🛒", label: "Purchase Orders", path: "/purchase-orders" },
   { icon: "📋", label: "Stock History", path: "/stock-history" },
+  { icon: "📈", label: "Analytics", path: "/analytics" },
+  { icon: "📄", label: "Reports", path: "/reports" },
+  { icon: "🔔", label: "Notifications", path: "/notifications" },
 ];
 
   return (
@@ -163,12 +167,15 @@ function PharmacistDashboard() {
               color: "#1a1a2e", fontSize: "26px",
               fontWeight: "700", margin: "0 0 5px 0"
             }}>
-              Welcome, {name}! 👨‍⚕️
+              Welcome back, {name || "User"}! 👋
             </h1>
             <p style={{ color: "#718096", margin: 0, fontSize: "14px" }}>
-              Pharmacist Dashboard — Manage medicines and suppliers
+              Here is your inventory overview for today
             </p>
           </div>
+          <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+          {/* Add Bell here! */}
+          <NotificationBell />
           <div style={{
             background: "white", padding: "10px 20px",
             borderRadius: "10px",
@@ -178,6 +185,7 @@ function PharmacistDashboard() {
             📅 {new Date().toDateString()}
           </div>
         </div>
+      </div>
 
         {/* Stats Cards */}
         <div style={{

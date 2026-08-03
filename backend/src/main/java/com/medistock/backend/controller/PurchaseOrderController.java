@@ -6,6 +6,8 @@ import com.medistock.backend.model.StockLog;
 import com.medistock.backend.repository.MedicineRepository;
 import com.medistock.backend.repository.PurchaseOrderRepository;
 import com.medistock.backend.repository.StockLogRepository;
+import com.medistock.backend.service.EmailService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,9 @@ public class PurchaseOrderController {
 
     @Autowired
     private StockLogRepository stockLogRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping
     public ResponseEntity<PurchaseOrder> createOrder(
@@ -98,6 +103,13 @@ public class PurchaseOrderController {
                 stockLogRepository.save(log);
             }
         }
+        // Send email notification
+        emailService.sendPurchaseOrderAlert(
+        order.getSupplierName(),
+        order.getMedicineName(),
+        order.getQuantity(),
+        status
+        );
 
         return ResponseEntity.ok(updated);
     }

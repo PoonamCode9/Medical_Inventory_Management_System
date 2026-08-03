@@ -100,6 +100,9 @@ function UserManagement() {
     { icon: "🛒", label: "Purchase Orders", path: "/purchase-orders" },
     { icon: "📋", label: "Stock History", path: "/stock-history" },
     { icon: "👥", label: "User Management", path: "/user-management" },
+    { icon: "📈", label: "Analytics", path: "/analytics" },
+    { icon: "📄", label: "Reports", path: "/reports" },
+    { icon: "🔔", label: "Notifications", path: "/notifications" },
   ];
 
   return (
