@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Register from "./pages/Register/Register";
 import Login from "./pages/Login/Login";
-
+import LandingPage from "./pages/LandingPage/LandingPage";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import PharmacistDashboard from "./pages/Pharmacist/PharmacistDashboard";
 import StaffDashboard from "./pages/Staff/StaffDashboard";
@@ -16,6 +16,7 @@ import PurchaseOrders from "./pages/PurchaseOrders/PurchaseOrders";
 import StockLogs from "./pages/StockLogs/StockLogs";
 import Notifications from "./pages/Notifications/Notifications";
 import Stock from "./pages/stock/Stock";
+import AnalyticsDashboard from "./pages/Analytics/Analyticsdashboard";
 function App() {
 
   return (
@@ -23,6 +24,8 @@ function App() {
     <BrowserRouter>
 
       <Routes>
+
+        <Route path="/" element={<LandingPage />} />
 
         <Route path="/register" element={<Register />} />
 
@@ -68,6 +71,7 @@ function App() {
 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
 <Route path="/stock" element={<ProtectedRoute><Stock /></ProtectedRoute>} />
+<Route path="/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
       </Routes>
 
      

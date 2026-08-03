@@ -55,6 +55,8 @@ function Sidebar({ role }) {
             <li><NavLink to="/reports"><FaChartBar /> Reports</NavLink></li>
 
             <li><NavLink to="/notifications"><FaBell /> Notifications</NavLink></li>
+
+            <li><NavLink to="/analytics"><FaChartBar /> Analytics</NavLink></li>
 {/* 
             <li><NavLink to="/settings"><FaCog /> Settings</NavLink></li> */}
           </>
