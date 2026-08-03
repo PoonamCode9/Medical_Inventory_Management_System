@@ -7,9 +7,11 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.medicalinventory.backend.dto.ReportRequestDTO;
 import com.medicalinventory.backend.entity.Inventory;
 import com.medicalinventory.backend.entity.Medicine;
+import com.medicalinventory.backend.entity.PurchaseOrder;
 import com.medicalinventory.backend.entity.Report;
 import com.medicalinventory.backend.entity.User;
 import com.medicalinventory.backend.repository.InventoryRepository;
+import com.medicalinventory.backend.repository.PurchaseOrderRepository;
 import com.medicalinventory.backend.repository.ReportRepository;
 import com.medicalinventory.backend.repository.UserRepository;
 
@@ -30,26 +32,58 @@ import java.util.List;
 public class ReportService {
 
     private final InventoryRepository inventoryRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
 
     public ReportService(InventoryRepository inventoryRepository,
+                         PurchaseOrderRepository purchaseOrderRepository,
                          ReportRepository reportRepository,
                          UserRepository userRepository) {
         this.inventoryRepository = inventoryRepository;
+        this.purchaseOrderRepository = purchaseOrderRepository;
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
     }
 
     @Transactional
     public ByteArrayInputStream generateReport(ReportRequestDTO requestDTO, String userEmail) {
+        String reportType = requestDTO.getReportType() != null ? requestDTO.getReportType().toUpperCase() : "";
+
+        String extension = "EXCEL".equalsIgnoreCase(requestDTO.getFormat()) ? ".xlsx" : ".pdf";
+        String fileName = reportType.toLowerCase() + "_report_" + System.currentTimeMillis() + extension;
+        String reportName = reportType + " Report";
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        Report reportEntry = new Report(
+                reportName,
+                reportType,
+                requestDTO.getFormat().toUpperCase(),
+                user,
+                LocalDateTime.now(),
+                fileName
+        );
+        reportRepository.save(reportEntry);
+
+        if ("PURCHASE".equalsIgnoreCase(reportType) || "PURCHASE_HISTORY".equalsIgnoreCase(reportType)) {
+            List<PurchaseOrder> purchaseOrders = purchaseOrderRepository.findAll();
+            
+            if ("EXCEL".equalsIgnoreCase(requestDTO.getFormat())) {
+                return generatePurchaseOrderExcelReport(purchaseOrders);
+            } else {
+                return generatePurchaseOrderPdfReport(purchaseOrders);
+            }
+        } 
+        
         List<Inventory> inventoryList = inventoryRepository.findAll();
 
-        if ("LOW_STOCK".equalsIgnoreCase(requestDTO.getReportType())) {
+        if ("LOW_STOCK".equalsIgnoreCase(reportType)) {
             inventoryList = inventoryList.stream()
-                    .filter(inv -> inv.getQuantity() != null && inv.getQuantity() < 20)
+                    .filter(inv -> inv.getQuantity() != null && inv.getQuantity() <= 20)
                     .toList();
-        } else if ("EXPIRY".equalsIgnoreCase(requestDTO.getReportType())) {
+        } else if ("EXPIRY".equalsIgnoreCase(reportType)) {
             LocalDate today = LocalDate.now();
             LocalDate next30Days = today.plusDays(30);
 
@@ -64,27 +98,10 @@ public class ReportService {
                     .toList();
         }
 
-        String extension = "EXCEL".equalsIgnoreCase(requestDTO.getFormat()) ? ".xlsx" : ".pdf";
-        String fileName = requestDTO.getReportType().toLowerCase() + "_report_" + System.currentTimeMillis() + extension;
-        String reportName = requestDTO.getReportType() + " Report";
-
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
-
-        Report reportEntry = new Report(
-                reportName,
-                requestDTO.getReportType(),
-                requestDTO.getFormat().toUpperCase(),
-                user,
-                LocalDateTime.now(),
-                fileName
-        );
-        reportRepository.save(reportEntry);
-
         if ("EXCEL".equalsIgnoreCase(requestDTO.getFormat())) {
-            return generateExcelReport(inventoryList, requestDTO.getReportType());
+            return generateExcelReport(inventoryList, reportType);
         } else {
-            return generatePdfReport(inventoryList, requestDTO.getReportType());
+            return generatePdfReport(inventoryList, reportType);
         }
     }
 
@@ -100,7 +117,101 @@ public class ReportService {
         }
     }
 
-    // --- EXCEL GENERATION LOGIC ---
+    // PURCHASE ORDER REPORT LOGIC (EXCEL & PDF)
+    private ByteArrayInputStream generatePurchaseOrderExcelReport(List<PurchaseOrder> orders) {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Purchase Orders");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            String[] headers = new String[]{
+                "Order ID", "Medicine Name", "Supplier", "Ordered Qty", "Received Qty", "Damaged Qty", "Status", "Remarks"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (PurchaseOrder po : orders) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(po.getOrderId() != null ? po.getOrderId() : 0);
+                row.createCell(1).setCellValue(po.getMedicine() != null ? po.getMedicine().getMedicineName() : "N/A");
+                row.createCell(2).setCellValue(po.getSupplier() != null ? po.getSupplier().getSupplierName() : "N/A");
+                row.createCell(3).setCellValue(po.getQuantity() != null ? po.getQuantity() : 0);
+                row.createCell(4).setCellValue(po.getReceivedQuantity() != null ? po.getReceivedQuantity() : 0);
+                row.createCell(5).setCellValue(po.getDamagedQuantity() != null ? po.getDamagedQuantity() : 0);
+                row.createCell(6).setCellValue(po.getStatus() != null ? po.getStatus() : "PENDING");
+                row.createCell(7).setCellValue(po.getRemarks() != null ? po.getRemarks() : "");
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating Purchase Order Excel report", e);
+        }
+    }
+
+    private ByteArrayInputStream generatePurchaseOrderPdfReport(List<PurchaseOrder> orders) {
+        Document document = new Document();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLUE);
+            Paragraph title = new Paragraph("MediStock - Purchase Orders Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            PdfPTable table = new PdfPTable(8);
+            table.setWidthPercentage(100);
+
+            String[] headers = new String[]{
+                "PO #", "Medicine", "Supplier", "Ordered Qty", "Received Qty", "Damaged Qty", "Status", "Remarks"
+            };
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                cell.setPadding(5);
+                table.addCell(cell);
+            }
+
+            for (PurchaseOrder po : orders) {
+                table.addCell(new Phrase("#" + po.getOrderId(), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(po.getMedicine() != null ? po.getMedicine().getMedicineName() : "N/A", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(po.getSupplier() != null ? po.getSupplier().getSupplierName() : "N/A", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(String.valueOf(po.getQuantity()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(String.valueOf(po.getReceivedQuantity() != null ? po.getReceivedQuantity() : 0), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(String.valueOf(po.getDamagedQuantity() != null ? po.getDamagedQuantity() : 0), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(po.getStatus() != null ? po.getStatus() : "PENDING", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                table.addCell(new Phrase(po.getRemarks() != null ? po.getRemarks() : "—", FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            }
+
+            document.add(table);
+            document.close();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating Purchase Order PDF report", e);
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    // Excel report logic
     private ByteArrayInputStream generateExcelReport(List<Inventory> inventoryList, String reportType) {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Inventory Report");
@@ -154,7 +265,7 @@ public class ReportService {
         }
     }
 
-    // --- PDF GENERATION LOGIC ---
+    // PDF report logic
     private ByteArrayInputStream generatePdfReport(List<Inventory> inventoryList, String reportType) {
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
