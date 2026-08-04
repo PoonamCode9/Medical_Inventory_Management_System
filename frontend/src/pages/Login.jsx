@@ -116,6 +116,18 @@ function Login() {
                             <button type="submit">
                                 Login
                             </button>
+                            <hr />
+
+<button
+    type="button"
+    className="google-btn"
+    onClick={() => {
+        window.location.href =
+            "http://localhost:8080/oauth2/authorization/google";
+    }}
+>
+    Continue with Google
+</button>
 
                         </form>
 

@@ -17,10 +17,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+   public SecurityConfig(
+        JwtAuthenticationFilter jwtAuthenticationFilter,
+        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -28,45 +33,52 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .cors(Customizer.withDefaults())
+    http
+            .cors(Customizer.withDefaults())
 
-                .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
 
-                       .requestMatchers(
-        "/api/users/register",
-        "/api/users/login"
-).permitAll()
+                    .requestMatchers(
+                            "/api/users/register",
+                            "/api/users/login"
+                    ).permitAll()
 
-.requestMatchers("/api/reports/**")
-.hasRole("ADMIN")
+                    // Google OAuth2 URLs
+                    .requestMatchers("/login/**", "/oauth2/**").permitAll()
 
-.requestMatchers("/api/purchaseorders/**")
-.hasAnyRole("ADMIN", "PHARMACIST")
+                    .requestMatchers("/api/reports/**")
+.permitAll()
+                    .requestMatchers("/api/purchaseorders/**")
+                    .hasAnyRole("ADMIN", "PHARMACIST")
 
-.requestMatchers(
-        "/api/medicines/**",
-        "/api/inventory/**",
-        "/api/expirytracking/**",
-        "/api/notifications/**"
+                    .requestMatchers(
+                            "/api/medicines/**",
+                            "/api/inventory/**",
+                            "/api/expirytracking/**",
+                            "/api/notifications/**"
+                    )
+                    .hasAnyRole("ADMIN", "PHARMACIST", "STAFF")
+
+                    .anyRequest().authenticated())
+
+            // Google Login
+           .oauth2Login(oauth -> oauth
+        .successHandler(this.oAuth2LoginSuccessHandler)
 )
-.hasAnyRole("ADMIN", "PHARMACIST", "STAFF")
 
-.anyRequest().authenticated())
+            .httpBasic(Customizer.withDefaults());
 
-                .httpBasic(Customizer.withDefaults());
+    http.addFilterBefore(
+            jwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class);
 
-        http.addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
+    return http.build();
+}
 }

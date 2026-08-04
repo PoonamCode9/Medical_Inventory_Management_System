@@ -1,0 +1,38 @@
+.analytics-page {
+    background: #f4f7fb;
+    min-height: 100vh;
+    padding-bottom: 30px;
+}
+
+.page-title {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.page-subtitle {
+    color: gray;
+    margin-bottom: 25px;
+}
+
+.analytics-card {
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+}
+
+.analytics-card:hover {
+    transform: translateY(-5px);
+}
+
+.analytics-card h5 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.analytics-card h2 {
+    font-size: 32px;
+    font-weight: bold;
+}

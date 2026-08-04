@@ -7,6 +7,7 @@ import {
   FaClipboardList,
   FaBell,
   FaChartBar,
+  FaChartPie,
   FaHistory,
   FaClock,
   FaSignOutAlt
@@ -89,6 +90,14 @@ function Sidebar({ role, logout }) {
             </NavLink>
           </li>
         )}
+
+        {role === "ADMIN" && (
+  <li>
+    <NavLink to="/analytics">
+      <FaChartPie /> Analytics
+    </NavLink>
+  </li>
+)}
 
         {role === "ADMIN" && (
           <li>

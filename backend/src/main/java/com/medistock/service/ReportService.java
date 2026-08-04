@@ -2,12 +2,11 @@ package com.medistock.service;
 
 import java.util.List;
 import java.util.Map;
-
+import com.medistock.dto.ReportResponse;
 import com.medistock.entity.ExpiryTracking;
 import com.medistock.entity.Medicine;
 import com.medistock.entity.PurchaseOrder;
 import com.medistock.entity.Report;
-
 
 import com.medistock.entity.Supplier;
 
@@ -34,5 +33,6 @@ List<ExpiryTracking> getExpiryReport();
 List<Supplier> getSupplierReport();
 
 List<PurchaseOrder> getPurchaseOrderReport();
+ReportResponse generateReport();
 
 }

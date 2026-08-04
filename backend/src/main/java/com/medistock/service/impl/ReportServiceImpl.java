@@ -22,6 +22,8 @@ import com.medistock.entity.ExpiryTracking;
 
 import com.medistock.repository.PurchaseOrderRepository;
 import com.medistock.repository.ExpiryTrackingRepository;
+import java.time.LocalDate;
+import com.medistock.dto.ReportResponse;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -135,5 +137,47 @@ public List<Supplier> getSupplierReport() {
 @Override
 public List<PurchaseOrder> getPurchaseOrderReport() {
     return purchaseOrderRepository.findAll();
+}
+@Override
+public ReportResponse generateReport() {
+
+    long totalMedicines = medicineRepository.count();
+
+    long totalSuppliers = supplierRepository.count();
+
+    long totalInventory = medicineRepository.count();
+
+    long lowStock = medicineRepository.findAll()
+            .stream()
+            .filter(m -> m.getQuantity() <= 20)
+            .count();
+
+    long expiringSoon = expiryTrackingRepository.findAll()
+            .stream()
+            .filter(e -> "Expiring Soon".equals(e.getStatus()))
+            .count();
+
+    long expired = expiryTrackingRepository.findAll()
+            .stream()
+            .filter(e -> "Expired".equals(e.getStatus()))
+            .count();
+
+    String summary =
+        "Inventory contains " + totalMedicines +
+        " medicines, " + lowStock +
+        " low stock medicines, " + expiringSoon +
+        " expiring soon and " + expired +
+        (expired == 1 ? " expired medicine." : " expired medicines.");
+
+    return new ReportResponse(
+            LocalDate.now().toString(),
+            totalMedicines,
+            totalSuppliers,
+            totalInventory,
+            lowStock,
+            expiringSoon,
+            expired,
+            summary
+    );
 }
 }

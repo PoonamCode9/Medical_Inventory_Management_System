@@ -24,6 +24,7 @@ const [expiryReport, setExpiryReport] = useState([]);
 const [supplierReport, setSupplierReport] = useState([]);
 
 const [purchaseReport, setPurchaseReport] = useState([]);
+const [generatedReport, setGeneratedReport] = useState(null);
 
     useEffect(() => {
         loadReports();
@@ -46,6 +47,7 @@ const [purchaseReport, setPurchaseReport] = useState([]);
         const supplierRes = await API.get("/reports/suppliers");
 
         const purchaseRes = await API.get("/reports/purchaseorders");
+        const generatedRes = await API.get("/reports/generate");
 
         setReports(reportsRes.data);
 
@@ -60,7 +62,7 @@ const [purchaseReport, setPurchaseReport] = useState([]);
         setSupplierReport(supplierRes.data);
 
         setPurchaseReport(purchaseRes.data);
-
+        setGeneratedReport(generatedRes.data);
     }
 
     catch(error){
@@ -551,6 +553,37 @@ const [purchaseReport, setPurchaseReport] = useState([]);
     </tbody>
 
 </table>
+         <h3 className="mt-5">📄 Generated Report</h3>
+
+{
+    generatedReport && (
+
+        <div className="card shadow p-4 mb-5">
+
+            <p><strong>Report Date:</strong> {generatedReport.reportDate}</p>
+
+            <p><strong>Total Medicines:</strong> {generatedReport.totalMedicines}</p>
+
+            <p><strong>Total Suppliers:</strong> {generatedReport.totalSuppliers}</p>
+
+            <p><strong>Total Inventory:</strong> {generatedReport.totalInventory}</p>
+
+            <p><strong>Low Stock:</strong> {generatedReport.lowStock}</p>
+
+            <p><strong>Expiring Soon:</strong> {generatedReport.expiringSoon}</p>
+
+            <p><strong>Expired:</strong> {generatedReport.expired}</p>
+
+            <hr />
+
+            <h5>Summary</h5>
+
+            <p>{generatedReport.summary}</p>
+
+        </div>
+
+    )
+}
             
             </div>
 

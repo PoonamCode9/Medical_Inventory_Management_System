@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.medistock.dto.ReportResponse;
 import com.medistock.entity.ExpiryTracking;
 import com.medistock.entity.Medicine;
 import com.medistock.entity.PurchaseOrder;
@@ -83,5 +84,9 @@ public List<Supplier> getSupplierReport() {
 @GetMapping("/purchaseorders")
 public List<PurchaseOrder> getPurchaseOrderReport() {
     return reportService.getPurchaseOrderReport();
+}
+@GetMapping("/generate")
+public ReportResponse generateReport() {
+    return reportService.generateReport();
 }
 }

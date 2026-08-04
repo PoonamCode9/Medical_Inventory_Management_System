@@ -13,6 +13,8 @@ import com.medistock.dto.LoginResponse;
 import com.medistock.service.JwtService;
 import com.medistock.entity.Role;
 import com.medistock.repository.RoleRepository;
+import com.medistock.dto.UpdateProfileRequest;
+import com.medistock.dto.ResetPasswordRequest;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -75,5 +77,51 @@ public User getUserById(Long id) {
 
     return userRepository.findById(id).orElse(null);
 
+}
+@Override
+public User getProfile(String email) {
+
+    return userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+}
+
+@Override
+public User updateProfile(String email, UpdateProfileRequest request) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+    user.setName(request.getName());
+
+    user.setEmail(request.getEmail());
+
+    if (request.getPassword() != null &&
+            !request.getPassword().isEmpty()) {
+
+        user.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
+
+    }
+
+    return userRepository.save(user);
+
+}
+@Override
+public void resetPassword(String email, ResetPasswordRequest request) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+    // Verify current password
+    if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+        throw new RuntimeException("Current Password is Incorrect");
+    }
+
+    // Encrypt and save new password
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+    userRepository.save(user);
 }
 }
