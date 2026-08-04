@@ -1,0 +1,332 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import WarehouseRoundedIcon from "@mui/icons-material/WarehouseRounded";
+
+import StatCard from "../../components/dashboard/StatCard";
+import RecentActivity from "../../components/dashboard/RecentActivity";
+
+import { getAdminDashboardSummary } from "../../services/dashboardService";
+
+function StaffDashboard() {
+
+    const email = localStorage.getItem("email");
+
+    const [summary, setSummary] = useState({
+
+        totalMedicines: 0,
+        totalInventoryUnits: 0,
+        lowStockMedicines: 0
+
+    });
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const loadDashboard = useCallback(async () => {
+
+        try {
+
+            const summaryData = await getAdminDashboardSummary();
+
+            setSummary({
+
+                totalMedicines: summaryData.totalMedicines ?? 0,
+                totalInventoryUnits: summaryData.totalInventoryUnits ?? 0,
+                lowStockMedicines: summaryData.lowStockMedicines ?? 0
+
+            });
+
+            setError("");
+
+        } catch {
+
+            setError("Unable to load dashboard data.");
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    }, []);
+
+    useEffect(() => {
+
+        const timer = setTimeout(() => {
+            loadDashboard();
+        }, 0);
+
+        const interval = setInterval(loadDashboard, 15000);
+
+        return () => {
+            clearTimeout(timer);
+            clearInterval(interval);
+        };
+
+    }, [loadDashboard]);
+
+    const dashboardUpdates = useMemo(() => [
+
+        "Dashboard synchronized successfully",
+        `${summary.totalMedicines} medicines available`,
+        `${summary.lowStockMedicines} medicines require restocking`
+
+    ], [summary]);
+
+    const displayValue = (value) => loading ? "..." : value;
+
+    return (
+
+        <Box>
+
+            {/* Header */}
+
+            <Typography
+                variant="h4"
+                fontWeight="bold"
+                gutterBottom
+            >
+                Welcome Back 👋
+            </Typography>
+
+            <Typography
+                variant="h6"
+                color="primary"
+                gutterBottom
+            >
+                Staff
+            </Typography>
+
+            <Typography
+                color="text.secondary"
+                sx={{ mb: 1 }}
+            >
+                Manage medicines and monitor inventory.
+            </Typography>
+
+            <Typography
+                color="text.secondary"
+                sx={{ mb: 4 }}
+            >
+                Logged in as {email}
+            </Typography>
+
+            {error && (
+
+                <Alert
+                    severity="error"
+                    sx={{ mb: 3 }}
+                >
+                    {error}
+                </Alert>
+
+            )}
+
+            {/* Statistics */}
+
+            <Grid container spacing={3}>
+
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <StatCard
+                        title="Medicines"
+                        value={displayValue(summary.totalMedicines)}
+                        icon={<MedicationRoundedIcon />}
+                        color="#1976D2"
+                    />
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <StatCard
+                        title="Inventory"
+                        value={displayValue(summary.totalInventoryUnits)}
+                        icon={<WarehouseRoundedIcon />}
+                        color="#6A1B9A"
+                    />
+
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 4 }}>
+
+                    <StatCard
+                        title="Low Stock"
+                        value={displayValue(summary.lowStockMedicines)}
+                        icon={<WarningAmberRoundedIcon />}
+                        color="#EF6C00"
+                    />
+
+                </Grid>
+
+            </Grid>
+
+            {/* Quick Actions */}
+
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    mt: 4
+                }}
+            >
+
+                <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    gutterBottom
+                >
+                    Quick Actions
+                </Typography>
+
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 2,
+                        flexWrap: "wrap",
+                        mt: 2
+                    }}
+                >
+
+                    <Button
+                        component={RouterLink}
+                        to="/staff/medicines"
+                        variant="contained"
+                        startIcon={<AddRoundedIcon />}
+                    >
+                        Medicines
+                    </Button>
+
+                    <Button
+                        component={RouterLink}
+                        to="/staff/inventory"
+                        variant="outlined"
+                        startIcon={<Inventory2RoundedIcon />}
+                    >
+                        Inventory
+                    </Button>
+
+                </Box>
+
+            </Paper>
+
+            {/* Dashboard Widgets */}
+
+            <Box sx={{ mt: 4 }}>
+
+                <Grid container spacing={3}>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+
+                        <RecentActivity
+                            activities={dashboardUpdates}
+                        />
+
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                p: 3,
+                                borderRadius: 3,
+                                height: "100%"
+                            }}
+                        >
+
+                            <Typography
+                                variant="h6"
+                                fontWeight="bold"
+                                gutterBottom
+                            >
+                                Low Stock Medicines
+                            </Typography>
+
+                            <Typography
+                                color="text.secondary"
+                                sx={{ mt: 2 }}
+                            >
+                                {loading
+                                    ? "Loading..."
+                                    : summary.lowStockMedicines === 0
+                                        ? "No medicines are currently below the minimum stock."
+                                        : `${summary.lowStockMedicines} medicine(s) require immediate restocking.`}
+                            </Typography>
+
+                            <Button
+                                component={RouterLink}
+                                to="/staff/inventory"
+                                variant="contained"
+                                sx={{ mt: 3 }}
+                            >
+                                View Inventory
+                            </Button>
+
+                        </Paper>
+
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 4 }}>
+
+                        <Paper
+                            elevation={3}
+                            sx={{
+                                p: 3,
+                                borderRadius: 3,
+                                height: "100%"
+                            }}
+                        >
+
+                            <Typography
+                                variant="h6"
+                                fontWeight="bold"
+                                gutterBottom
+                            >
+                                Notifications
+                            </Typography>
+
+                            <Typography
+                                color="text.secondary"
+                                sx={{ mt: 2 }}
+                            >
+                                No new notifications.
+                            </Typography>
+
+                            <Button
+                                component={RouterLink}
+                                to="/staff/notifications"
+                                variant="outlined"
+                                sx={{ mt: 3 }}
+                            >
+                                View Notifications
+                            </Button>
+
+                        </Paper>
+
+                    </Grid>
+
+                </Grid>
+
+            </Box>
+
+        </Box>
+
+    );
+
+}
+
+export default StaffDashboard;
