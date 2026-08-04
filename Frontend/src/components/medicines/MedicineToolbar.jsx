@@ -1,7 +1,13 @@
-import { Box, Button, TextField } from "@mui/material";
+import {
+    Box,
+    Button,
+    TextField
+} from "@mui/material";
+
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 function MedicineToolbar({
+    role,
     searchTerm,
     onSearchChange,
     onAdd
@@ -26,7 +32,9 @@ function MedicineToolbar({
                 variant="outlined"
                 size="small"
                 value={searchTerm}
-                onChange={(event) => onSearchChange(event.target.value)}
+                onChange={(event) =>
+                    onSearchChange(event.target.value)
+                }
                 sx={{
                     minWidth: 300,
                     flexGrow: 1,
@@ -34,16 +42,22 @@ function MedicineToolbar({
                 }}
             />
 
-            <Button
-                variant="contained"
-                startIcon={<AddRoundedIcon />}
-                onClick={onAdd}
-                sx={{
-                    whiteSpace: "nowrap"
-                }}
-            >
-                Add Medicine
-            </Button>
+            {(role === "ADMIN" || role === "PHARMACIST") && (
+
+                <Button
+                    variant="contained"
+                    startIcon={<AddRoundedIcon />}
+                    onClick={onAdd}
+                    sx={{
+                        whiteSpace: "nowrap"
+                    }}
+                >
+
+                    Add Medicine
+
+                </Button>
+
+            )}
 
         </Box>
 

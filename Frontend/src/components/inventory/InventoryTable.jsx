@@ -68,7 +68,9 @@ function InventoryTable({
                         size="small"
                     />
                 );
+
         }
+
     };
 
     if (inventory.length === 0) {
@@ -82,12 +84,15 @@ function InventoryTable({
                     textAlign: "center"
                 }}
             >
+
                 <Typography color="text.secondary">
                     No inventory found.
                 </Typography>
+
             </Paper>
 
         );
+
     }
 
     return (
@@ -139,9 +144,11 @@ function InventoryTable({
                             <strong>Status</strong>
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Actions</strong>
-                        </TableCell>
+                        {(role === "ADMIN" || role === "PHARMACIST") && (
+                            <TableCell align="center">
+                                <strong>Actions</strong>
+                            </TableCell>
+                        )}
 
                     </TableRow>
 
@@ -192,29 +199,39 @@ function InventoryTable({
                                 {getStatusChip(item.status)}
                             </TableCell>
 
-                            <TableCell align="center">
+                            {(role === "ADMIN" || role === "PHARMACIST") && (
 
-                                {/* Admin & Pharmacist */}
-                                {(role === "ADMIN" || role === "PHARMACIST") && onEdit && (
-                                    <IconButton
-                                        color="primary"
-                                        onClick={() => onEdit(item)}
-                                    >
-                                        <EditRoundedIcon />
-                                    </IconButton>
-                                )}
+                                <TableCell align="center">
 
-                                {/* Admin Only */}
-                                {role === "ADMIN" && onDelete && (
-                                    <IconButton
-                                        color="error"
-                                        onClick={() => onDelete(item)}
-                                    >
-                                        <DeleteRoundedIcon />
-                                    </IconButton>
-                                )}
+                                    {onEdit && (
 
-                            </TableCell>
+                                        <IconButton
+                                            color="primary"
+                                            onClick={() => onEdit(item)}
+                                        >
+
+                                            <EditRoundedIcon />
+
+                                        </IconButton>
+
+                                    )}
+
+                                    {role === "ADMIN" && onDelete && (
+
+                                        <IconButton
+                                            color="error"
+                                            onClick={() => onDelete(item)}
+                                        >
+
+                                            <DeleteRoundedIcon />
+
+                                        </IconButton>
+
+                                    )}
+
+                                </TableCell>
+
+                            )}
 
                         </TableRow>
 

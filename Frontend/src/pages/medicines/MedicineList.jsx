@@ -29,6 +29,9 @@ function MedicineList() {
 
     const [selectedMedicine, setSelectedMedicine] = useState(null);
 
+    // Logged-in user's role
+    const role = localStorage.getItem("role");
+
     const loadMedicines = async () => {
 
         try {
@@ -38,11 +41,13 @@ function MedicineList() {
             const data = await getMedicines();
 
             setMedicines(data);
+
             setError("");
 
         } catch (err) {
 
             console.error(err);
+
             setError("Unable to load medicines.");
 
         } finally {
@@ -56,7 +61,9 @@ function MedicineList() {
     useEffect(() => {
 
         const timer = setTimeout(() => {
+
             loadMedicines();
+
         }, 0);
 
         return () => clearTimeout(timer);
@@ -64,7 +71,9 @@ function MedicineList() {
     }, []);
 
     const filteredMedicines = medicines.filter((medicine) =>
-        medicine.name.toLowerCase().includes(searchTerm.toLowerCase())
+        medicine.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -80,17 +89,26 @@ function MedicineList() {
             </Typography>
 
             {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
+
+                <Alert
+                    severity="error"
+                    sx={{ mb: 3 }}
+                >
                     {error}
                 </Alert>
+
             )}
 
             <MedicineToolbar
+                role={role}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onAdd={() => {
+
                     setSelectedMedicine(null);
+
                     setDialogOpen(true);
+
                 }}
             />
 
@@ -101,20 +119,29 @@ function MedicineList() {
                     justifyContent="center"
                     mt={5}
                 >
+
                     <CircularProgress />
+
                 </Box>
 
             ) : (
 
                 <MedicineTable
+                    role={role}
                     medicines={filteredMedicines}
                     onEdit={(medicine) => {
+
                         setSelectedMedicine(medicine);
+
                         setDialogOpen(true);
+
                     }}
                     onDelete={(medicine) => {
+
                         setSelectedMedicine(medicine);
+
                         setDeleteOpen(true);
+
                     }}
                 />
 

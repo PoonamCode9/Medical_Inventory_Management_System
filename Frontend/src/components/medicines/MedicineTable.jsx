@@ -19,8 +19,12 @@ function MedicineTable({
     onDelete
 }) {
 
+    const showActions = onEdit || onDelete;
+
     if (medicines.length === 0) {
+
         return (
+
             <Paper
                 elevation={2}
                 sx={{
@@ -28,11 +32,15 @@ function MedicineTable({
                     textAlign: "center"
                 }}
             >
+
                 <Typography color="text.secondary">
                     No medicines found.
                 </Typography>
+
             </Paper>
+
         );
+
     }
 
     return (
@@ -64,9 +72,13 @@ function MedicineTable({
                             <strong>Supplier</strong>
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Actions</strong>
-                        </TableCell>
+                        {showActions && (
+
+                            <TableCell align="center">
+                                <strong>Actions</strong>
+                            </TableCell>
+
+                        )}
 
                     </TableRow>
 
@@ -97,31 +109,39 @@ function MedicineTable({
                                 {medicine.supplierName}
                             </TableCell>
 
-                            <TableCell align="center">
+                            {showActions && (
 
-                                {onEdit && (
+                                <TableCell align="center">
 
-                                    <IconButton
-                                        color="primary"
-                                        onClick={() => onEdit(medicine)}
-                                    >
-                                        <EditRoundedIcon />
-                                    </IconButton>
+                                    {onEdit && (
 
-                                )}
+                                        <IconButton
+                                            color="primary"
+                                            onClick={() => onEdit(medicine)}
+                                        >
 
-                                {onDelete && (
+                                            <EditRoundedIcon />
 
-                                    <IconButton
-                                        color="error"
-                                        onClick={() => onDelete(medicine)}
-                                    >
-                                        <DeleteRoundedIcon />
-                                    </IconButton>
+                                        </IconButton>
 
-                                )}
+                                    )}
 
-                            </TableCell>
+                                    {onDelete && (
+
+                                        <IconButton
+                                            color="error"
+                                            onClick={() => onDelete(medicine)}
+                                        >
+
+                                            <DeleteRoundedIcon />
+
+                                        </IconButton>
+
+                                    )}
+
+                                </TableCell>
+
+                            )}
 
                         </TableRow>
 
