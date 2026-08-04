@@ -1,4 +1,6 @@
 HELP.md
+
+# Maven
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -14,10 +16,13 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+
+### VS Code ###
+.vscode/
 
 ### NetBeans ###
 /nbproject/private/
@@ -25,9 +30,18 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+### Build ###
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+### macOS ###
+.DS_Store
+
+### Logs ###
+*.log
+
+### Environment ###
+.env
+.env.*
