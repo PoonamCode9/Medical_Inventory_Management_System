@@ -63,7 +63,7 @@ export default function ExpiryTracker() {
     // Status category filter
     if (activeFilter === 'EXPIRED') return alert.status === 'Expired';
     if (activeFilter === 'CRITICAL') return alert.status === 'Critical';
-    if (activeFilter === 'EXPIRING_SOON') return alert.status === 'Expiring Soon';
+    if (activeFilter === 'EXPIRING_SOON') return alert.status === 'Expiring Soon' || alert.status === 'Critical' || alert.status === 'Expired';
     if (activeFilter === 'SAFE') return alert.status === 'Safe';
 
     return true;

@@ -58,8 +58,11 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public Inventory stockIn(Integer medicineId, Integer quantity, String reason, String email) {
         log.info("Stock in request for medicine ID: {} by quantity: {} with reason: {}", medicineId, quantity, reason);
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Stock in quantity must be positive. Provided: " + quantity);
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Stock in quantity must be a positive integer greater than zero.");
+        }
+        if (reason == null || reason.trim().length() < 10) {
+            throw new IllegalArgumentException("Transaction Reason is mandatory and must be at least 10 characters long.");
         }
 
         Inventory inventory = getInventoryByMedicineId(medicineId);
@@ -68,20 +71,20 @@ public class InventoryServiceImpl implements InventoryService {
         
         int maxStock = inventory.getMaximumStock() != null ? inventory.getMaximumStock() : 1000;
         if (newQty > maxStock) {
-            throw new IllegalArgumentException("Cannot stock in. Total quantity (" + newQty + ") would exceed maximum stock limit (" + maxStock + ").");
+            throw new IllegalArgumentException("Cannot stock in. Total resulting quantity (" + newQty + ") would exceed Maximum Stock limit (" + maxStock + ").");
         }
 
         inventory.setQuantity(newQty);
         inventory.setLastUpdated(LocalDateTime.now());
         Inventory saved = inventoryRepository.save(inventory);
 
-        String activeReason = (reason != null && !reason.trim().isEmpty()) ? reason : "Stock Replenishment";
+        String activeReason = reason.trim();
         logStockMovement(inventory.getMedicine(), email, "STOCK_IN", oldQty, newQty, activeReason);
 
         notificationService.createNotification(
                 null,
                 "Stock In Recorded",
-                "Stock added for medicine \"" + inventory.getMedicine().getMedicineName() + "\" (Batch: " + inventory.getMedicine().getBatchNumber() + "). Quantity added: " + quantity + ". New stock: " + newQty + " by " + email + ". Reason: " + activeReason,
+                "Stock added for medicine \"" + inventory.getMedicine().getMedicineName() + "\" (Batch: " + inventory.getMedicine().getBatchNumber() + "). Quantity added: +" + quantity + ". New stock: " + newQty + " by " + email + ". Reason: " + activeReason,
                 "INFO",
                 "LOW",
                 "INVENTORY",
@@ -95,27 +98,30 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public Inventory stockOut(Integer medicineId, Integer quantity, String reason, String email) {
         log.info("Stock out request for medicine ID: {} by quantity: {} with reason: {}", medicineId, quantity, reason);
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Stock out quantity must be positive. Provided: " + quantity);
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Stock out quantity must be a positive integer greater than zero.");
+        }
+        if (reason == null || reason.trim().length() < 10) {
+            throw new IllegalArgumentException("Transaction Reason is mandatory and must be at least 10 characters long.");
         }
 
         Inventory inventory = getInventoryByMedicineId(medicineId);
         int oldQty = inventory.getQuantity();
         if (oldQty < quantity) {
-            throw new IllegalArgumentException("Insufficient inventory stock quantity. Current stock: " + oldQty + ", requested Stock Out: " + quantity);
+            throw new IllegalArgumentException("Cannot perform Stock Out. Requested quantity (" + quantity + ") exceeds current available stock (" + oldQty + ").");
         }
         int newQty = oldQty - quantity;
         inventory.setQuantity(newQty);
         inventory.setLastUpdated(LocalDateTime.now());
         Inventory saved = inventoryRepository.save(inventory);
 
-        String activeReason = (reason != null && !reason.trim().isEmpty()) ? reason : "Stock Dispensation";
+        String activeReason = reason.trim();
         logStockMovement(inventory.getMedicine(), email, "STOCK_OUT", oldQty, newQty, activeReason);
 
         notificationService.createNotification(
                 null,
                 "Stock Out Recorded",
-                "Stock dispensed for medicine \"" + inventory.getMedicine().getMedicineName() + "\" (Batch: " + inventory.getMedicine().getBatchNumber() + "). Quantity dispensed: " + quantity + ". Remaining stock: " + newQty + " by " + email + ". Reason: " + activeReason,
+                "Stock dispensed for medicine \"" + inventory.getMedicine().getMedicineName() + "\" (Batch: " + inventory.getMedicine().getBatchNumber() + "). Quantity dispensed: -" + quantity + ". Remaining stock: " + newQty + " by " + email + ". Reason: " + activeReason,
                 "INFO",
                 "LOW",
                 "INVENTORY",
@@ -126,7 +132,7 @@ public class InventoryServiceImpl implements InventoryService {
         if (newQty == 0) {
             notificationService.createNotification(
                     null,
-                    "Out Of Stock Alert",
+                    "Out Of Stock Notification",
                     "Medicine \"" + inventory.getMedicine().getMedicineName() + "\" is now out of stock.",
                     "OUT_OF_STOCK",
                     "HIGH",
@@ -136,7 +142,7 @@ public class InventoryServiceImpl implements InventoryService {
         } else if (newQty <= inventory.getMinimumStock()) {
             notificationService.createNotification(
                     null,
-                    "Low Stock Alert",
+                    "Low Stock Warning",
                     "Medicine \"" + inventory.getMedicine().getMedicineName() + "\" stock dropped below minimum. Current stock: " + newQty + " (Minimum: " + inventory.getMinimumStock() + ").",
                     "LOW_STOCK",
                     "HIGH",
@@ -152,36 +158,36 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public Inventory adjustStock(Integer medicineId, Integer quantity, Integer minimumStock, Integer maximumStock, String reason, String email) {
         log.info("Stock adjustment request for medicine ID: {} quantity: {} minimumStock: {} maximumStock: {} reason: {}", medicineId, quantity, minimumStock, maximumStock, reason);
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Quantity cannot be negative. Provided: " + quantity);
+        if (quantity == null || quantity < 0) {
+            throw new IllegalArgumentException("Inventory Quantity must be greater than or equal to zero.");
         }
-        if (minimumStock != null && minimumStock < 0) {
-            throw new IllegalArgumentException("Minimum stock limit cannot be negative.");
+        if (minimumStock == null || minimumStock <= 0) {
+            throw new IllegalArgumentException("Minimum Buffer level must be greater than zero.");
         }
-        if (maximumStock != null && maximumStock < 0) {
-            throw new IllegalArgumentException("Maximum stock limit cannot be negative.");
+        if (maximumStock == null || maximumStock <= minimumStock) {
+            throw new IllegalArgumentException("Maximum Stock limit must always be strictly greater than Minimum Buffer level.");
         }
-        if (minimumStock != null && maximumStock != null && minimumStock > maximumStock) {
-            throw new IllegalArgumentException("Minimum Stock limit (" + minimumStock + ") cannot exceed Maximum Stock limit (" + maximumStock + ").");
+        if (quantity > maximumStock) {
+            throw new IllegalArgumentException("Inventory Quantity (" + quantity + ") cannot exceed Maximum Stock limit (" + maximumStock + ").");
         }
-        if (maximumStock != null && quantity > maximumStock) {
-            throw new IllegalArgumentException("Stock quantity (" + quantity + ") cannot exceed Maximum Stock limit (" + maximumStock + ").");
+        if (reason == null || reason.trim().length() < 10) {
+            throw new IllegalArgumentException("Transaction Reason is mandatory and must be at least 10 characters long.");
         }
 
         Inventory inventory = getInventoryByMedicineId(medicineId);
         int oldQty = inventory.getQuantity();
         inventory.setQuantity(quantity);
-        if (minimumStock != null) {
-            inventory.setMinimumStock(minimumStock);
-        }
-        if (maximumStock != null) {
-            inventory.setMaximumStock(maximumStock);
-        }
+        inventory.setMinimumStock(minimumStock);
+        inventory.setMaximumStock(maximumStock);
         inventory.setLastUpdated(LocalDateTime.now());
         Inventory saved = inventoryRepository.save(inventory);
 
-        String activeReason = (reason != null && !reason.trim().isEmpty()) ? reason : "Inventory Stock Reconciliation";
-        logStockMovement(inventory.getMedicine(), email, "ADJUST", oldQty, quantity, activeReason);
+        String activeReason = reason.trim();
+        String actionType = "ADJUST";
+        if (oldQty != quantity) {
+            actionType = quantity > oldQty ? "BUFFER_INCREASE" : "BUFFER_DECREASE";
+        }
+        logStockMovement(inventory.getMedicine(), email, actionType, oldQty, quantity, activeReason);
 
         notificationService.createNotification(
                 null,
@@ -193,22 +199,21 @@ public class InventoryServiceImpl implements InventoryService {
                 inventory.getInventoryId()
         );
 
-        int threshold = minimumStock != null ? minimumStock : (inventory.getMinimumStock() != null ? inventory.getMinimumStock() : 10);
         if (quantity == 0) {
             notificationService.createNotification(
                     null,
-                    "Out Of Stock Alert",
+                    "Out Of Stock Notification",
                     "Medicine \"" + inventory.getMedicine().getMedicineName() + "\" is now out of stock.",
                     "OUT_OF_STOCK",
                     "HIGH",
                     "INVENTORY",
                     inventory.getInventoryId()
             );
-        } else if (quantity <= threshold) {
+        } else if (quantity <= minimumStock) {
             notificationService.createNotification(
                     null,
-                    "Low Stock Alert",
-                    "Medicine \"" + inventory.getMedicine().getMedicineName() + "\" stock is low. Current stock: " + quantity + " (Minimum: " + threshold + ").",
+                    "Low Stock Warning",
+                    "Medicine \"" + inventory.getMedicine().getMedicineName() + "\" stock is low. Current stock: " + quantity + " (Minimum: " + minimumStock + ").",
                     "LOW_STOCK",
                     "HIGH",
                     "INVENTORY",

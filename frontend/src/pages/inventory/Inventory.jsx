@@ -30,6 +30,7 @@ export default function Inventory() {
   const [maxStockChange, setMaxStockChange] = useState('1000');
   const [adjustQty, setAdjustQty] = useState('');
   const [reasonChange, setReasonChange] = useState('');
+  const [reasonError, setReasonError] = useState('');
 
   // Log History Filters
   const [logSearchMedicine, setLogSearchMedicine] = useState('');
@@ -82,6 +83,9 @@ export default function Inventory() {
 
   useEffect(() => {
     fetchInventory();
+    if (activeTab === 'logs') {
+      fetchLogs();
+    }
 
     const handleWriteSuccess = () => {
       console.log('Real-time sync: reloading inventory data');
@@ -99,8 +103,19 @@ export default function Inventory() {
 
   const handleMoveSubmit = async (e) => {
     e.preventDefault();
-    if (!qtyChange || parseInt(qtyChange, 10) <= 0) {
-      triggerToast('Please input a valid quantity.');
+    setReasonError('');
+    const qtyNum = parseInt(qtyChange, 10);
+    if (!qtyChange || isNaN(qtyNum) || qtyNum <= 0) {
+      triggerToast('Please input a valid transaction quantity greater than zero.');
+      return;
+    }
+
+    let activeReason = reasonChange.trim();
+    if (!activeReason) {
+      activeReason = moveType === 'IN' ? 'Stock replenishment transaction' : 'Stock dispensation transaction';
+    } else if (activeReason.length < 10) {
+      setReasonError('Transaction Reason must be at least 10 characters long.');
+      triggerToast('Transaction Reason must be at least 10 characters long.');
       return;
     }
 
@@ -113,20 +128,30 @@ export default function Inventory() {
       return;
     }
 
+    // Client-side Stock Out limit validation
+    if (moveType === 'OUT') {
+      const selectedItem = inventoryList.find(i => i.medicine?.medicineId?.toString() === medId);
+      if (selectedItem && selectedItem.quantity < qtyNum) {
+        triggerToast(`Cannot dispense ${qtyNum} units. Available stock is only ${selectedItem.quantity} units.`);
+        return;
+      }
+    }
+
     setSubmitLoading(true);
     const endpoint = moveType === 'IN' ? '/api/inventory/stock-in' : '/api/inventory/stock-out';
     const payload = {
       medicineId: parseInt(medId, 10),
-      quantity: parseInt(qtyChange, 10),
-      reason: reasonChange.trim()
+      quantity: qtyNum,
+      reason: activeReason
     };
 
     try {
       const res = await api.post(endpoint, payload);
       if (res.data && res.data.success) {
-        triggerToast(moveType === 'IN' ? 'Stock received successfully.' : 'Stock dispensed successfully.');
+        triggerToast(moveType === 'IN' ? 'Stock received and logged successfully.' : 'Stock dispensed and logged successfully.');
         resetForm();
         fetchInventory();
+        if (activeTab === 'logs') fetchLogs();
       }
     } catch (err) {
       triggerToast(err.response?.data?.message || 'Transaction rejected by server.');
@@ -137,45 +162,56 @@ export default function Inventory() {
 
   const handleAdjustSubmit = async (e) => {
     e.preventDefault();
-    if (adjustQty === '' || parseInt(adjustQty, 10) < 0) {
-      triggerToast('Stock quantity cannot be negative.');
+    setReasonError('');
+    const adjQtyNum = parseInt(adjustQty, 10);
+    const minStockNum = parseInt(minStockChange, 10);
+    const maxStockNum = parseInt(maxStockChange, 10);
+
+    if (adjustQty === '' || isNaN(adjQtyNum) || adjQtyNum < 0) {
+      triggerToast('Inventory Stock quantity must be greater than or equal to zero.');
       return;
     }
-    if (minStockChange === '' || parseInt(minStockChange, 10) < 0) {
-      triggerToast('Minimum stock limit cannot be negative.');
+    if (minStockChange === '' || isNaN(minStockNum) || minStockNum <= 0) {
+      triggerToast('Minimum Buffer level must be greater than zero.');
       return;
     }
-    if (maxStockChange === '' || parseInt(maxStockChange, 10) < 0) {
-      triggerToast('Maximum stock limit cannot be negative.');
+    if (maxStockChange === '' || isNaN(maxStockNum) || maxStockNum <= minStockNum) {
+      triggerToast('Maximum Stock limit must always be strictly greater than Minimum Buffer level.');
       return;
     }
-    if (parseInt(minStockChange, 10) > parseInt(maxStockChange, 10)) {
-      triggerToast('Minimum Stock limit cannot exceed Maximum Stock limit.');
+    if (adjQtyNum > maxStockNum) {
+      triggerToast(`Inventory Quantity (${adjQtyNum}) cannot exceed Maximum Stock limit (${maxStockNum}).`);
       return;
     }
-    if (parseInt(adjustQty, 10) > parseInt(maxStockChange, 10)) {
-      triggerToast('Stock quantity cannot exceed Maximum Stock limit.');
+
+    let activeReason = reasonChange.trim();
+    if (!activeReason) {
+      activeReason = 'Inventory stock level reconciliation';
+    } else if (activeReason.length < 10) {
+      setReasonError('Transaction Reason must be at least 10 characters long.');
+      triggerToast('Transaction Reason must be at least 10 characters long.');
       return;
     }
 
     setSubmitLoading(true);
     const payload = {
       medicineId: parseInt(selectedMedId, 10),
-      quantity: parseInt(adjustQty, 10),
-      minimumStock: parseInt(minStockChange, 10),
-      maximumStock: parseInt(maxStockChange, 10),
-      reason: reasonChange.trim()
+      quantity: adjQtyNum,
+      minimumStock: minStockNum,
+      maximumStock: maxStockNum,
+      reason: activeReason
     };
 
     try {
       const res = await api.post('/api/inventory/adjust', payload);
       if (res.data && res.data.success) {
-        triggerToast('Stock levels manually adjusted.');
+        triggerToast('Stock levels & threshold configurations updated and logged.');
         resetForm();
         fetchInventory();
+        if (activeTab === 'logs') fetchLogs();
       }
     } catch (err) {
-      triggerToast(err.response?.data?.message || 'Adjustment rejected.');
+      triggerToast(err.response?.data?.message || 'Adjustment rejected by server.');
     } finally {
       setSubmitLoading(false);
     }
@@ -207,6 +243,7 @@ export default function Inventory() {
     setMinStockChange('10');
     setMaxStockChange('1000');
     setReasonChange('');
+    setReasonError('');
     setShowAdjustModal(false);
     setShowMoveModal(false);
   };
@@ -305,7 +342,10 @@ export default function Inventory() {
           Current Stock Matrix
         </button>
         <button
-          onClick={() => setActiveTab('logs')}
+          onClick={() => {
+            setActiveTab('logs');
+            fetchLogs();
+          }}
           className={`pb-2.5 text-xs font-bold cursor-pointer transition-all border-b-2 ${
             activeTab === 'logs' ? 'border-[#0F766E] text-[#0F766E]' : 'border-transparent text-gray-400 hover:text-gray-650'
           }`}
@@ -630,14 +670,25 @@ export default function Inventory() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Transaction Reason / Description</label>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Transaction Reason / Description *</label>
                 <input
                   type="text"
-                  className="w-full bg-white border border-gray-300 rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30"
-                  placeholder="e.g. Supplier Restock, Dispensed to patient"
+                  required
+                  className={`w-full bg-white border rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+                    reasonError ? 'border-red-500 bg-red-50/10' : 'border-gray-300'
+                  }`}
+                  placeholder="Mandatory (min 10 characters, e.g., Stock received from supplier shipment)"
                   value={reasonChange}
-                  onChange={(e) => setReasonChange(e.target.value)}
+                  onChange={(e) => {
+                    setReasonChange(e.target.value);
+                    setReasonError('');
+                  }}
                 />
+                {reasonError ? (
+                  <p className="text-[9px] text-red-500 font-bold mt-1">{reasonError}</p>
+                ) : (
+                  <p className="text-[9px] text-gray-400 mt-1">Audit log requires at least 10 characters description.</p>
+                )}
               </div>
 
               <div className="pt-3 border-t border-gray-150 flex justify-end space-x-2.5">
@@ -709,14 +760,25 @@ export default function Inventory() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1 font-sans">Adjustment Reason / Details</label>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1 font-sans">Adjustment Reason / Details *</label>
                 <input
                   type="text"
-                  className="w-full bg-white border border-gray-300 rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30"
-                  placeholder="e.g. Discrepancy reconciliation"
+                  required
+                  className={`w-full bg-white border rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+                    reasonError ? 'border-red-500 bg-red-50/10' : 'border-gray-300'
+                  }`}
+                  placeholder="Mandatory (min 10 characters, e.g., Monthly inventory stock reconciliation)"
                   value={reasonChange}
-                  onChange={(e) => setReasonChange(e.target.value)}
+                  onChange={(e) => {
+                    setReasonChange(e.target.value);
+                    setReasonError('');
+                  }}
                 />
+                {reasonError ? (
+                  <p className="text-[9px] text-red-500 font-bold mt-1">{reasonError}</p>
+                ) : (
+                  <p className="text-[9px] text-gray-400 mt-1">Audit log requires at least 10 characters description.</p>
+                )}
               </div>
 
               <div className="pt-3 border-t border-gray-150 flex justify-end space-x-2.5">

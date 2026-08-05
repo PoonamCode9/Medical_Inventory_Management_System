@@ -9,13 +9,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.math.BigDecimal;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -49,298 +51,230 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
         }
 
         try {
-            // Fetch metadata details
+            // Data variables loaded strictly from backend entities
             String appName = "MediStock";
-            String medicineName = "N/A";
-            String genericName = "N/A";
-            String batchNumber = "N/A";
-            String categoryName = "N/A";
-            String manufacturerName = "N/A";
-            String manufactureDate = "N/A";
-            String expiryDate = "N/A";
-            String unitPrice = "N/A";
+            String medicineName = null;
+            String batchNumber = null;
+            String categoryName = null;
+            String supplierName = null;
+            String expiryDateStr = null;
+            String unitPriceStr = null;
 
-            String currentStock = "N/A";
-            String previousStock = "N/A";
-            String transactionType = "N/A";
-            String transactionQty = "N/A";
-            String stockStatus = "N/A";
+            Integer currentStockVal = null;
+            Integer minimumStockVal = null;
+            String stockStatusText = null;
+            String stockBadgeBg = "#10B981"; // Default Green
+            String stockBadgeColor = "#FFFFFF";
 
-            String supplierName = "N/A";
-            String supplierContact = "N/A";
-            String supplierPhone = "N/A";
-            String supplierEmail = "N/A";
+            String notifType = notification.getType() != null ? notification.getType() : "INFO";
+            String priority = notification.getPriority();
+            String createdBy = "System";
+            String dateStr = notification.getCreatedAt() != null ? DateTimeFormatter.ofPattern("yyyy-MM-dd").format(notification.getCreatedAt()) : DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now());
+            String timeStr = notification.getCreatedAt() != null ? DateTimeFormatter.ofPattern("HH:mm:ss").format(notification.getCreatedAt()) : DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now());
 
-            String poIdStr = "N/A";
-            String expectedDeliveryDate = "N/A"; // Not available in DB schema
-            String poStatus = "N/A";
-            String poTotalCost = "N/A";
-            String poItemsHtml = "";
+            String notifTitle = notification.getTitle() != null ? notification.getTitle().replace("Alert", "Notification") : "MediStock Inventory Notification";
 
-            String daysRemaining = "N/A";
-            String actionRequired = "Please review this alert in the system console.";
-            String notifTitle = notification.getTitle() != null ? notification.getTitle() : "MediStock Notification";
-
-            String relatedModule = notification.getRelatedModule();
-            Integer relatedId = notification.getRelatedEntityId();
-
-            String updatedBy = "System";
+            // Extract creator from message if present
             String msg = notification.getMessage() != null ? notification.getMessage() : "";
             if (msg.contains(" by ")) {
                 int idx = msg.indexOf(" by ");
-                updatedBy = msg.substring(idx + 4).trim();
-                if (updatedBy.endsWith(".")) {
-                    updatedBy = updatedBy.substring(0, updatedBy.length() - 1);
+                String extracted = msg.substring(idx + 4).trim();
+                if (extracted.endsWith(".")) {
+                    extracted = extracted.substring(0, extracted.length() - 1);
+                }
+                if (!extracted.isEmpty()) {
+                    createdBy = extracted;
                 }
             }
 
+            // Determine dynamic priority if missing or normalize
+            if (priority == null || priority.trim().isEmpty()) {
+                if ("LOW_STOCK".equalsIgnoreCase(notifType)) {
+                    priority = "High";
+                } else if ("EXPIRED".equalsIgnoreCase(notifType) || "EXPIRY_ALERT".equalsIgnoreCase(notifType)) {
+                    priority = "Critical";
+                } else if ("MEDICINE_CREATE".equalsIgnoreCase(notifType)) {
+                    priority = "Low";
+                } else if ("MEDICINE_UPDATE".equalsIgnoreCase(notifType) || "MEDICINE_DELETE".equalsIgnoreCase(notifType) || "PURCHASE".equalsIgnoreCase(notifType)) {
+                    priority = "Medium";
+                } else {
+                    priority = "Medium";
+                }
+            }
+
+            // Fetch related entity context dynamically from backend DB
+            String relatedModule = notification.getRelatedModule();
+            Integer relatedId = notification.getRelatedEntityId();
+
+            Medicine medicineEntity = null;
+            Inventory inventoryEntity = null;
+            Supplier supplierEntity = null;
+
             if (relatedModule != null && relatedId != null) {
-                try {
-                    if ("INVENTORY".equalsIgnoreCase(relatedModule)) {
-                        Optional<Inventory> invOpt = inventoryRepository.findById(relatedId);
-                        if (invOpt.isPresent()) {
-                            Inventory inv = invOpt.get();
-                            currentStock = String.valueOf(inv.getQuantity());
-                            Medicine med = inv.getMedicine();
-                            if (med != null) {
-                                medicineName = med.getMedicineName();
-                                genericName = med.getGenericName() != null ? med.getGenericName() : "N/A";
-                                batchNumber = med.getBatchNumber() != null ? med.getBatchNumber() : "N/A";
-                                if (med.getCategory() != null) {
-                                    categoryName = med.getCategory().getCategoryName();
-                                }
-                                manufacturerName = med.getManufacturer() != null ? med.getManufacturer() : "N/A";
-                                manufactureDate = med.getManufactureDate() != null ? med.getManufactureDate().toString() : "N/A";
-                                expiryDate = med.getExpiryDate() != null ? med.getExpiryDate().toString() : "N/A";
-                                unitPrice = med.getSellingPrice() != null ? "₹" + med.getSellingPrice() : (med.getUnitPrice() != null ? "₹" + med.getUnitPrice() : "N/A");
-                                if (med.getSupplier() != null) {
-                                    Supplier s = med.getSupplier();
-                                    supplierName = s.getSupplierName();
-                                    supplierContact = s.getContactPerson() != null ? s.getContactPerson() : "N/A";
-                                    supplierPhone = s.getPhone() != null ? s.getPhone() : "N/A";
-                                    supplierEmail = s.getEmail() != null ? s.getEmail() : "N/A";
-                                }
-
-                                // Query latest stock log for this medicine
-                                List<StockLog> logs = stockLogRepository.findAll();
-                                StockLog latestLog = logs.stream()
-                                    .filter(l -> l.getMedicine() != null && l.getMedicine().getMedicineId().equals(med.getMedicineId()))
-                                    .max(Comparator.comparing(StockLog::getUpdatedAt).thenComparing(StockLog::getStockLogId))
-                                    .orElse(null);
-                                if (latestLog != null) {
-                                    transactionType = latestLog.getAction();
-                                    transactionQty = String.valueOf(Math.abs(latestLog.getNewQuantity() - latestLog.getOldQuantity()));
-                                    previousStock = String.valueOf(latestLog.getOldQuantity());
-                                    currentStock = String.valueOf(latestLog.getNewQuantity());
-                                    if (latestLog.getUser() != null) {
-                                        updatedBy = latestLog.getUser().getEmail();
-                                    }
-                                }
-                            }
-                            stockStatus = inv.getQuantity() > 0 ? "In Stock" : "Out of Stock";
+                if ("MEDICINE".equalsIgnoreCase(relatedModule) || "EXPIRY".equalsIgnoreCase(relatedModule)) {
+                    Optional<Medicine> medOpt = medicineRepository.findById(relatedId);
+                    if (medOpt.isPresent()) {
+                        medicineEntity = medOpt.get();
+                        inventoryEntity = medicineEntity.getInventory();
+                        supplierEntity = medicineEntity.getSupplier();
+                    }
+                } else if ("INVENTORY".equalsIgnoreCase(relatedModule)) {
+                    Optional<Inventory> invOpt = inventoryRepository.findById(relatedId);
+                    if (invOpt.isPresent()) {
+                        inventoryEntity = invOpt.get();
+                        medicineEntity = inventoryEntity.getMedicine();
+                        if (medicineEntity != null) {
+                            supplierEntity = medicineEntity.getSupplier();
                         }
-                    } else if ("EXPIRY".equalsIgnoreCase(relatedModule)) {
-                        Optional<Medicine> medOpt = medicineRepository.findById(relatedId);
-                        if (medOpt.isPresent()) {
-                            Medicine med = medOpt.get();
-                            medicineName = med.getMedicineName();
-                            genericName = med.getGenericName() != null ? med.getGenericName() : "N/A";
-                            batchNumber = med.getBatchNumber() != null ? med.getBatchNumber() : "N/A";
-                            if (med.getCategory() != null) {
-                                categoryName = med.getCategory().getCategoryName();
-                            }
-                            manufacturerName = med.getManufacturer() != null ? med.getManufacturer() : "N/A";
-                            manufactureDate = med.getManufactureDate() != null ? med.getManufactureDate().toString() : "N/A";
-                            expiryDate = med.getExpiryDate() != null ? med.getExpiryDate().toString() : "N/A";
-                            unitPrice = med.getSellingPrice() != null ? "₹" + med.getSellingPrice() : (med.getUnitPrice() != null ? "₹" + med.getUnitPrice() : "N/A");
-                            if (med.getExpiryDate() != null) {
-                                long days = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), med.getExpiryDate());
-                                daysRemaining = days + " days";
-                            }
-                            if (med.getInventory() != null) {
-                                currentStock = String.valueOf(med.getInventory().getQuantity());
-                                stockStatus = med.getInventory().getQuantity() > 0 ? "In Stock" : "Out of Stock";
-                            }
-                            if (med.getSupplier() != null) {
-                                Supplier s = med.getSupplier();
-                                supplierName = s.getSupplierName();
-                                supplierContact = s.getContactPerson() != null ? s.getContactPerson() : "N/A";
-                                supplierPhone = s.getPhone() != null ? s.getPhone() : "N/A";
-                                supplierEmail = s.getEmail() != null ? s.getEmail() : "N/A";
-                            }
-                        }
-                    } else if ("PURCHASE".equalsIgnoreCase(relatedModule)) {
-                        Optional<PurchaseOrder> poOpt = purchaseOrderRepository.findById(relatedId);
-                        if (poOpt.isPresent()) {
-                            PurchaseOrder po = poOpt.get();
-                            poIdStr = String.valueOf(po.getPurchaseOrderId());
-                            poStatus = po.getStatus();
-                            poTotalCost = po.getTotalAmount() != null ? "₹" + po.getTotalAmount() : "N/A";
-                            if (po.getSupplier() != null) {
-                                Supplier s = po.getSupplier();
-                                supplierName = s.getSupplierName();
-                                supplierContact = s.getContactPerson() != null ? s.getContactPerson() : "N/A";
-                                supplierPhone = s.getPhone() != null ? s.getPhone() : "N/A";
-                                supplierEmail = s.getEmail() != null ? s.getEmail() : "N/A";
-                            }
-
-                            if (po.getItems() != null && !po.getItems().isEmpty()) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("<table style='width:100%; border-collapse:collapse; margin-top:8px; font-size:12px;'>");
-                                sb.append("<tr style='background-color:#F8FAFC; color:#475569;'><th style='border:1px solid #E2E8F0; padding:6px; text-align:left;'>Medicine</th><th style='border:1px solid #E2E8F0; padding:6px; text-align:center;'>Qty</th><th style='border:1px solid #E2E8F0; padding:6px; text-align:right;'>Unit Cost</th><th style='border:1px solid #E2E8F0; padding:6px; text-align:right;'>Total</th></tr>");
-                                for (PurchaseOrderItem item : po.getItems()) {
-                                    String medName = item.getMedicine() != null ? item.getMedicine().getMedicineName() : "Unknown";
-                                    int qty = item.getQuantity() != null ? item.getQuantity() : 0;
-                                    BigDecimal uPrice = item.getUnitPrice() != null ? item.getUnitPrice() : BigDecimal.ZERO;
-                                    BigDecimal totalItem = uPrice.multiply(BigDecimal.valueOf(qty));
-                                    sb.append("<tr>");
-                                    sb.append("<td style='border:1px solid #E2E8F0; padding:6px; color:#0F172A;'>").append(medName).append("</td>");
-                                    sb.append("<td style='border:1px solid #E2E8F0; padding:6px; text-align:center; color:#0F172A;'>").append(qty).append("</td>");
-                                    sb.append("<td style='border:1px solid #E2E8F0; padding:6px; text-align:right; color:#0F172A;'>₹").append(uPrice).append("</td>");
-                                    sb.append("<td style='border:1px solid #E2E8F0; padding:6px; text-align:right; color:#0F172A;'>₹").append(totalItem).append("</td>");
-                                    sb.append("</tr>");
-                                }
-                                sb.append("</table>");
-                                poItemsHtml = sb.toString();
-                            }
-                        }
-                    } else if ("MEDICINE".equalsIgnoreCase(relatedModule)) {
-                        Optional<Medicine> medOpt = medicineRepository.findById(relatedId);
-                        if (medOpt.isPresent()) {
-                            Medicine med = medOpt.get();
-                            medicineName = med.getMedicineName();
-                            genericName = med.getGenericName() != null ? med.getGenericName() : "N/A";
-                            batchNumber = med.getBatchNumber() != null ? med.getBatchNumber() : "N/A";
-                            if (med.getCategory() != null) {
-                                categoryName = med.getCategory().getCategoryName();
-                            }
-                            manufacturerName = med.getManufacturer() != null ? med.getManufacturer() : "N/A";
-                            manufactureDate = med.getManufactureDate() != null ? med.getManufactureDate().toString() : "N/A";
-                            expiryDate = med.getExpiryDate() != null ? med.getExpiryDate().toString() : "N/A";
-                            unitPrice = med.getSellingPrice() != null ? "₹" + med.getSellingPrice() : (med.getUnitPrice() != null ? "₹" + med.getUnitPrice() : "N/A");
-                            if (med.getInventory() != null) {
-                                currentStock = String.valueOf(med.getInventory().getQuantity());
-                                stockStatus = med.getInventory().getQuantity() > 0 ? "In Stock" : "Out of Stock";
-                            }
-                            if (med.getSupplier() != null) {
-                                Supplier s = med.getSupplier();
-                                supplierName = s.getSupplierName();
-                                supplierContact = s.getContactPerson() != null ? s.getContactPerson() : "N/A";
-                                supplierPhone = s.getPhone() != null ? s.getPhone() : "N/A";
-                                supplierEmail = s.getEmail() != null ? s.getEmail() : "N/A";
+                    }
+                } else if ("PURCHASE".equalsIgnoreCase(relatedModule)) {
+                    Optional<PurchaseOrder> poOpt = purchaseOrderRepository.findById(relatedId);
+                    if (poOpt.isPresent()) {
+                        PurchaseOrder po = poOpt.get();
+                        supplierEntity = po.getSupplier();
+                        if (po.getItems() != null && !po.getItems().isEmpty()) {
+                            medicineEntity = po.getItems().get(0).getMedicine();
+                            if (medicineEntity != null) {
+                                inventoryEntity = medicineEntity.getInventory();
                             }
                         }
                     }
-                } catch (Exception ex) {
-                    log.warn("EmailNotificationService: Error loading entity details for email rendering. Fallbacks will be used.", ex);
                 }
             }
 
-            // Customize Action Required message based on alert type
-            String notifType = notification.getType() != null ? notification.getType() : "INFO";
-            if ("LOW_STOCK".equals(notifType)) {
-                actionRequired = "Urgent: Stock level is low. Please place a purchase order soon to replenish stock.";
-            } else if ("OUT_OF_STOCK".equals(notifType)) {
-                actionRequired = "Critical: Medicine is out of stock! Immediate procurement is required to restore supply.";
-            } else if ("EXPIRY_ALERT".equals(notifType)) {
-                actionRequired = "Warning: Medicine batch is expiring soon. Please ensure stock rotation or plan disposal.";
-            } else if ("EXPIRED".equals(notifType)) {
-                actionRequired = "Critical: Medicine batch has expired! Remove immediately from active stock and schedule disposal.";
-            } else if ("PURCHASE_DELIVERED".equals(notifType) || "PURCHASE_RECEIVED".equals(notifType)) {
-                actionRequired = "Info: Purchase order shipment received. Inventory has been replenished automatically.";
+            // Fallback lookup if medicine was found but inventory entity unpopulated
+            if (medicineEntity != null && inventoryEntity == null) {
+                inventoryEntity = medicineEntity.getInventory();
             }
 
-            String dateStr = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(notification.getCreatedAt());
-            String timeStr = DateTimeFormatter.ofPattern("HH:mm:ss").format(notification.getCreatedAt());
-
-            String typeColor = "#0F766E"; // Teal
-            if ("DANGER".equalsIgnoreCase(notification.getPriority()) || "HIGH".equalsIgnoreCase(notification.getPriority())) {
-                typeColor = "#B91C1C"; // Crimson red
-            } else if ("WARNING".equalsIgnoreCase(notification.getPriority()) || "MEDIUM".equalsIgnoreCase(notification.getPriority())) {
-                typeColor = "#D97706"; // Amber
+            // Bind values directly from backend entities
+            if (medicineEntity != null) {
+                medicineName = medicineEntity.getMedicineName();
+                batchNumber = medicineEntity.getBatchNumber();
+                if (medicineEntity.getCategory() != null) {
+                    categoryName = medicineEntity.getCategory().getCategoryName();
+                }
+                if (supplierEntity == null && medicineEntity.getSupplier() != null) {
+                    supplierEntity = medicineEntity.getSupplier();
+                }
+                if (medicineEntity.getExpiryDate() != null) {
+                    expiryDateStr = medicineEntity.getExpiryDate().toString();
+                }
+                BigDecimal price = medicineEntity.getSellingPrice() != null ? medicineEntity.getSellingPrice() : medicineEntity.getUnitPrice();
+                if (price != null) {
+                    unitPriceStr = "₹" + String.format("%.2f", price);
+                }
             }
 
-            // Construct Structured Sections
-            String medicineDetailsSection = "";
-            if (!"N/A".equals(medicineName)) {
-                medicineDetailsSection = 
-                    "<div style='margin-bottom: 24px;'>" +
-                    "  <div style='border-left: 4px solid " + typeColor + "; padding-left: 8px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: #475569; margin-bottom: 8px;'>Medicine Details</div>" +
-                    "  <table class='details-table'>" +
-                    "    <tr><th>Medicine Name</th><td>" + medicineName + "</td></tr>" +
-                    "    <tr><th>Generic Name</th><td>" + genericName + "</td></tr>" +
-                    "    <tr><th>Batch Number</th><td>" + batchNumber + "</td></tr>" +
-                    "    <tr><th>Category</th><td>" + categoryName + "</td></tr>" +
-                    "    <tr><th>Manufacturer</th><td>" + manufacturerName + "</td></tr>" +
-                    "    <tr><th>Manufacturing Date</th><td>" + manufactureDate + "</td></tr>" +
-                    "    <tr><th>Expiry Date</th><td>" + expiryDate + "</td></tr>" +
-                    "    <tr><th>Unit Price</th><td>" + unitPrice + "</td></tr>" +
-                    "  </table>" +
-                    "</div>";
+            if (supplierEntity != null) {
+                supplierName = supplierEntity.getSupplierName();
             }
 
-            String inventoryDetailsSection = "";
-            if ("INVENTORY".equalsIgnoreCase(relatedModule) || "EXPIRY".equalsIgnoreCase(relatedModule) || "MEDICINE".equalsIgnoreCase(relatedModule)) {
+            if (inventoryEntity != null) {
+                currentStockVal = inventoryEntity.getQuantity();
+                minimumStockVal = inventoryEntity.getMinimumStock();
+            }
+
+            // Compute Stock Status and badge color dynamically
+            boolean isExpired = false;
+            if (medicineEntity != null && medicineEntity.getExpiryDate() != null) {
+                if (medicineEntity.getExpiryDate().isBefore(LocalDate.now())) {
+                    isExpired = true;
+                }
+            }
+
+            if (isExpired) {
+                stockStatusText = "Expired";
+                stockBadgeBg = "#991B1B"; // Dark Red
+                stockBadgeColor = "#FFFFFF";
+            } else if (currentStockVal != null && currentStockVal == 0) {
+                stockStatusText = "Out of Stock";
+                stockBadgeBg = "#DC2626"; // Red
+                stockBadgeColor = "#FFFFFF";
+            } else if (currentStockVal != null && minimumStockVal != null && currentStockVal <= minimumStockVal) {
+                stockStatusText = "Low Stock";
+                stockBadgeBg = "#F97316"; // Orange
+                stockBadgeColor = "#FFFFFF";
+            } else {
+                stockStatusText = "Healthy Stock";
+                stockBadgeBg = "#10B981"; // Green
+                stockBadgeColor = "#FFFFFF";
+            }
+
+            // Priority badge styling dynamically
+            String priorityBadgeBg = "#3B82F6"; // Default Blue Medium
+            if ("Critical".equalsIgnoreCase(priority) || "DANGER".equalsIgnoreCase(priority)) {
+                priorityBadgeBg = "#991B1B"; // Dark Red
+            } else if ("High".equalsIgnoreCase(priority) || "HIGH".equalsIgnoreCase(priority)) {
+                priorityBadgeBg = "#EF4444"; // Bright Red
+            } else if ("Medium".equalsIgnoreCase(priority) || "MEDIUM".equalsIgnoreCase(priority) || "WARNING".equalsIgnoreCase(priority)) {
+                priorityBadgeBg = "#F59E0B"; // Amber / Orange
+            } else if ("Low".equalsIgnoreCase(priority) || "LOW".equalsIgnoreCase(priority) || "INFO".equalsIgnoreCase(priority)) {
+                priorityBadgeBg = "#10B981"; // Green
+            }
+
+            // Build dynamic sections safely omitting N/A defaults
+            String medicineSectionHtml = "";
+            if (medicineName != null || batchNumber != null || categoryName != null || supplierName != null || expiryDateStr != null || unitPriceStr != null) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("<div style='margin-bottom: 24px;'>")
-                  .append("  <div style='border-left: 4px solid ").append(typeColor).append("; padding-left: 8px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: #475569; margin-bottom: 8px;'>Inventory Details</div>")
-                  .append("  <table class='details-table'>");
-                
-                if ("INVENTORY".equalsIgnoreCase(relatedModule)) {
-                    sb.append("    <tr><th>Transaction Type</th><td>").append(transactionType).append("</td></tr>")
-                      .append("    <tr><th>Transaction Quantity</th><td>").append(transactionQty).append("</td></tr>")
-                      .append("    <tr><th>Previous Stock</th><td>").append(previousStock).append("</td></tr>");
+                sb.append("<div style='margin-bottom: 24px; background: #FFFFFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);'>")
+                  .append("  <div style='font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #004D40; margin-bottom: 14px; border-bottom: 2px solid #E0F2F1; padding-bottom: 8px;'>Medicine Details</div>")
+                  .append("  <table style='width: 100%; border-collapse: collapse;'>");
+
+                if (medicineName != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500; width: 40%;'>Medicine Name</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(medicineName).append("</td></tr>");
                 }
-                sb.append("    <tr><th>Current Stock Quantity</th><td>").append(currentStock).append("</td></tr>")
-                  .append("    <tr><th>Stock Status</th><td>").append(stockStatus).append("</td></tr>");
-                
-                if ("EXPIRY".equalsIgnoreCase(relatedModule)) {
-                    sb.append("    <tr><th>Days Remaining</th><td>").append(daysRemaining).append("</td></tr>");
+                if (batchNumber != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Batch Number</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(batchNumber).append("</td></tr>");
                 }
-                
+                if (categoryName != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Category</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(categoryName).append("</td></tr>");
+                }
+                if (supplierName != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Supplier</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(supplierName).append("</td></tr>");
+                }
+                if (expiryDateStr != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Expiry Date</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(expiryDateStr).append("</td></tr>");
+                }
+                if (unitPriceStr != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Unit Price</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(unitPriceStr).append("</td></tr>");
+                }
+
                 sb.append("  </table>")
                   .append("</div>");
-                inventoryDetailsSection = sb.toString();
+                medicineSectionHtml = sb.toString();
             }
 
-            String purchaseOrderSection = "";
-            if ("PURCHASE".equalsIgnoreCase(relatedModule)) {
-                purchaseOrderSection = 
-                    "<div style='margin-bottom: 24px;'>" +
-                    "  <div style='border-left: 4px solid " + typeColor + "; padding-left: 8px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: #475569; margin-bottom: 8px;'>Purchase Order Details</div>" +
-                    "  <table class='details-table'>" +
-                    "    <tr><th>Purchase Order ID</th><td>" + poIdStr + "</td></tr>" +
-                    "    <tr><th>Purchase Status</th><td>" + poStatus + "</td></tr>" +
-                    "    <tr><th>Expected Delivery Date</th><td>" + expectedDeliveryDate + "</td></tr>" +
-                    "    <tr><th>Total Cost</th><td>" + poTotalCost + "</td></tr>" +
-                    "  </table>" +
-                    "  <div style='margin-top:12px; font-weight:600; font-size:12px; color:#475569;'>Ordered Items:</div>" +
-                    poItemsHtml +
-                    "</div>";
+            String inventorySectionHtml = "";
+            if (currentStockVal != null || minimumStockVal != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("<div style='margin-bottom: 24px; background: #FFFFFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);'>")
+                  .append("  <div style='font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #004D40; margin-bottom: 14px; border-bottom: 2px solid #E0F2F1; padding-bottom: 8px;'>Inventory Details</div>")
+                  .append("  <table style='width: 100%; border-collapse: collapse;'>");
+
+                if (currentStockVal != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500; width: 40%;'>Current Stock</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(currentStockVal).append(" units</td></tr>");
+                }
+                if (minimumStockVal != null) {
+                    sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Minimum Stock</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>").append(minimumStockVal).append(" units</td></tr>");
+                }
+
+                sb.append("<tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Stock Status</td><td style='padding: 8px 0; font-size: 13px;'><span style='display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background-color: ").append(stockBadgeBg).append("; color: ").append(stockBadgeColor).append(";'>").append(stockStatusText).append("</span></td></tr>");
+
+                sb.append("  </table>")
+                  .append("</div>");
+                inventorySectionHtml = sb.toString();
             }
 
-            String supplierDetailsSection = "";
-            if (!"N/A".equals(supplierName)) {
-                supplierDetailsSection = 
-                    "<div style='margin-bottom: 24px;'>" +
-                    "  <div style='border-left: 4px solid " + typeColor + "; padding-left: 8px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: #475569; margin-bottom: 8px;'>Supplier Details</div>" +
-                    "  <table class='details-table'>" +
-                    "    <tr><th>Supplier Name</th><td>" + supplierName + "</td></tr>" +
-                    "    <tr><th>Contact Person</th><td>" + supplierContact + "</td></tr>" +
-                    "    <tr><th>Phone Number</th><td>" + supplierPhone + "</td></tr>" +
-                    "    <tr><th>Email Address</th><td>" + supplierEmail + "</td></tr>" +
-                    "  </table>" +
-                    "</div>";
-            }
-
-            String notificationDetailsSection = 
-                "<div style='margin-bottom: 24px;'>" +
-                "  <div style='border-left: 4px solid " + typeColor + "; padding-left: 8px; font-weight: 700; font-size: 12px; text-transform: uppercase; color: #475569; margin-bottom: 8px;'>Notification Details</div>" +
-                "  <table class='details-table'>" +
-                "    <tr><th>Notification Type</th><td>" + notifType + "</td></tr>" +
-                "    <tr><th>Priority Level</th><td>" + notification.getPriority() + "</td></tr>" +
-                "    <tr><th>Created / Updated By</th><td>" + updatedBy + "</td></tr>" +
-                "    <tr><th>Date & Time</th><td>" + dateStr + " @ " + timeStr + "</td></tr>" +
+            String notificationSectionHtml = 
+                "<div style='margin-bottom: 24px; background: #FFFFFF; border-radius: 10px; padding: 20px; border: 1px solid #E2E8F0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);'>" +
+                "  <div style='font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #004D40; margin-bottom: 14px; border-bottom: 2px solid #E0F2F1; padding-bottom: 8px;'>Notification Details</div>" +
+                "  <table style='width: 100%; border-collapse: collapse;'>" +
+                "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500; width: 40%;'>Notification Type</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + notifType.replace("_", " ") + "</td></tr>" +
+                "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Priority</td><td style='padding: 8px 0; font-size: 13px;'><span style='display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background-color: " + priorityBadgeBg + "; color: #FFFFFF;'>" + priority + "</span></td></tr>" +
+                "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Created By</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + createdBy + "</td></tr>" +
+                "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Date</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + dateStr + "</td></tr>" +
+                "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Time</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + timeStr + "</td></tr>" +
                 "  </table>" +
                 "</div>";
 
@@ -348,48 +282,43 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 "<html>" +
                 "<head>" +
                 "<meta charset='utf-8'>" +
+                "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
                 "<title>" + notifTitle + "</title>" +
                 "<style>" +
-                "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; margin: 0; padding: 20px; color: #1E293B; }" +
-                ".container { max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid #E2E8F0; }" +
-                ".header { background-color: #0F766E; padding: 24px; text-align: center; color: #FFFFFF; }" +
-                ".header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }" +
-                ".header p { margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; font-weight: 500; }" +
-                ".content { padding: 32px; }" +
-                ".alert-badge { display: inline-block; padding: 6px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #FFFFFF; margin-bottom: 20px; }" +
-                "h2 { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; color: #0F172A; }" +
-                ".desc { font-size: 14px; line-height: 1.5; color: #475569; margin: 0 0 24px 0; }" +
-                ".details-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 13px; }" +
-                ".details-table th, .details-table td { padding: 10px 14px; border-bottom: 1px solid #F1F5F9; text-align: left; }" +
-                ".details-table th { background-color: #F8FAFC; color: #475569; font-weight: 600; width: 40%; }" +
-                ".details-table td { color: #0F172A; font-weight: 500; }" +
-                ".action-box { background-color: #FFFBEB; border-left: 4px solid #F59E0B; padding: 16px; border-radius: 4px; font-size: 13px; color: #92400E; font-weight: 500; line-height: 1.5; margin-bottom: 24px; }" +
-                ".footer { background-color: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }" +
+                "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F0FDF4; margin: 0; padding: 24px 12px; color: #1E293B; }" +
+                ".wrapper { max-width: 620px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); border: 1px solid #E2E8F0; }" +
+                ".header-banner { background: linear-gradient(135deg, #004D40 0%, #00796B 100%); padding: 32px 24px; text-align: center; color: #FFFFFF; }" +
+                ".header-banner h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }" +
+                ".header-banner p { margin: 6px 0 0 0; font-size: 14px; opacity: 0.9; font-weight: 500; letter-spacing: 0.2px; }" +
+                ".main-body { padding: 32px 24px; background-color: #F8FAFC; }" +
+                ".message-card { background: #FFFFFF; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #00796B; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }" +
+                ".message-card h2 { margin: 0 0 8px 0; font-size: 16px; color: #0F172A; font-weight: 700; }" +
+                ".message-card p { margin: 0; font-size: 14px; color: #475569; line-height: 1.5; }" +
+                ".footer-banner { background-color: #F1F5F9; padding: 24px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid #E2E8F0; line-height: 1.6; }" +
+                ".footer-banner p { margin: 4px 0; }" +
                 "</style>" +
                 "</head>" +
                 "<body>" +
-                "<div class='container'>" +
-                "  <div class='header' style='background-color: " + typeColor + ";'>" +
-                "    <h1>" + appName + " Pharmacy Portal</h1>" +
-                "    <p>Automated Systems Monitoring Alert</p>" +
+                "<div class='wrapper'>" +
+                "  <div class='header-banner'>" +
+                "    <h1>MediStock Pharmacy Portal</h1>" +
+                "    <p>Inventory Management Notification</p>" +
                 "  </div>" +
-                "  <div class='content'>" +
-                "    <div class='alert-badge' style='background-color: " + typeColor + ";'>" + notifType.replace("_", " ") + "</div>" +
-                "    <h2>" + notifTitle + "</h2>" +
-                "    <p class='desc'>" + notification.getMessage() + "</p>" +
-                
-                medicineDetailsSection +
-                inventoryDetailsSection +
-                purchaseOrderSection +
-                supplierDetailsSection +
-                notificationDetailsSection +
-                
-                "    <div class='action-box'>" +
-                "      <strong>Required Action:</strong><br>" + actionRequired +
+                "  <div class='main-body'>" +
+                "    <div class='message-card'>" +
+                "      <h2>" + notifTitle + "</h2>" +
+                "      <p>" + msg + "</p>" +
                 "    </div>" +
+                
+                medicineSectionHtml +
+                inventorySectionHtml +
+                notificationSectionHtml +
+                
                 "  </div>" +
-                "  <div class='footer'>" +
-                "    This is an automated notification generated by the MediStock Medical Inventory Management Platform. Please do not reply to this email." +
+                "  <div class='footer-banner'>" +
+                "    <p>This is an automated notification generated by MediStock.</p>" +
+                "    <p>Please do not reply to this email.</p>" +
+                "    <p style='font-weight: 600; color: #334155; margin-top: 8px;'>© 2026 MediStock Pharmacy Portal</p>" +
                 "  </div>" +
                 "</div>" +
                 "</body>" +
@@ -398,11 +327,11 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(recipientEmail);
-            helper.setSubject("MediStock Alert: " + notification.getTitle());
+            helper.setSubject("MediStock Inventory Notification: " + notifTitle);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("EmailNotificationService: Successfully sent HTML notification to {}", recipientEmail);
+            log.info("EmailNotificationService: Successfully sent HTML notification email to {}", recipientEmail);
         } catch (Exception e) {
             log.error("EmailNotificationService: Failed to send HTML email via JavaMailSender. Error: {}", e.getMessage());
         }

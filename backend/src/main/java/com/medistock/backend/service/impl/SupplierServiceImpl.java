@@ -130,9 +130,12 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     private void validateSupplier(Supplier supplier, Integer updateId) {
-        // Name validation
-        if (supplier.getSupplierName() == null || supplier.getSupplierName().isEmpty()) {
+        // Name validation (Minimum 3 characters)
+        if (supplier.getSupplierName() == null || supplier.getSupplierName().trim().isEmpty()) {
             throw new IllegalArgumentException("Supplier Name is required.");
+        }
+        if (supplier.getSupplierName().trim().length() < 3) {
+            throw new IllegalArgumentException("Supplier Name must be at least 3 characters long.");
         }
 
         // Duplicate Supplier Name check
@@ -141,32 +144,51 @@ public class SupplierServiceImpl implements SupplierService {
             throw new DuplicateResourceException("Supplier Name already exists.");
         }
 
-        // Phone validation
-        if (supplier.getPhone() == null || supplier.getPhone().isEmpty()) {
-            throw new IllegalArgumentException("Phone number is required.");
+        // Contact Person validation
+        if (supplier.getContactPerson() == null || supplier.getContactPerson().trim().isEmpty()) {
+            throw new IllegalArgumentException("Contact Person is required.");
         }
 
-        if (!PHONE_PATTERN.matcher(supplier.getPhone()).matches()) {
-            throw new IllegalArgumentException("Invalid Phone number format. Must be 10-15 digits.");
+        // Phone validation (Exactly 10 digits)
+        if (supplier.getPhone() == null || supplier.getPhone().trim().isEmpty()) {
+            throw new IllegalArgumentException("Phone number is required.");
+        }
+        String cleanPhone = supplier.getPhone().trim().replaceAll("\\s+", "");
+        if (!cleanPhone.matches("^[0-9]{10}$")) {
+            throw new IllegalArgumentException("Phone number must contain exactly 10 digits.");
         }
 
         // Phone uniqueness validation
-        Optional<Supplier> existingPhone = supplierRepository.findByPhone(supplier.getPhone());
+        Optional<Supplier> existingPhone = supplierRepository.findByPhone(cleanPhone);
         if (existingPhone.isPresent() && (updateId == null || !existingPhone.get().getSupplierId().equals(updateId))) {
             throw new DuplicateResourceException("Supplier Phone number already exists.");
         }
 
-        // Email validation
-        if (supplier.getEmail() != null && !supplier.getEmail().isEmpty()) {
-            if (!EMAIL_PATTERN.matcher(supplier.getEmail()).matches()) {
-                throw new IllegalArgumentException("Invalid Email format.");
-            }
-            
-            // Email uniqueness validation
-            Optional<Supplier> existingEmail = supplierRepository.findByEmail(supplier.getEmail());
-            if (existingEmail.isPresent() && (updateId == null || !existingEmail.get().getSupplierId().equals(updateId))) {
-                throw new DuplicateResourceException("Supplier Email already exists.");
-            }
+        // Email validation (Mandatory and valid format)
+        if (supplier.getEmail() == null || supplier.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Email Address is required.");
+        }
+        if (!EMAIL_PATTERN.matcher(supplier.getEmail().trim()).matches()) {
+            throw new IllegalArgumentException("Invalid Email address format.");
+        }
+        
+        // Email uniqueness validation
+        Optional<Supplier> existingEmail = supplierRepository.findByEmail(supplier.getEmail().trim().toLowerCase());
+        if (existingEmail.isPresent() && (updateId == null || !existingEmail.get().getSupplierId().equals(updateId))) {
+            throw new DuplicateResourceException("Supplier Email already exists.");
+        }
+
+        // Physical Address validation (Minimum 10 characters)
+        if (supplier.getAddress() == null || supplier.getAddress().trim().isEmpty()) {
+            throw new IllegalArgumentException("Physical Address is required.");
+        }
+        if (supplier.getAddress().trim().length() < 10) {
+            throw new IllegalArgumentException("Address must be at least 10 characters long.");
+        }
+
+        // Status validation
+        if (supplier.getStatus() == null) {
+            throw new IllegalArgumentException("Supplier Status is required.");
         }
     }
 }

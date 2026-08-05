@@ -60,24 +60,41 @@ export default function AddEditSupplier() {
 
   const validateForm = () => {
     const errors = {};
-    if (!supplierName.trim()) {
+    const nameVal = supplierName.trim();
+    const contactVal = contactPerson.trim();
+    const phoneVal = phone.trim().replace(/\s+/g, '');
+    const emailVal = email.trim();
+    const addressVal = address.trim();
+
+    if (!nameVal) {
       errors.supplierName = 'Supplier Name is required.';
+    } else if (nameVal.length < 3) {
+      errors.supplierName = 'Supplier Name must be at least 3 characters.';
     }
 
-    if (email.trim()) {
+    if (!contactVal) {
+      errors.contactPerson = 'Contact Person is required.';
+    }
+
+    if (!phoneVal) {
+      errors.phone = 'Phone number is required.';
+    } else if (!/^[0-9]{10}$/.test(phoneVal)) {
+      errors.phone = 'Phone number must contain exactly 10 digits.';
+    }
+
+    if (!emailVal) {
+      errors.email = 'Email Address is required.';
+    } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
+      if (!emailRegex.test(emailVal)) {
         errors.email = 'Invalid Email address format.';
       }
     }
 
-    if (!phone.trim()) {
-      errors.phone = 'Phone number is required.';
-    } else {
-      const phoneRegex = /^\+?[0-9]{10,15}$/;
-      if (!phoneRegex.test(phone.trim().replace(/\s+/g, ''))) {
-        errors.phone = 'Invalid Phone number format (Must be 10-15 digits).';
-      }
+    if (!addressVal) {
+      errors.address = 'Physical Address is required.';
+    } else if (addressVal.length < 10) {
+      errors.address = 'Address must be at least 10 characters long.';
     }
 
     setFormErrors(errors);
@@ -197,19 +214,27 @@ export default function AddEditSupplier() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Contact Person</label>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Contact Person *</label>
           <input
             type="text"
-            className="w-full bg-white border border-gray-300 rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30"
+            className={`w-full bg-white border rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+              formErrors.contactPerson ? 'border-red-500 bg-red-50/10' : 'border-gray-300'
+            }`}
             placeholder="e.g. John Doe"
             value={contactPerson}
-            onChange={(e) => setContactPerson(e.target.value)}
+            onChange={(e) => {
+              setContactPerson(e.target.value);
+              setFormErrors(prev => ({ ...prev, contactPerson: null }));
+            }}
           />
+          {formErrors.contactPerson && (
+            <p className="text-[9px] text-red-500 font-bold mt-1">{formErrors.contactPerson}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Phone Number</label>
+            <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Phone Number *</label>
             <input
               ref={phoneRef}
               type="text"
@@ -226,12 +251,12 @@ export default function AddEditSupplier() {
             {formErrors.phone ? (
               <p className="text-[9px] text-red-500 font-bold mt-1">{formErrors.phone}</p>
             ) : (
-              <p className="text-[9px] text-gray-400 mt-1">10-15 digit number format.</p>
+              <p className="text-[9px] text-gray-400 mt-1">Exactly 10 numeric digits.</p>
             )}
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Email Address</label>
+            <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Email Address *</label>
             <input
               ref={emailRef}
               type="text"
@@ -252,7 +277,7 @@ export default function AddEditSupplier() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status</label>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status *</label>
           <select
             className="w-full bg-white border border-gray-300 rounded-card p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 font-medium"
             value={status}
@@ -264,14 +289,22 @@ export default function AddEditSupplier() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Physical Address</label>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Physical Address *</label>
           <textarea
-            className="w-full bg-white border border-gray-300 rounded-[10px] p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 font-medium"
+            className={`w-full bg-white border rounded-[10px] p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 font-medium ${
+              formErrors.address ? 'border-red-500 bg-red-50/10' : 'border-gray-300'
+            }`}
             rows="3"
-            placeholder="Street details, building number, zip..."
+            placeholder="Street details, building number, zip (min 10 chars)..."
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              setFormErrors(prev => ({ ...prev, address: null }));
+            }}
           />
+          {formErrors.address && (
+            <p className="text-[9px] text-red-500 font-bold mt-1">{formErrors.address}</p>
+          )}
         </div>
 
         {/* Action buttons */}

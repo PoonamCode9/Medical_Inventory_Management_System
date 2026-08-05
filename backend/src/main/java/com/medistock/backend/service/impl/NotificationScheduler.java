@@ -51,19 +51,34 @@ public class NotificationScheduler {
 
             if (days < 0) {
                 title = "Medicine Expired";
-                message = "Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expired on " + exp + ".";
+                message = "CRITICAL: Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expired on " + exp + ". Immediate removal and disposal required.";
                 type = "EXPIRED";
-                priority = "HIGH";
+                priority = "Critical";
+            } else if (days == 3) {
+                title = "Critical Expiry Warning - 3 Days Remaining";
+                message = "CRITICAL WARNING: Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expires in 3 days on " + exp + ". High urgency action required.";
+                type = "EXPIRY_ALERT";
+                priority = "Critical";
+            } else if (days == 5) {
+                title = "Critical Expiry Warning - 5 Days Remaining";
+                message = "HIGH WARNING: Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expires in 5 days on " + exp + ". Stock rotation required.";
+                type = "EXPIRY_ALERT";
+                priority = "High";
+            } else if (days == 10) {
+                title = "Expiry Warning Notice - 10 Days Remaining";
+                message = "EXPIRY NOTICE: Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expires in 10 days on " + exp + ". Prepare stock rotation.";
+                type = "EXPIRY_ALERT";
+                priority = "High";
             } else if (days <= 30) {
                 title = "Critical Expiry Warning";
                 message = "Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expires in " + days + " days (Critical).";
                 type = "EXPIRY_ALERT";
-                priority = "HIGH";
+                priority = "High";
             } else if (days <= 60) {
                 title = "Batch Expiring Soon";
                 message = "Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") expires in " + days + " days (Expiring Soon).";
                 type = "EXPIRY_ALERT";
-                priority = "MEDIUM";
+                priority = "Medium";
             }
 
             if (type != null) {
@@ -109,12 +124,12 @@ public class NotificationScheduler {
             String priority = null;
 
             if (qty == 0) {
-                title = "Out Of Stock Alert";
+                title = "Out Of Stock Notification";
                 message = "Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") is now out of stock.";
                 type = "OUT_OF_STOCK";
                 priority = "HIGH";
             } else if (qty <= minStock) {
-                title = "Low Stock Alert";
+                title = "Low Stock Warning";
                 message = "Medicine \"" + med.getMedicineName() + "\" (Batch: " + med.getBatchNumber() + ") stock has fallen below the minimum stock level. Current quantity: " + qty;
                 type = "LOW_STOCK";
                 priority = "HIGH";

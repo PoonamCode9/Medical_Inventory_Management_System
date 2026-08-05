@@ -117,6 +117,7 @@ public class MedicineServiceImpl implements MedicineService {
                 .action("CREATE")
                 .oldQuantity(0)
                 .newQuantity(request.getQuantity())
+                .reason("New medicine catalog registration")
                 .updatedAt(LocalDateTime.now())
                 .build();
         stockLogRepository.save(stockLog);
@@ -136,7 +137,7 @@ public class MedicineServiceImpl implements MedicineService {
         if (request.getQuantity() <= request.getMinimumStock()) {
             notificationService.createNotification(
                     null,
-                    "Low Stock Alert",
+                    "Low Stock Warning",
                     "Medicine \"" + saved.getMedicineName() + "\" is running low on stock. Current quantity: " + request.getQuantity(),
                     "LOW_STOCK",
                     "HIGH",
@@ -251,6 +252,25 @@ public class MedicineServiceImpl implements MedicineService {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with ID: " + id));
         
+        User user = null;
+        if (email != null && !email.trim().isEmpty()) {
+            user = userRepository.findByEmail(email).orElse(null);
+        }
+
+        int currentQty = medicine.getInventory() != null ? medicine.getInventory().getQuantity() : 0;
+
+        // Log Stock Removal
+        StockLog stockLog = StockLog.builder()
+                .medicine(medicine)
+                .user(user)
+                .action("DELETE")
+                .oldQuantity(currentQty)
+                .newQuantity(0)
+                .reason("Medicine item removed from system catalog by " + email)
+                .updatedAt(LocalDateTime.now())
+                .build();
+        stockLogRepository.save(stockLog);
+
         notificationService.createNotification(
                 null,
                 "Medicine Deleted",
