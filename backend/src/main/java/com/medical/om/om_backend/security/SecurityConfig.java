@@ -87,8 +87,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow Vite React frontend development server
-        configuration.setAllowedOrigins(java.util.Arrays.asList("http://localhost:5173"));
+        // Allow the web app (Vite dev server) and any origin (mobile app / Expo web)
+        configuration.setAllowedOriginPatterns(java.util.Arrays.asList("*"));
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(java.util.Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
         configuration.setAllowCredentials(true);

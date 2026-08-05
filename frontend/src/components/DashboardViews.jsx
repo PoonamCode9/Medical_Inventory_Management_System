@@ -541,7 +541,7 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
       html += `<h2>Stock by Medicine</h2><table><thead><tr><th>Medicine</th><th>Total Qty</th><th>Batches</th></tr></thead><tbody>${stockByMedicine.map(s => `<tr><td><b>${s.name}</b></td><td>${s.totalQty}</td><td>${s.batches.length}</td></tr>`).join('')}</tbody></table>`;
       html += `<h2>Batch Details</h2><table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Supplier</th><th>Mfg</th><th>Exp</th></tr></thead><tbody>${items.map(i => `<tr><td><b>${i.medicine?.name || '—'}</b></td><td>${i.batch || '—'}</td><td>${i.available_qty}</td><td>${i.supplier || '—'}</td><td>${formatDate(i.manufacturing_date)}</td><td>${formatDate(i.expiration_date)}</td></tr>`).join('')}</tbody></table>`;
     } else {
-      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>${movements.map(m => `<tr><td>${formatDate(m.date)}</td><td><span class="badge ${m.type === 'PURCHASE' ? 'in' : 'out'}">${m.type}</span></td><td><b>${m.medicine?.name || '—'}</b></td><td>${m.batch || '—'}</td><td>${m.quantity}</td><td>$${m.amount?.toFixed(2)}</td><td>${m.supplier?.name || '—'}</td></tr>`).join('')}</tbody></table>`;
+      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>${movements.map(m => `<tr><td>${formatDate(m.date)}</td><td><span class="badge ${m.type === 'PURCHASE' ? 'in' : 'out'}">${m.type}</span></td><td><b>${m.medicine?.name || '—'}</b></td><td>${m.batch || '—'}</td><td>${m.quantity}</td><td>₹${m.amount?.toFixed(2)}</td><td>${m.supplier?.name || '—'}</td></tr>`).join('')}</tbody></table>`;
     }
     html += '</body></html>';
     w.document.write(html);
@@ -701,7 +701,7 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
                     <td className="px-5 py-3.5 font-bold text-slate-800 whitespace-nowrap">{m.medicine?.name}</td>
                     <td className="px-5 py-3.5 font-mono text-slate-600 whitespace-nowrap">{m.batch || '—'}</td>
                     <td className="px-5 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{m.quantity}</td>
-                    <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">${m.amount?.toFixed(2)}</td>
+                    <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">₹${m.amount?.toFixed(2)}</td>
                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.supplier?.name || '—'}</td>
                   </motion.tr>
                 ))}
@@ -869,6 +869,7 @@ export function SalesView({ role = 'ADMIN' }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [purchaseLedger, setPurchaseLedger] = useState([]);
 
   const loadData = async (q) => {
     if (!token()) { setLoading(false); return; }
@@ -881,7 +882,11 @@ export function SalesView({ role = 'ADMIN' }) {
         fetch(`${API}/api/admin/suppliers`, { headers: auth() }),
         fetch(`${API}/api/admin/inventory`, { headers: auth() }),
       ]);
-      if (rSales.ok) setRecords(await rSales.json());
+      if (rSales.ok) {
+        const salesJson = await rSales.json();
+        setRecords(salesJson);
+        if (!q) setPurchaseLedger(salesJson);
+      }
       if (rMed.ok) setMedicines(await rMed.json());
       if (rSup.ok) setSuppliers(await rSup.json());
       if (rInv.ok) setInventoryItems(await rInv.json());
@@ -976,6 +981,23 @@ export function SalesView({ role = 'ADMIN' }) {
     ? inventoryItems.filter(i => i.medicine?.id === Number(form.medicineId) && i.available_qty > 0)
     : [];
   const medicinesWithStock = medicines.filter(m => inventoryItems.some(i => i.medicine?.id === m.id && i.available_qty > 0));
+  const selectedBatch = form.type === 'SALE' && form.batch
+    ? availableBatches.find(b => b.batch === form.batch) || null
+    : null;
+  const quantityTooHigh = selectedBatch && Number(form.quantity) > selectedBatch.available_qty;
+
+  // Latest purchase of this medicine+batch gives the unit cost → estimated profit.
+  const purchaseCostPerUnit = selectedBatch
+    ? (() => {
+        const buys = purchaseLedger.filter(r => r.type === 'PURCHASE' && r.medicine?.id === Number(form.medicineId) && r.batch === form.batch);
+        if (buys.length === 0) return null;
+        const last = buys.reduce((a, b) => ((b.date || '') > (a.date || '') ? b : a));
+        return last && last.quantity > 0 ? last.amount / last.quantity : null;
+      })()
+    : null;
+  const estProfit = form.type === 'SALE' && selectedBatch && purchaseCostPerUnit != null
+    ? Math.round(((Number(form.amount) || 0) - purchaseCostPerUnit * (Number(form.quantity) || 0)) * 100) / 100
+    : null;
 
   return (
     <div className="space-y-6">
@@ -1072,11 +1094,35 @@ export function SalesView({ role = 'ADMIN' }) {
               <FormInput label="Batch Code" placeholder="e.g. BATCH-2026A" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required tooltip="Unique batch identifier for this purchase" />
             )}
 
-            {/* Quantity */}
-            <FormInput label="Quantity (Units)" type="number" placeholder="Number of units" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} min="1" required tooltip="Number of units being purchased or sold" />
+            {/* Quantity + remaining (sales) */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <FormInput label="Quantity (Units)" type="number" placeholder="Number of units" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} min="1" required tooltip="Number of units being purchased or sold" />
+              </div>
+              {selectedBatch && (
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Remaining in batch</span>
+                  <div className={`rounded-xl border px-3.5 py-2.5 text-sm font-black transition ${quantityTooHigh ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+                    {selectedBatch.available_qty} units{quantityTooHigh ? ' · insufficient!' : ''}
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Amount */}
-            <FormInput label="Total Amount ($)" type="number" step="0.01" placeholder="Total cost" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} min="0" required tooltip="Total monetary value of the transaction" />
+            {/* Amount + estimated profit (sales) */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <FormInput label="Total Amount (₹)" type="number" step="0.01" placeholder="Total cost" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} min="0" required tooltip="Total monetary value of the transaction" />
+              </div>
+              {estProfit !== null && (
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Estimated Profit</span>
+                  <div className={`rounded-xl border px-3.5 py-2.5 text-sm font-black transition ${estProfit >= 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-300 bg-rose-50 text-rose-700'}`}>
+                    {estProfit >= 0 ? `+₹${estProfit.toFixed(2)}` : `Loss ₹${Math.abs(estProfit).toFixed(2)}`}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Date */}
             <FormInput label="Transaction Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required tooltip="Date when the transaction took place" />
@@ -1134,7 +1180,7 @@ export function SalesView({ role = 'ADMIN' }) {
                   </div>
                   <div className="mt-3 pt-2 border-t border-slate-50 space-y-1.5 text-xs">
                     <div className="flex justify-between"><span className="text-slate-400">Quantity</span><span className="font-bold text-slate-700">{r.quantity} units</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Amount</span><span className="font-black text-slate-900">${r.amount?.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Amount</span><span className="font-black text-slate-900">₹{r.amount?.toFixed(2)}</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Date</span><span className="font-semibold text-slate-600">{formatDate(r.date)}</span></div>
                     {r.supplier && <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5"><span className="text-slate-400">Vendor</span><span className="font-semibold text-slate-600">{r.supplier.name}</span></div>}
                   </div>

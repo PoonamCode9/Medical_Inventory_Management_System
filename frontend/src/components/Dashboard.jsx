@@ -3,7 +3,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 
 import Swal from 'sweetalert2'
 import { Tooltip } from 'react-tooltip'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView, ExpiryView } from './DashboardViews';
 
 const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
@@ -231,6 +231,38 @@ export default function Dashboard({ user, onLogout }) {
                       </motion.div>
                     ))}
                   </div>
+                </motion.div>
+              </InViewSection>
+            )}
+
+            {stats.profitSales?.length > 0 && (
+              <InViewSection className="mt-6 md:mt-8">
+                <motion.div
+                  className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6"
+                  whileHover={{ y: -4, boxShadow: '0 12px 30px -8px rgba(0,0,0,0.08)' }}
+                  layout
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-slate-900">Profit vs Loss</h2>
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Last {stats.profitSales.length} months</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={stats.profitSales} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+                      <RechartsTooltip
+                        formatter={(value, name) => {
+                          const v = Number(value);
+                          if (name === 'Profit (₹)' && v < 0) return [`₹${Math.abs(v).toFixed(2)}`, 'Loss'];
+                          return [`₹${v.toFixed(2)}`, name];
+                        }}
+                        contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13, boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 13 }} iconType="circle" />
+                      <Line type="monotone" dataKey="profit" name="Profit (₹)" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 6 }} animationDuration={1200} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </motion.div>
               </InViewSection>
             )}
