@@ -225,10 +225,10 @@ public class InventoryService {
                 "EXPIRED_STOCK",
                 inventory.getMedicine().getMedicineName()
                         + " expired stock removed successfully",
-                "Push"
+                "Both"
         );
 
-        // Low Stock Check Trigger (Quantity is now 0)
+        // Low Stock Check Trigger
         notificationService.checkAndTriggerLowStockNotification(inventory.getMedicine(), 0);
 
         return updatedInventory;

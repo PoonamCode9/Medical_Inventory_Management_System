@@ -3,7 +3,9 @@ package com.medicalinventory.backend.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.medicalinventory.backend.dto.NotificationDTO;
 import com.medicalinventory.backend.entity.Medicine;
@@ -14,60 +16,110 @@ import com.medicalinventory.backend.repository.NotificationRepository;
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    @Value("${app.notification.admin-email:${spring.mail.username:admin@pharmacy.com}}")
+    private String adminEmail;
+
+    public NotificationService(NotificationRepository notificationRepository, EmailService emailService) {
         this.notificationRepository = notificationRepository;
+        this.emailService = emailService;
     }
 
-    public Notification createNotification(Medicine medicine, String notificationType, String message, String notificationMode) {
-        Notification notification = new Notification();
+    @Transactional
+    public Notification createNotification(Medicine medicine, String notificationType, String message,
+            String notificationMode) {
+        String finalMode = (notificationMode != null && !notificationMode.isBlank()) ? notificationMode : "Push";
 
+        Notification notification = new Notification();
         notification.setMedicine(medicine);
         notification.setNotificationType(notificationType);
         notification.setMessage(message);
-        notification.setNotificationMode(notificationMode);
+        notification.setNotificationMode(finalMode);
         notification.setIsRead(false);
 
-        return notificationRepository.save(notification);
+        Notification savedNotification = null;
+
+        // Mode "Push" or "Both" (save in DB)
+        if ("Push".equalsIgnoreCase(finalMode) || "Both".equalsIgnoreCase(finalMode)) {
+            savedNotification = notificationRepository.save(notification);
+        }
+
+        // Mode "Email" or "Both" (send email)
+        if ("Email".equalsIgnoreCase(finalMode) || "Both".equalsIgnoreCase(finalMode)) {
+            try {
+                String subject = "[MediStock Alert] " + notificationType;
+                emailService.sendEmail(adminEmail, subject, message);
+            } catch (Exception e) {
+                System.err.println("Email dispatch error: " + e.getMessage());
+            }
+        }
+
+        return savedNotification != null ? savedNotification : notification;
     }
 
     public List<NotificationDTO> getLatestNotifications() {
-        return notificationRepository.findTop5ByOrderByCreatedAtDesc().stream().map(NotificationMapper::toDTO).collect(Collectors.toList());
+        return notificationRepository.findTop5ByOrderByCreatedAtDesc()
+                .stream()
+                .map(NotificationMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public List<NotificationDTO> getAllNotifications() {
-        return notificationRepository.findAllByOrderByCreatedAtDesc().stream().map(NotificationMapper::toDTO).collect(Collectors.toList());
+        return notificationRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(NotificationMapper::toDTO)
+                .collect(Collectors.toList());
     }
-    
+
     public List<NotificationDTO> getUnreadNotifications() {
-        return notificationRepository.findByIsReadFalseOrderByCreatedAtDesc().stream().map(NotificationMapper::toDTO).collect(Collectors.toList());
+        return notificationRepository.findByIsReadFalseOrderByCreatedAtDesc()
+                .stream()
+                .map(NotificationMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public Notification markAsRead(Long id) {
-        Notification notification = notificationRepository.findById(id).orElseThrow(() -> new RuntimeException("Notification not found"));
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with ID: " + id));
         notification.setIsRead(true);
         return notificationRepository.save(notification);
     }
 
+    @Transactional
     public void markAllAsRead() {
         List<Notification> notifications = notificationRepository.findByIsReadFalse();
-        for(Notification notification : notifications) {
+        for (Notification notification : notifications) {
             notification.setIsRead(true);
         }
-        notificationRepository.saveAll(notifications);
+        if (!notifications.isEmpty()) {
+            notificationRepository.saveAll(notifications);
+        }
     }
 
     public long getUnreadCount() {
         return notificationRepository.countByIsReadFalse();
     }
 
-    // Trigger Low Stock Notification if quantity <= 20
     public void checkAndTriggerLowStockNotification(Medicine medicine, int currentQuantity) {
         int LOW_STOCK_THRESHOLD = 20;
 
         if (currentQuantity <= LOW_STOCK_THRESHOLD && currentQuantity >= 0) {
-            String message = medicine.getMedicineName() + " stock is running low! Remaining quantity: " + currentQuantity;
-            createNotification(medicine, "LOW_STOCK", message, "Push");
+            String message = medicine.getMedicineName() + " stock is running low! Remaining quantity: "
+                    + currentQuantity;
+            createNotification(medicine, "LOW_STOCK", message, "Both");
         }
+    }
+
+    @Transactional
+    public void deleteReadNotifications() {
+        List<Notification> readNotifications = notificationRepository.findByIsReadTrue();
+        if (!readNotifications.isEmpty()) {
+            notificationRepository.deleteAll(readNotifications);
+        }
+    }
+
+    public void deleteNotificationById(Long id) {
+        notificationRepository.deleteById(id);
     }
 }

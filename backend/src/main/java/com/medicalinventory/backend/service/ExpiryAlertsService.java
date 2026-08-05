@@ -20,8 +20,7 @@ public class ExpiryAlertsService {
     private final InventoryRepository inventoryRepository;
     private final ExpiryTrackingRepository expiryTrackingRepository;
 
-    public ExpiryAlertsService(
-            InventoryRepository inventoryRepository, 
+    public ExpiryAlertsService(InventoryRepository inventoryRepository,
             ExpiryTrackingRepository expiryTrackingRepository) {
         this.inventoryRepository = inventoryRepository;
         this.expiryTrackingRepository = expiryTrackingRepository;
@@ -33,6 +32,9 @@ public class ExpiryAlertsService {
         LocalDate today = LocalDate.now();
 
         for (ExpiryTracking expiry : list) {
+            if (expiry.getMedicine() == null || expiry.getMedicine().getExpiryDate() == null)
+                continue;
+
             long daysLeft = ChronoUnit.DAYS.between(today, expiry.getMedicine().getExpiryDate());
 
             if (daysLeft < 0) {
@@ -66,5 +68,4 @@ public class ExpiryAlertsService {
             return dto;
         }).toList();
     }
-
 }

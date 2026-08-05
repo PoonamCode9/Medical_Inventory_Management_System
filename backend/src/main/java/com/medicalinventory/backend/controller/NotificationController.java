@@ -3,11 +3,7 @@ package com.medicalinventory.backend.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.medicalinventory.backend.dto.NotificationDTO;
 import com.medicalinventory.backend.entity.Notification;
@@ -15,6 +11,7 @@ import com.medicalinventory.backend.service.NotificationService;
 
 @RestController
 @RequestMapping("/api/notifications")
+@CrossOrigin(origins = "*")
 public class NotificationController {
     private final NotificationService notificationService;
 
@@ -22,39 +19,46 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @GetMapping("/latest")
-    public List<NotificationDTO> getLatestNotifications() {
-        return notificationService.getLatestNotifications();
+    @GetMapping
+    public ResponseEntity<List<NotificationDTO>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
-    @GetMapping
-    public List<NotificationDTO> getAllNotifications() {
-        return notificationService.getAllNotifications();
+    @GetMapping("/latest")
+    public ResponseEntity<List<NotificationDTO>> getLatestNotifications() {
+        return ResponseEntity.ok(notificationService.getLatestNotifications());
     }
 
     @GetMapping("/unread")
-    public List<NotificationDTO> getUnreadNotifications() {
-        return notificationService.getUnreadNotifications();
-    }
-
-    @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
-        try {
-            Notification updatedNotification = notificationService.markAsRead(id);
-            return ResponseEntity.ok(updatedNotification);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/mark-all-read")
-    public ResponseEntity<String> markAllAsRead() {
-        notificationService.markAllAsRead();
-        return ResponseEntity.ok("All notifications marked as read");
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications() {
+        return ResponseEntity.ok(notificationService.getUnreadNotifications());
     }
 
     @GetMapping("/unread-count")
-    public Long getUnreadCount() {
-        return notificationService.getUnreadCount();
+    public ResponseEntity<Long> getUnreadCount() {
+        return ResponseEntity.ok(notificationService.getUnreadCount());
+    }
+
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Notification> markAsRead(@PathVariable Long id) {
+        return ResponseEntity.ok(notificationService.markAsRead(id));
+    }
+
+    @PutMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead() {
+        notificationService.markAllAsRead();
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/read")
+    public ResponseEntity<Void> deleteReadNotifications() {
+        notificationService.deleteReadNotifications();
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotificationById(@PathVariable Long id) {
+        notificationService.deleteNotificationById(id);
+        return ResponseEntity.ok().build();
     }
 }

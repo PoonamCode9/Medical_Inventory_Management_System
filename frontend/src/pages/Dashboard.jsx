@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, Building2, Pill, Users, PackageX } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
-import RecentInventoryUpdates from "../components/dashboard/RecentInventoryUpdates";
+import ExpiryAlertsCard from "../components/dashboard/ExpiryAlertsCard";
 import LowStockAlerts from "../components/dashboard/LowStockAlerts";
 import InventoryChart from "../components/dashboard/InventoryChart";
 import CategoryChart from "../components/dashboard/CategoryChart";
@@ -100,7 +100,7 @@ function Dashboard() {
                     
                     <div className="grid grid-cols-5 gap-6 p-6">
                         <div className="col-span-3">
-                            <RecentInventoryUpdates/>
+                            <ExpiryAlertsCard/>
                         </div>
                         <div className="col-span-2">
                             <LowStockAlerts/>
@@ -153,7 +153,7 @@ function Dashboard() {
                     
                     <div className="grid grid-cols-5 gap-6 p-6">
                         <div className="col-span-3">
-                            <RecentInventoryUpdates/>
+                            <ExpiryAlertsCard/>
                         </div>
                         <div className="col-span-2">
                             <LowStockAlerts/>
