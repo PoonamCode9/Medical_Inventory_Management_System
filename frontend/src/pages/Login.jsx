@@ -1,550 +1,298 @@
-import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import {
-    FaEye,
-    FaEyeSlash,
-    FaLock,
-    FaArrowLeft,
-    FaUserShield,
-    FaUserNurse,
-    FaUserTie,
     FaEnvelope,
-    FaMobileAlt,
-    FaKey
+    FaLock
 } from "react-icons/fa";
 
-import loginBg from "../assets/login-bg.jpg";
+import "../styles/Login.css";
+
 
 function Login() {
 
     const navigate = useNavigate();
 
-    const [mode, setMode] = useState("LOGIN");
+    const [role, setRole] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    const [showPassword, setShowPassword] = useState(false);
+    const handleLogin = (e) => {
 
-    const [loading, setLoading] = useState(false);
+    e.preventDefault();
 
-    const [data, setData] = useState({
-        email: "",
-        password: "",
-        role: "STAFF",
-        secretCode: ""
-    });
+    // ===========================
+    // PHARMACIST LOGIN
+    // ===========================
+if (role === "Pharmacist") {
 
-    const [phone, setPhone] = useState("");
+    if (email.trim() !== "" && password.trim() !== "") {
 
-    const [otp, setOtp] = useState("");
+        navigate("/pharmacist-dashboard");
+        return;
 
+    } else {
 
+        alert("Please enter email and password");
+        return;
 
-    // ================= LOGIN =================
+    }
 
-    const handleLogin = async (e) => {
+}
+// ===========================
+// STAFF LOGIN
+// ===========================
+if (role === "Staff") {
 
-        e.preventDefault();
+    if (email.trim() !== "" && password.trim() !== "") {
 
-        try {
+        localStorage.setItem("role", "Staff");
 
-            setLoading(true);
+        navigate("/staff-dashboard");
+        return;
 
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/login",
-                {
-                    email: data.email,
-                    password: data.password,
-                    role: data.role,
-                    secretCode: data.secretCode
-                }
-            );
+    } else {
 
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
+        alert("Please enter email and password");
+        return;
 
-            localStorage.setItem(
-                "role",
-                response.data.role
-            );
+    }
 
-            localStorage.setItem(
-                "userId",
-                response.data.userId
-            );
+}
+    // ===========================
+    // ADMIN LOGIN
+    // ===========================
+    const savedUser = JSON.parse(localStorage.getItem("user"));
 
-            alert("Login Successful");
+    if (!savedUser) {
 
-            redirectUser(
-                response.data.role
-            );
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                email: email,
+                password: password,
+                role: role
+            })
+        );
 
-        }
-        catch (error) {
+        alert("Admin account created successfully");
 
-            console.error(error);
+      localStorage.setItem("role", "admin");
+navigate("/admin-dashboard");
 
-            if (error.response) {
+    } else {
 
-                alert(
-                    error.response.data
-                );
+        if (
+            savedUser.email === email &&
+            savedUser.password === password
+        ) {
 
-            } else {
+       if (role === "admin") {
 
-                alert(
-                    "Unable to connect to server."
-                );
+    localStorage.setItem("role", "admin");
+    navigate("/admin-dashboard");
 
-            }
+} else if (role === "Pharmacist") {
 
-        }
-        finally {
+    localStorage.setItem("role", "Pharmacist");
+    navigate("/pharmacist-dashboard");
 
-            setLoading(false);
+} else if (role === "Staff") {
 
-        }
+    localStorage.setItem("role", "Staff");
+    navigate("/staff-dashboard");
 
-    };
+}
 
+        } else if (
+            savedUser.email === email &&
+            savedUser.password !== password
+        ) {
 
+            alert("Invalid Password");
 
+        } else {
 
-
-    // ================= SEND OTP =================
-
-    const sendOtp = async () => {
-
-        try {
-
-            await axios.post(
-                "http://localhost:8080/api/auth/send-otp",
-                {
-                    phone: phone
-                }
-            );
-
-            alert(
-                "OTP Sent Successfully"
-            );
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            alert(
-                "OTP Sending Failed"
-            );
+            alert("Email not registered");
 
         }
 
-    };
+    }
 
-
-
-
-
-
-    // ================= VERIFY OTP =================
-
-    const verifyOtp = async () => {
-
-        try {
-
-            const response = await axios.post(
-                "http://localhost:8080/api/auth/verify-otp",
-                {
-                    phone: phone,
-                    otp: otp
-                }
-            );
-
-            localStorage.setItem(
-                "token",
-                response.data.token
-            );
-
-            localStorage.setItem(
-                "role",
-                response.data.role
-            );
-
-            localStorage.setItem(
-                "userId",
-                response.data.userId
-            );
-
-            alert(
-                "OTP Login Successful"
-            );
-
-            redirectUser(
-                response.data.role
-            );
-
-        }
-        catch (error) {
-
-            console.error(error);
-
-            alert(
-                "Invalid OTP"
-            );
-
-        }
-
-    };
-
-
-
-
-
-
-    // ================= REDIRECT =================
-
-    const redirectUser = (role) => {
-
-        switch (role) {
-
-            case "ADMIN":
-
-                navigate("/admin/dashboard");
-                break;
-
-            case "PHARMACIST":
-
-                navigate("/pharmacist/dashboard");
-                break;
-
-            case "STAFF":
-
-                navigate("/staff/dashboard");
-                break;
-
-            default:
-
-                navigate("/");
-
-        }
-
-    };
-
+};
 
 
     return (
 
-        <div
-            className="auth-container"
-            style={{
-                backgroundImage: `
-                linear-gradient(
-                    135deg,
-                    rgba(0,70,120,.85),
-                    rgba(0,180,220,.65)
-                ),
-                url(${loginBg})
-                `
-            }}
-        >
+        <div className="login-page">
 
-            <div className="auth-overlay"></div>
 
-            <div className="auth-left">
+            <div className="login-card">
 
-                <div className="brand">
 
-                    <h1>
-                        🏥 MediStock
-                    </h1>
 
-                    <p>
-                        Smart Medical Inventory Management System
-                    </p>
+                <h1 className="logo-title">
 
-                </div>
+                    💊 MediStock
 
-                <div className="feature-list">
+                </h1>
 
-                    <div>💊 Medicine Management</div>
 
-                    <div>🚚 Supplier Tracking</div>
 
-                    <div>⚠ Expiry Notifications</div>
 
-                    <div>📊 Smart Analytics Reports</div>
+                <form onSubmit={handleLogin}>
+                    <div className="role-section">
 
-                </div>
+    <h2 className="welcome-title">
+        Welcome Back!
+    </h2>
+
+    <p className="welcome-subtitle">
+        Sign in to continue to your account
+    </p>
+
+    <h3 className="role-heading">
+        Select Your Role
+    </h3>
+<div className="role-cards">
+
+    <div
+        className={`role-card ${role === "admin" ? "active" : ""}`}
+        onClick={() => setRole("admin")}
+    >
+        <div className="role-icon">👨‍💼</div>
+        <p>Admin</p>
+    </div>
+
+    <div
+        className={`role-card ${role === "Pharmacist" ? "active" : ""}`}
+        onClick={() => setRole("Pharmacist")}
+    >
+        <div className="role-icon">💊</div>
+        <p>Pharmacist</p>
+    </div>
+
+    <div
+        className={`role-card ${role === "Staff" ? "active" : ""}`}
+        onClick={() => setRole("Staff")}
+    >
+        <div className="role-icon">👩‍⚕️</div>
+        <p>Staff</p>
+    </div>
+
+</div>
+</div>   {/*// closes role-section*/}
+
+                    <label className="form-label">
+
+                        Email Address
+
+                    </label>
+
+
+
+                    <div className="input-box">
+
+
+                        <FaEnvelope/>
+
+
+                        <input
+
+                        type="email"
+
+                        placeholder="Enter your email"
+
+                        value={email}
+
+                        onChange={(e)=>setEmail(e.target.value)}
+
+                        />
+
+
+                    </div>
+
+
+
+
+
+
+                    <label className="form-label">
+
+                        Password
+
+                    </label>
+
+
+
+                    <div className="input-box">
+
+
+                        <FaLock/>
+
+
+                        <input
+
+                        type="password"
+
+                        placeholder="Enter your password"
+
+                        value={password}
+
+                        onChange={(e)=>setPassword(e.target.value)}
+
+                        />
+
+
+                    </div>
+
+
+
+
+
+
+
+                    <button className="login-btn">
+
+
+                        Login
+
+
+                    </button>
+                     <div className="login-links">
+
+    <span
+        className="forgot-password"
+        onClick={() => navigate("/forgot-password")}
+    >
+        Forgot Password?
+    </span>
+
+    <span
+        className="register-link"
+        onClick={() => navigate("/register")}
+    >
+        Register Here
+    </span>
+
+</div>
+
+
+
+                </form>
+
+
 
             </div>
 
-            <div className="auth-card">
-
-                <div className="medical-icon">
-                    🩺
-                </div>
-
-                <h1 className="title">
-                    MediStock Login
-                </h1>
-
-                {
-                    mode === "LOGIN"
-                        ?
-                        <form onSubmit={handleLogin}>
-
-    <h3 className="role-title">
-        Select Account Type
-    </h3>
-
-    {/* ================= ROLE SELECTION ================= */}
-
-    <div className="role-box">
-
-        <button
-            type="button"
-            className={data.role === "ADMIN" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "ADMIN",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserShield />
-            <span>Admin</span>
-        </button>
-
-        <button
-            type="button"
-            className={data.role === "PHARMACIST" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "PHARMACIST",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserNurse />
-            <span>Pharmacist</span>
-        </button>
-
-        <button
-            type="button"
-            className={data.role === "STAFF" ? "role active" : "role"}
-            onClick={() =>
-                setData({
-                    ...data,
-                    role: "STAFF",
-                    secretCode: ""
-                })
-            }
-        >
-            <FaUserTie />
-            <span>Staff</span>
-        </button>
-
-    </div>
 
 
-    {/* ================= SECRET CODE ================= */}
+        </div>
 
-    <div className="input-group">
+    );
 
-        <FaKey />
-
-        <input
-            type="password"
-            placeholder={`${data.role} Secret Code`}
-            value={data.secretCode}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    secretCode: e.target.value
-                })
-            }
-            required
-        />
-
-    </div>
-
-
-    {/* ================= EMAIL ================= */}
-
-    <div className="input-group">
-
-        <FaEnvelope />
-
-        <input
-            type="email"
-            placeholder="Email Address"
-            value={data.email}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    email: e.target.value
-                })
-            }
-            required
-        />
-
-    </div>
-
-
-    {/* ================= PASSWORD ================= */}
-
-    <div className="input-group password-wrapper">
-
-        <FaLock />
-
-        <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={data.password}
-            onChange={(e) =>
-                setData({
-                    ...data,
-                    password: e.target.value
-                })
-            }
-            required
-        />
-
-        <button
-            type="button"
-            className="eye-btn"
-            onClick={() =>
-                setShowPassword(!showPassword)
-            }
-        >
-            {
-                showPassword
-                    ? <FaEyeSlash />
-                    : <FaEye />
-            }
-        </button>
-
-    </div>
-
-
-    {/* ================= LOGIN BUTTON ================= */}
-
-    <button
-        className="primary-btn"
-        type="submit"
-        disabled={loading}
-    >
-        {
-            loading
-                ? "Logging in..."
-                : "🔐 Login"
-        }
-    </button>
-
-
-    {/* ================= OTP BUTTON ================= */}
-
-    <button
-        type="button"
-        className="otp-btn"
-        onClick={() =>
-            setMode("OTP")
-        }
-    >
-        📱 Login With OTP
-    </button>
-
-</form>
-
-:
-<div className="otp-section">
-
-    <h2>
-        📱 OTP Login
-    </h2>
-
-    {/* ================= PHONE ================= */}
-
-    <div className="input-group">
-
-        <FaMobileAlt />
-
-        <input
-            type="text"
-            placeholder="Mobile Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-        />
-
-    </div>
-
-    {/* ================= SEND OTP ================= */}
-
-    <button
-        className="primary-btn"
-        onClick={sendOtp}
-    >
-        Send OTP
-    </button>
-
-    {/* ================= OTP INPUT ================= */}
-
-    <div className="input-group">
-
-        <FaKey />
-
-        <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-        />
-
-    </div>
-
-    {/* ================= VERIFY OTP ================= */}
-
-    <button
-        className="primary-btn"
-        onClick={verifyOtp}
-    >
-        Verify OTP
-    </button>
-
-    {/* ================= BACK ================= */}
-
-    <button
-        className="back-btn"
-        onClick={() => setMode("LOGIN")}
-    >
-        <FaArrowLeft />
-        <span>Back</span>
-    </button>
-
-</div>
 
 }
 
-<div className="link">
-
-    <Link to="/register">
-        Don't have an account? Register
-    </Link>
-
-</div>
-
-</div>
-
-</div>
-
-);
-
-}
 
 export default Login;
