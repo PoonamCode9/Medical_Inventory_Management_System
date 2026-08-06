@@ -56,7 +56,7 @@ function Medicines() {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");

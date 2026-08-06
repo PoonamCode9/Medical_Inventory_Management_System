@@ -15,7 +15,7 @@ import {
 
 const Inventory = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
   const [inventoryList, setInventoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

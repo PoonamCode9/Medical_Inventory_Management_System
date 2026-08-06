@@ -33,7 +33,7 @@ function Suppliers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
 
   const fetchSuppliers = async () => {
     try {

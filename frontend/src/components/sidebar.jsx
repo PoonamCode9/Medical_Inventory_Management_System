@@ -79,7 +79,7 @@ function Sidebar() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const role = localStorage.getItem("role") || "User";
+    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
     const filteredMenuItems = menuItems.filter(item => item.roles.includes(role));
 
     const handleLogout = () => {

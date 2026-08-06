@@ -13,7 +13,7 @@ import {
 import API from "../api/Api";
 
 function ExpiryTracker() {
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

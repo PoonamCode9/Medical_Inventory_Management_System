@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 function PurchaseOrders() {
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
 
   const [orders, setOrders] = useState([]);
   const [medicines, setMedicines] = useState([]);

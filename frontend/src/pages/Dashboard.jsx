@@ -8,7 +8,7 @@ import CategoryChart from "../components/dashboard/CategoryChart";
 import API from "../api/Api";
 
 function Dashboard() {
-    const role = localStorage.getItem("role") || "User";
+    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
     const [stats, setStats] = useState({
         totalMedicines: 0,
         totalSuppliers: 0,
