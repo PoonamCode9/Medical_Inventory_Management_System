@@ -46,5 +46,9 @@ public class SupplierController {
     public List<Supplier> searchSupplier(@RequestParam String name){
         return supplierService.searchSupplier(name);
     }
+    @GetMapping("/count")
+public long getSupplierCount() {
+    return supplierService.getAllSuppliers().size();
+}
 
 }

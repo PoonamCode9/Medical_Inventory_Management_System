@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:8080/api/suppliers";
+const API = "http://localhost:8081/api/suppliers";
 
 export const getSuppliers = () => axios.get(API);
 
@@ -15,3 +15,5 @@ export const deleteSupplier = (id) =>
 
 export const searchSupplier = (name) =>
     axios.get(`${API}/search?name=${name}`);
+export const getSupplierCount = () =>
+    axios.get(`${API}/count`);

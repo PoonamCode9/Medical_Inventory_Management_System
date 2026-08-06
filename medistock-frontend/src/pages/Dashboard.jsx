@@ -1,123 +1,293 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
-import { getMedicines } from "../services/medicineService";
-import { getSuppliers } from "../services/supplierService";
+import InventoryChart from "../components/InventoryChart";
+import InventoryPieChart from "../components/InventoryPieChart";
+import RecentActivity from "../components/RecentActivity";
 
 function Dashboard() {
 
     const [medicineCount, setMedicineCount] = useState(0);
     const [supplierCount, setSupplierCount] = useState(0);
+    const [purchaseCount, setPurchaseCount] = useState(0);
+
     const [lowStockCount, setLowStockCount] = useState(0);
+    const [outStockCount, setOutStockCount] = useState(0);
+    const [nearExpiryCount, setNearExpiryCount] = useState(0);
     const [expiredCount, setExpiredCount] = useState(0);
 
     useEffect(() => {
         loadDashboard();
     }, []);
 
-    const loadDashboard = async () => {
-        try {
+    const loadDashboard = () => {
 
-            const medicineRes = await getMedicines();
-            const supplierRes = await getSuppliers();
+        // Demo values
+        setMedicineCount(20);
+        setSupplierCount(10);
+        setPurchaseCount(15);
 
-            const medicines = medicineRes.data;
-            const suppliers = supplierRes.data;
+        setLowStockCount(4);
+        setOutStockCount(2);
+        setNearExpiryCount(3);
+        setExpiredCount(2);
 
-            setMedicineCount(medicines.length);
-            setSupplierCount(suppliers.length);
-
-            const lowStock = medicines.filter(
-                (m) => m.quantity < 10
-            );
-            setLowStockCount(lowStock.length);
-
-            const today = new Date();
-
-            const expired = medicines.filter(
-                (m) => new Date(m.expiryDate) < today
-            );
-
-            setExpiredCount(expired.length);
-
-        } catch (error) {
-            console.error("Error loading dashboard", error);
-        }
     };
 
     return (
         <>
             <Navbar />
+            <div
+  className="container-fluid py-5 text-white mb-4"
+  style={{
+    background: "linear-gradient(90deg,#2563eb,#06b6d4)"
+  }}
+>
+  <div className="container">
+    <div className="row align-items-center">
 
-            <div className="container mt-5">
+      <div className="col-md-7">
 
-                <h2>MediStock Dashboard</h2>
+        <h1 className="display-4 fw-bold">
+          💊 MediStock
+        </h1>
 
-                <hr />
+        <p className="fs-4">
+          Smart Medical Inventory Management Platform
+        </p>
+
+        <p>
+          Monitor medicine stock, expiry dates,
+          suppliers and purchases through one
+          centralized dashboard.
+        </p>
+
+      </div>
+
+      <div className="col-md-5 text-center">
+
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/4320/4320337.png"
+          className="img-fluid"
+          style={{maxHeight:"220px"}}
+          alt="Medicine"
+        />
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+            <div className="container mt-4">
+
+                <h2 className="mb-4">
+                    MediStock Dashboard
+                </h2>
+
+                <div className="row g-3">
+
+                    <DashboardCard
+    title="Total Medicines"
+    value={medicineCount}
+    color="primary"
+    icon="💊"
+    link="/medicines"
+/>
+
+<DashboardCard
+    title="Total Suppliers"
+    value={supplierCount}
+    color="success"
+    icon="🏢"
+    link="/suppliers"
+/>
+
+<DashboardCard
+    title="Total Purchases"
+    value={purchaseCount}
+    color="dark"
+    icon="📦"
+    link="/purchases"
+/>
+
+<DashboardCard
+    title="Low Stock"
+    value={lowStockCount}
+    color="warning"
+    icon="⚠️"
+    link="/low-stock"
+/>
+
+<DashboardCard
+    title="Out Of Stock"
+    value={outStockCount}
+    color="danger"
+    icon="❌"
+    link="/out-of-stock"
+/>
+
+<DashboardCard
+    title="Near Expiry"
+    value={nearExpiryCount}
+    color="info"
+    icon="⏳"
+    link="/near-expiry"
+/>
+
+<DashboardCard
+    title="Expired Medicines"
+    value={expiredCount}
+    color="secondary"
+    icon="🚫"
+    link="/expired"
+/>
+
+                </div>
+
+                <hr className="my-5" />
+
+                <h3 className="mb-4">
+                    Inventory Analytics
+                </h3>
+
+                <InventoryChart
+                    medicines={medicineCount}
+                    suppliers={supplierCount}
+                    purchases={purchaseCount}
+                    lowStock={lowStockCount}
+                    expired={expiredCount}
+                />
+
+                <hr className="my-5" />
+
+                <h3 className="mb-4">
+                    Stock Distribution
+                </h3>
 
                 <div className="row">
 
-                    {/* Total Medicines */}
-                    <div className="col-md-3 mb-3">
-                        <div className="card shadow text-center p-3">
-                            <h5>Total Medicines</h5>
-                            <h1>{medicineCount}</h1>
+                    <div className="col-md-6">
 
-                            <Link to="/medicines">
-                                <button className="btn btn-primary">
-                                    View Medicines
-                                </button>
-                            </Link>
-                        </div>
+                        <InventoryPieChart
+                            normalStock={14}
+                            lowStock={4}
+                            outOfStock={2}
+                        />
+
                     </div>
 
-                    {/* Total Suppliers */}
-                    <div className="col-md-3 mb-3">
-                        <div className="card shadow text-center p-3">
-                            <h5>Total Suppliers</h5>
-                            <h1>{supplierCount}</h1>
+                    <div className="col-md-6">
 
-                            <Link to="/suppliers">
-                                <button className="btn btn-success">
-                                    View Suppliers
-                                </button>
-                            </Link>
+                        <div className="card shadow">
+
+                            <div className="card-body">
+
+                                <h4 className="mb-3">
+                                    Inventory Summary
+                                </h4>
+
+                                <p>✅ Total Medicines : 20</p>
+
+                                <p>✅ Total Suppliers : 10</p>
+
+                                <p>✅ Total Purchases : 15</p>
+
+                                <p className="text-warning">
+                                    ⚠ Low Stock : 4
+                                </p>
+
+                                <p className="text-info">
+                                    ⏳ Near Expiry : 3
+                                </p>
+
+                                <p className="text-danger">
+                                    ❌ Expired : 2
+                                </p>
+
+                            </div>
+
                         </div>
+
                     </div>
+                    <hr className="my-5" />
 
-                    {/* Low Stock */}
-                    <div className="col-md-3 mb-3">
-                        <div className="card shadow text-center p-3">
-                            <h5>Low Stock</h5>
-                            <h1>{lowStockCount}</h1>
-
-                            <Link to="/medicines">
-                                <button className="btn btn-warning">
-                                    View Medicines
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* Expired Medicines */}
-                    <div className="col-md-3 mb-3">
-                        <div className="card shadow text-center p-3">
-                            <h5>Expired Medicines</h5>
-                            <h1>{expiredCount}</h1>
-
-                            <Link to="/medicines">
-                                <button className="btn btn-danger">
-                                    View Medicines
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
+<RecentActivity />
 
                 </div>
 
             </div>
+
+            {/* Footer */}
+
+            <footer
+                className="text-center text-white mt-5 py-4"
+                style={{
+                    background: "linear-gradient(90deg,#2563eb,#06b6d4)"
+                }}
+            >
+
+                <h4>💊 MediStock</h4>
+
+                <p className="mb-1">
+                    Smart Medical Inventory Management Platform
+                </p>
+
+                <small>
+                    © 2026 | Developed by Daggupati Indumathi
+                </small>
+
+            </footer>
+
         </>
     );
 }
+
+function DashboardCard({ title, value, color, link, icon }) {
+   
+
+    return (
+
+        <div className="col-md-3">
+
+            <div className={`card border-${color} shadow`}>
+
+                <div className="card-body text-center">
+
+                    <div className="display-4 mb-2">
+
+{icon}
+
+</div>
+
+<h1 className="fw-bold">
+
+{value}
+
+</h1>
+
+<h5>
+
+{title}
+
+</h5>
+
+                    <Link
+                        to={link}
+                        className={`btn btn-${color}`}
+                    >
+                        View
+                    </Link>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
+
+}
+
 
 export default Dashboard;

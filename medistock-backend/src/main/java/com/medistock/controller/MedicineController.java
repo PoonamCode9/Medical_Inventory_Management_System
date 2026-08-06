@@ -3,8 +3,13 @@ package com.medistock.controller;
 import com.medistock.entity.Medicine;
 import com.medistock.service.MedicineService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpServletResponse;
+import com.medistock.util.ExcelGenerator;
+import com.medistock.util.PdfGenerator;
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -67,5 +72,64 @@ public List<Medicine> getNearExpiryMedicines() {
     return medicineService.getNearExpiryMedicines();
 
 }
+@GetMapping("/search/category")
+public List<Medicine> searchByCategory(@RequestParam String category) {
+    return medicineService.searchByCategory(category);
+}
+@GetMapping("/search/batch")
+public List<Medicine> searchByBatch(@RequestParam String batch) {
+    return medicineService.searchByBatch(batch);
+}
+@GetMapping("/search/expiry")
+public List<Medicine> searchByExpiry(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate expiryDate) {
 
+    return medicineService.searchByExpiry(expiryDate);
+}
+@GetMapping("/count")
+public long getMedicineCount() {
+    return medicineService.getAllMedicines().size();
+}
+@GetMapping("/excel")
+public void exportExcel(
+        HttpServletResponse response)
+        throws Exception{
+
+    response.setContentType(
+            "application/octet-stream");
+
+    response.setHeader(
+
+            "Content-Disposition",
+
+            "attachment; filename=Medicines.xlsx"
+
+    );
+
+    ExcelGenerator.generateExcel(
+
+            medicineService.getAllMedicines(),
+
+            response
+
+    );
+
+}
+@GetMapping("/pdf")
+public void exportPdf(HttpServletResponse response)
+        throws Exception {
+
+    response.setContentType("application/pdf");
+
+    response.setHeader(
+            "Content-Disposition",
+            "attachment; filename=Medicines.pdf"
+    );
+
+    PdfGenerator.generate(
+            medicineService.getAllMedicines(),
+            response
+    );
+}
 }   

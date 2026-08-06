@@ -13,9 +13,11 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
     List<Medicine> findByQuantityLessThan(int quantity);
 
     // Expired Medicines
-    List<Medicine> findByExpiryDateBefore(LocalDate date);
+    
     List<Medicine> findByQuantity(int quantity);
     List<Medicine> findByExpiryDateBetween(LocalDate startDate, LocalDate endDate);
     List<Medicine> findByExpiryDateBefore(LocalDate date);
-   
+   List<Medicine> findByCategoryContainingIgnoreCase(String category);
+   List<Medicine> findByBatchNumberContainingIgnoreCase(String batchNumber);  
+   List<Medicine> findByExpiryDate(LocalDate expiryDate);  
 }

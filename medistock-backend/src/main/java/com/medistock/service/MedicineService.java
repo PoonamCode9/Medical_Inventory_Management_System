@@ -14,23 +14,47 @@ public class MedicineService {
     @Autowired
     private MedicineRepository medicineRepository;
 
-    public Medicine addMedicine(Medicine medicine){
-        return medicineRepository.save(medicine);
+    @Autowired
+    private InventoryHistoryService historyService;
+
+    // ===========================
+    // Add Medicine
+    // ===========================
+    public Medicine addMedicine(Medicine medicine) {
+
+        Medicine savedMedicine = medicineRepository.save(medicine);
+
+        historyService.saveHistory(
+                savedMedicine.getMedicineName(),
+                "Added",
+                savedMedicine.getQuantity()
+        );
+
+        return savedMedicine;
     }
 
-    public List<Medicine> getAllMedicines(){
+    // ===========================
+    // Get All Medicines
+    // ===========================
+    public List<Medicine> getAllMedicines() {
         return medicineRepository.findAll();
     }
 
-    public Medicine getMedicine(Long id){
+    // ===========================
+    // Get Medicine By Id
+    // ===========================
+    public Medicine getMedicine(Long id) {
         return medicineRepository.findById(id).orElse(null);
     }
 
-    public Medicine updateMedicine(Long id, Medicine medicine){
+    // ===========================
+    // Update Medicine
+    // ===========================
+    public Medicine updateMedicine(Long id, Medicine medicine) {
 
         Medicine existing = medicineRepository.findById(id).orElse(null);
 
-        if(existing == null){
+        if (existing == null) {
             return null;
         }
 
@@ -42,38 +66,94 @@ public class MedicineService {
         existing.setManufacturingDate(medicine.getManufacturingDate());
         existing.setExpiryDate(medicine.getExpiryDate());
 
-        return medicineRepository.save(existing);
+        Medicine updatedMedicine = medicineRepository.save(existing);
+
+        historyService.saveHistory(
+                updatedMedicine.getMedicineName(),
+                "Updated",
+                updatedMedicine.getQuantity()
+        );
+
+        return updatedMedicine;
     }
 
-    public void deleteMedicine(Long id){
-        medicineRepository.deleteById(id);
+    // ===========================
+    // Delete Medicine
+    // ===========================
+    public void deleteMedicine(Long id) {
+
+        Medicine medicine = medicineRepository.findById(id).orElse(null);
+
+        if (medicine != null) {
+
+            historyService.saveHistory(
+                    medicine.getMedicineName(),
+                    "Deleted",
+                    medicine.getQuantity()
+            );
+
+            medicineRepository.deleteById(id);
+        }
     }
 
-    public List<Medicine> searchMedicine(String name){
+    // ===========================
+    // Search By Name
+    // ===========================
+    public List<Medicine> searchMedicine(String name) {
         return medicineRepository.findByMedicineNameContainingIgnoreCase(name);
     }
+
+    // ===========================
+    // Low Stock
+    // ===========================
     public List<Medicine> getLowStockMedicines() {
-    return medicineRepository.findByQuantityLessThan(10);
+        return medicineRepository.findByQuantityLessThan(10);
     }
 
+    // ===========================
+    // Out Of Stock
+    // ===========================
+    public List<Medicine> getOutOfStockMedicines() {
+        return medicineRepository.findByQuantity(0);
+    }
+
+    // ===========================
+    // Near Expiry
+    // ===========================
+    public List<Medicine> getNearExpiryMedicines() {
+
+        LocalDate today = LocalDate.now();
+        LocalDate next30Days = today.plusDays(30);
+
+        return medicineRepository.findByExpiryDateBetween(today, next30Days);
+    }
+
+    // ===========================
+    // Expired Medicines
+    // ===========================
     public List<Medicine> getExpiredMedicines() {
         return medicineRepository.findByExpiryDateBefore(LocalDate.now());
     }
-    public List<Medicine> getOutOfStockMedicines() {
 
-    return medicineRepository.findByQuantity(0);
+    // ===========================
+    // Search By Category
+    // ===========================
+    public List<Medicine> searchByCategory(String category) {
+        return medicineRepository.findByCategoryContainingIgnoreCase(category);
+    }
 
-}
-public List<Medicine> getNearExpiryMedicines() {
+    // ===========================
+    // Search By Batch
+    // ===========================
+    public List<Medicine> searchByBatch(String batch) {
+        return medicineRepository.findByBatchNumberContainingIgnoreCase(batch);
+    }
 
-    LocalDate today = LocalDate.now();
-    LocalDate next30Days = today.plusDays(30);
+    // ===========================
+    // Search By Expiry Date
+    // ===========================
+    public List<Medicine> searchByExpiry(LocalDate expiryDate) {
+        return medicineRepository.findByExpiryDate(expiryDate);
+    }
 
-    return medicineRepository.findByExpiryDateBetween(today, next30Days);
-}
-public List<Medicine> getExpiredMedicines() {
-
-    return medicineRepository.findByExpiryDateBefore(LocalDate.now());
-
-}
 }

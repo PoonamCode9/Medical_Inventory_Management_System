@@ -9,6 +9,8 @@ import LowStock from "./pages/LowStock";
 import OutOfStock from "./pages/OutOfStock";
 import NearExpiry from "./pages/NearExpiry";
 import ExpiredMedicines from "./pages/ExpiredMedicines";
+import InventoryHistory from "./pages/InventoryHistory";
+import PurchaseOrders from "./pages/PurchaseOrders";
 
 function App() {
   return (
@@ -24,6 +26,14 @@ function App() {
         <Route path="/out-of-stock" element={<OutOfStock />} />
         <Route path="/near-expiry" element={<NearExpiry />} />
         <Route path="/expired" element={<ExpiredMedicines />} />
+        <Route
+path="/history"
+element={<InventoryHistory/>}
+/>
+<Route
+path="/purchases"
+element={<PurchaseOrders/>}
+/>
       </Routes>
     </BrowserRouter>
   );

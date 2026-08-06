@@ -47,6 +47,21 @@ function Navbar() {
           Expired
       </Link>
 
+      <Link
+className="nav-link"
+to="/history">
+
+History
+
+</Link>
+<Link
+className="nav-link"
+to="/purchases">
+
+Purchases
+
+</Link>
+
         </div>
 
         <button
