@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { 
   FiPackage, FiUsers, FiLayers, FiTruck, 
   FiDollarSign, FiAlertTriangle, FiClock, FiActivity,
-  FiPlus, FiTrendingUp, FiShoppingBag
+  FiPlus, FiTrendingUp, FiShoppingBag, FiMail, FiSend, FiCheck
 } from 'react-icons/fi';
 
 const Dashboard = () => {
@@ -13,6 +13,27 @@ const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [testMailLoading, setTestMailLoading] = useState(false);
+  const [testMailStatus, setTestMailStatus] = useState(null);
+
+  const handleSendTestEmail = async () => {
+    setTestMailLoading(true);
+    setTestMailStatus(null);
+    try {
+      const res = await API.post('/api/notifications/test-email');
+      setTestMailStatus({
+        type: 'success',
+        message: res.data.message || 'Test email triggered successfully!'
+      });
+    } catch (err) {
+      setTestMailStatus({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to trigger test email alert. Check SMTP configuration.'
+      });
+    } finally {
+      setTestMailLoading(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -161,6 +182,67 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+
+          {/* Email Notification Panel (Only for Admins) */}
+          {isAdmin && (
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
+              {/* Decorative light effect */}
+              <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-sky-500/5 blur-2xl"></div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-slate-200 flex items-center">
+                    <FiMail className="text-sky-400 mr-2" size={16} /> Email Alerts Settings
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Administrators automatically receive alerts for low stock and expiring items.
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handleSendTestEmail}
+                  disabled={testMailLoading}
+                  className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-sky-500/10 hover:bg-sky-500/20 active:bg-sky-500/30 text-sky-400 text-[11px] font-bold rounded-xl border border-sky-500/20 hover:border-sky-500/30 disabled:opacity-50 transition-all duration-200"
+                >
+                  {testMailLoading ? (
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-sky-400"></div>
+                  ) : (
+                    <FiSend size={12} />
+                  )}
+                  <span>{testMailLoading ? 'Sending...' : 'Send Test Alert'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-4 border-t border-slate-850">
+                <div className="flex items-center space-x-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850/50">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Low Stock Notification</p>
+                    <p className="text-[11px] text-slate-300 font-semibold mt-0.5">Active (Auto-Email Trigger)</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 bg-slate-950/40 p-3 rounded-2xl border border-slate-850/50">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Medicine Expiry Alert</p>
+                    <p className="text-[11px] text-slate-300 font-semibold mt-0.5">Active (Auto-Email Trigger)</p>
+                  </div>
+                </div>
+              </div>
+
+              {testMailStatus && (
+                <div className={`mt-4 p-3 rounded-xl border text-[11px] flex items-start space-x-2 ${
+                  testMailStatus.type === 'success' 
+                    ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-rose-500/5 border-rose-500/20 text-rose-400'
+                }`}>
+                  {testMailStatus.type === 'success' && <FiCheck className="mt-0.5 flex-shrink-0" />}
+                  <span>{testMailStatus.message}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Side: Recent activity logs */}

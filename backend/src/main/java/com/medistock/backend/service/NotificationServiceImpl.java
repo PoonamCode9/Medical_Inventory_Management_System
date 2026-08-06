@@ -22,6 +22,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private InventoryRepository inventoryRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public List<Notification> getUnreadNotifications() {
         return notificationRepository.findByIsReadFalseOrderByCreatedAtDesc();
@@ -36,6 +42,21 @@ public class NotificationServiceImpl implements NotificationService {
     public void createNotification(String message, String type) {
         Notification notification = new Notification(message, type);
         notificationRepository.save(notification);
+
+        // Send email alerts for Low Stock or Expiry
+        if ("LOW_STOCK".equals(type) || "EXPIRY".equals(type)) {
+            try {
+                List<User> admins = userRepository.findByRoleName("ROLE_ADMIN");
+                for (User admin : admins) {
+                    if (admin.getEmail() != null && !admin.getEmail().trim().isEmpty()) {
+                        emailService.sendAlertEmail(admin.getEmail(), type, message);
+                    }
+                }
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger(NotificationServiceImpl.class)
+                        .error("Error sending notification email alert: {}", e.getMessage());
+            }
+        }
     }
 
     @Override

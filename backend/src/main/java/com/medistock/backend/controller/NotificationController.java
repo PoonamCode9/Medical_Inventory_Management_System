@@ -16,6 +16,9 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private com.medistock.backend.service.EmailService emailService;
+
     @GetMapping("/unread")
     public ResponseEntity<List<Notification>> getUnreadNotifications() {
         // Run checks first
@@ -39,5 +42,20 @@ public class NotificationController {
     public ResponseEntity<?> markAllAsRead() {
         notificationService.markAllAsRead();
         return ResponseEntity.ok("All notifications marked as read");
+    }
+
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/test-email")
+    public ResponseEntity<?> sendTestEmail() {
+        org.springframework.security.core.Authentication auth = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof com.medistock.backend.config.UserDetailsImpl) {
+            com.medistock.backend.config.UserDetailsImpl userDetails = 
+                (com.medistock.backend.config.UserDetailsImpl) auth.getPrincipal();
+            String email = userDetails.getUsername();
+            emailService.sendAlertEmail(email, "LOW_STOCK", "This is a verification test email from your MediStock system. Email notifications are fully configured and functional!");
+            return ResponseEntity.ok(java.util.Map.of("message", "Test email alert successfully triggered to: " + email));
+        }
+        return ResponseEntity.badRequest().body(java.util.Map.of("message", "Unable to determine current logged-in user email"));
     }
 }
