@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import API from "../api/Api";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -87,7 +87,9 @@ function Login() {
                             <input type="checkbox" className='cursor-pointer'/>
                             <label className="ml-2">Remember me</label>
                         </div>
-                        <a href="" className="text-blue-600 hover:underline">Forgot Password?</a>
+                        <Link to="/forgot-password" className="text-blue-600 hover:underline">
+                            Forgot Password?
+                        </Link>
                     </div>
                     <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg cursor-pointer">Login</button>
                 </form>

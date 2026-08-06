@@ -22,6 +22,9 @@ import ExpiryTracker from "./pages/ExpiryTracker";
 import StockLogs from "./pages/StockLogs";
 import DispenseSale from "./pages/DispenseSale";
 import PurchaseOrders from "./pages/PurchaseOrders";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -32,11 +35,16 @@ function App() {
         <Route path="/register" element={<Register />}></Route>
         <Route path="/unauthorized" element={<Unauthorized />}></Route>
 
+        {/* New Password Reset Routes */}
+        <Route path="/forgot-password" element={<ForgotPassword />} ></Route>
+        <Route path="/reset-password" element={<ResetPassword />} ></Route>
+
         <Route 
         path="/dashboard" 
         element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="users" element={<ProtectedRoute allowedRoles={["Admin"]}><Users /></ProtectedRoute>} />
+          <Route path="profile" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Profile /></ProtectedRoute>} />
           <Route path="medicines" >
             <Route index  element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Medicines />
             </ProtectedRoute>}></Route>

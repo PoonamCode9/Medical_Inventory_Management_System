@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.medicalinventory.backend.dto.ForgotPasswordRequestDTO;
 import com.medicalinventory.backend.dto.LoginRequest;
+import com.medicalinventory.backend.dto.ResetPasswordRequestDTO;
 import com.medicalinventory.backend.entity.User;
 
 @RestController
@@ -32,6 +34,24 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             return ResponseEntity.ok(authService.register(user));
+        } catch(RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
+        try {
+            return ResponseEntity.ok(authService.forgotPassword(request.getEmail()));
+        } catch(RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDTO request) {
+        try {
+            return ResponseEntity.ok(authService.resetPassword(request.getOtp(), request.getNewPassword()));
         } catch(RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

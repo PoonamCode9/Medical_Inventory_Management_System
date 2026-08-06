@@ -198,7 +198,7 @@ function Navbar() {
           )}
         </div>
 
-        <button className="h-9 w-9 bg-blue-600 rounded-full text-white flex items-center justify-center hover:bg-blue-700 cursor-pointer">
+        <button className="h-9 w-9 bg-blue-600 rounded-full text-white flex items-center justify-center hover:bg-blue-700 cursor-pointer" onClick={() => navigate("/dashboard/profile")}>
           <User size={20} />
         </button>
       </div>

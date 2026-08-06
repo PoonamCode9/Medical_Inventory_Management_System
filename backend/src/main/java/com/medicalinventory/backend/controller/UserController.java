@@ -2,6 +2,8 @@ package com.medicalinventory.backend.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,8 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.medicalinventory.backend.dto.ChangePasswordRequestDTO;
+import com.medicalinventory.backend.dto.UserProfileDTO;
 import com.medicalinventory.backend.entity.User;
 import com.medicalinventory.backend.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -52,5 +58,35 @@ public class UserController {
     public String deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return "User deleted successfully";
+    }
+
+    // Get Current Logged-in User Profile
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        try {
+            return ResponseEntity.ok(userService.getUserProfile(authentication.getName()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Update Profile Details
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(Authentication authentication, @Valid @RequestBody UserProfileDTO dto) {
+        try {
+            return ResponseEntity.ok(userService.updateProfile(authentication.getName(), dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Change Password
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequestDTO request) {
+        try {
+            return ResponseEntity.ok(userService.changePassword(authentication.getName(), request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
