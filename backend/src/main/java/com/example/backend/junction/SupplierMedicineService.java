@@ -33,8 +33,13 @@ public class SupplierMedicineService {
         repo.replaceSuppliersForMedicine(medicineId, supplierIds);
     }
 
-    public List<Integer> getMedicineIdsForSupplier(Integer supplierId) {
+public List<Integer> getMedicineIdsForSupplier(Integer supplierId) {
         return repo.findMedicineIdsBySupplier(supplierId);
+    }
+
+    @Transactional
+    public void deleteSuppliersForMedicine(Integer medicineId) {
+        repo.deleteSuppliersForMedicine(medicineId);
     }
 }
 

@@ -73,7 +73,7 @@ public class SupplierMedicineJdbcRepository {
         }
     }
 
-    public List<Integer> findMedicineIdsBySupplier(Integer supplierId) {
+public List<Integer> findMedicineIdsBySupplier(Integer supplierId) {
         if (supplierId == null) return Collections.emptyList();
 
         return jdbcTemplate.queryForList(
@@ -81,6 +81,11 @@ public class SupplierMedicineJdbcRepository {
                 Integer.class,
                 supplierId
         );
+    }
+
+    public void deleteSuppliersForMedicine(Integer medicineId) {
+        if (medicineId == null) return;
+        jdbcTemplate.update("DELETE FROM supplier_medicines WHERE medicine_id = ?", medicineId);
     }
 }
 

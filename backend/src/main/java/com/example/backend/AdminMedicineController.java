@@ -19,15 +19,18 @@ public class AdminMedicineController {
 private final MedicineRepository medicineRepository;
     private final SupplierMedicineService supplierMedicineService;
     private final DispenseItemRepository dispenseItemRepository;
+    private final PurchaseOrderItemRepository purchaseOrderItemRepository;
     private final MedicineAlertScheduler medicineAlertScheduler;
 
     public AdminMedicineController(MedicineRepository medicineRepository,
                                    SupplierMedicineService supplierMedicineService,
                                    DispenseItemRepository dispenseItemRepository,
+                                   PurchaseOrderItemRepository purchaseOrderItemRepository,
                                    MedicineAlertScheduler medicineAlertScheduler) {
         this.medicineRepository = medicineRepository;
         this.supplierMedicineService = supplierMedicineService;
         this.dispenseItemRepository = dispenseItemRepository;
+        this.purchaseOrderItemRepository = purchaseOrderItemRepository;
         this.medicineAlertScheduler = medicineAlertScheduler;
     }
 
@@ -166,7 +169,8 @@ supplierMedicineService.replaceSuppliersForMedicine(saved.getId(), request.getSu
             return ResponseEntity.notFound().build();
         }
 
-        // Check if medicine is referenced in any dispense items
+// Block deletion if this medicine is referenced in any dispensing records
+        // (dispensing history must be preserved)
         List<DispenseItem> dispenseItems = dispenseItemRepository.findByMedicineId(id);
         if (!dispenseItems.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -174,6 +178,14 @@ supplierMedicineService.replaceSuppliersForMedicine(saved.getId(), request.getSu
             ));
         }
 
+        // Clean up related references before deleting the medicine:
+        // 1. Remove supplier_medicines junction rows
+        supplierMedicineService.deleteSuppliersForMedicine(id);
+
+        // 2. Remove purchase_order_items referencing this medicine
+        purchaseOrderItemRepository.deleteByMedicineId(id);
+
+        // 3. Finally delete the medicine itself
         medicineRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }

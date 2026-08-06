@@ -21,9 +21,6 @@ const menu = [
     label: 'Notifications', to: '/pharmacist/notifications', icon: 'bell',
   },
   {
-    label: 'Returns', to: '/pharmacist/returns', icon: 'box',
-  },
-  {
     label: 'Reports', to: '/pharmacist/reports', icon: 'file',
   },
   {
@@ -307,10 +304,7 @@ export default function PharmacistLayout({ children }) {
           </div>
 
           <div className="bb-topbar-right">
-            <button type="button" className="bb-btn bb-btn--ghost">
-              <span className="bb-btn-icon">+</span>
-              <span>Quick Add</span>
-            </button>
+            
 
             <div className="bb-profile">
               <div className="bb-avatar" aria-hidden="true">

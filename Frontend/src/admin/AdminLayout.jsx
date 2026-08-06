@@ -19,8 +19,6 @@ const menu = [
     items: [
       { label: 'Stock Overview', to: '/admin/inventory/overview', icon: 'box' },
       { label: 'Stock Movements', to: '/admin/inventory/movements', icon: 'list' },
-      { label: 'Adjustments', to: '/admin/inventory/adjustments' },
-      { label: 'Audits', to: '/admin/inventory/audits' },
     ],
   },
   {
@@ -29,7 +27,6 @@ const menu = [
     items: [
       { label: 'Purchase Orders', to: '/admin/purchases/orders' },
       { label: 'Goods Received', to: '/admin/purchases/received' },
-      { label: 'Vendors', to: '/admin/purchases/vendors' },
     ],
   },
   { label: 'Sales / Dispensing', to: '/admin/dispensing', icon: 'cart' },
@@ -438,10 +435,6 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className="bb-topbar-right">
-            <button type="button" className="bb-btn bb-btn--ghost">
-              <span className="bb-btn-icon">+</span>
-              <span>Quick Add</span>
-            </button>
 
             <div className="bb-profile">
               <div className="bb-avatar" aria-hidden="true">

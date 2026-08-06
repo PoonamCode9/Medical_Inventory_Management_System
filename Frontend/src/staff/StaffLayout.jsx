@@ -11,7 +11,6 @@ const menu = [
     items: [
       { label: 'Inventory', to: '/staff/dashboard/inventory' },
       { label: 'Receive Inventory', to: '/staff/dashboard/receive-inventory' },
-      { label: 'Stock Adjust', to: '/staff/dashboard/stock-adjust' },
     ],
   },
   {
@@ -19,7 +18,6 @@ const menu = [
     icon: 'list',
     items: [
       { label: 'Tasks', to: '/staff/dashboard/tasks' },
-      { label: 'Returns', to: '/staff/dashboard/returns' },
       { label: 'Notifications', to: '/staff/dashboard/notifications' },
       { label: 'Alerts', to: '/staff/dashboard/alerts' },
     ],
@@ -266,10 +264,7 @@ export default function StaffLayout({ children }) {
           </div>
 
           <div className="bb-topbar-right">
-            <button type="button" className="bb-btn bb-btn--ghost">
-              <span className="bb-btn-icon">+</span>
-              <span>Quick Add</span>
-            </button>
+            
 
             <div className="bb-profile">
               <div className="bb-avatar" aria-hidden="true">
