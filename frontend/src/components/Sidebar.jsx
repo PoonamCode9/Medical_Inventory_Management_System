@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import NotificationPanel from './NotificationPanel';
+import { getUnreadCount } from '../services/api';
 import {
   PackageOpen,
   LayoutDashboard,
@@ -16,16 +17,18 @@ import {
   ChevronRight,
   BarChart2,
   ShoppingCart,
+  Bell,
 } from 'lucide-react';
 
 const navItems = [
-  { to: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard, roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
-  { to: '/inventory',  label: 'Inventory',   icon: Package,          roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
-  { to: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, roles: ['ADMIN', 'PHARMACIST'] },
-  { to: '/reports',   label: 'Reports',     icon: BarChart2,        roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
-  { to: '/categories', label: 'Categories',  icon: Tag,              roles: ['ADMIN'] },
-  { to: '/suppliers',  label: 'Suppliers',   icon: Truck,            roles: ['ADMIN', 'PHARMACIST'] },
-  { to: '/users',      label: 'Users',       icon: UserPlus,         roles: ['ADMIN', 'PHARMACIST'] },
+  { to: '/dashboard',     label: 'Dashboard',       icon: LayoutDashboard, roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
+  { to: '/inventory',     label: 'Inventory',        icon: Package,          roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
+  { to: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart,    roles: ['ADMIN', 'PHARMACIST'] },
+  { to: '/reports',       label: 'Reports',          icon: BarChart2,        roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
+  { to: '/notifications', label: 'Notifications',    icon: Bell,             roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
+  { to: '/categories',    label: 'Categories',       icon: Tag,              roles: ['ADMIN'] },
+  { to: '/suppliers',     label: 'Suppliers',        icon: Truck,            roles: ['ADMIN', 'PHARMACIST'] },
+  { to: '/users',         label: 'Users',            icon: UserPlus,         roles: ['ADMIN', 'PHARMACIST'] },
 ];
 
 const roleColors = {
@@ -38,6 +41,19 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [navUnread, setNavUnread] = useState(0);
+
+  // Poll unread count for the sidebar badge
+  useEffect(() => {
+    const fetchCount = () => {
+      getUnreadCount()
+        .then((res) => setNavUnread(res.data?.count ?? 0))
+        .catch(() => {});
+    };
+    fetchCount();
+    const id = setInterval(fetchCount, 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleLogout = () => { logout(); navigate('/'); };
   const visibleItems = navItems.filter((item) => user && item.roles.includes(user.role));
@@ -140,12 +156,24 @@ const Sidebar = () => {
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-sky-400 rounded-r-full" />
                 )}
 
-                <item.icon
-                  className={`flex-shrink-0 transition-colors
-                    ${collapsed ? 'w-5 h-5' : 'w-[18px] h-[18px]'}
-                    ${isActive ? 'text-sky-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]'}
-                  `}
-                />
+                {/* Icon wrapper — relative for badge positioning */}
+                <span className="relative flex-shrink-0">
+                  <item.icon
+                    className={`transition-colors
+                      ${collapsed ? 'w-5 h-5' : 'w-[18px] h-[18px]'}
+                      ${isActive ? 'text-sky-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]'}
+                    `}
+                  />
+                  {/* Unread badge on Notifications nav item */}
+                  {item.to === '/notifications' && navUnread > 0 && (
+                    <span
+                      className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-[3px] rounded-full flex items-center justify-center text-[8px] font-bold text-white pointer-events-none"
+                      style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}
+                    >
+                      {navUnread > 99 ? '99+' : navUnread}
+                    </span>
+                  )}
+                </span>
 
                 <AnimatePresence>
                   {!collapsed && (
@@ -154,12 +182,25 @@ const Sidebar = () => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
-                      className="text-[13.5px] font-medium whitespace-nowrap"
+                      className="text-[13.5px] font-medium whitespace-nowrap flex-1"
                     >
                       {item.label}
                     </motion.span>
                   )}
                 </AnimatePresence>
+
+                {/* Unread count label (expanded sidebar only) */}
+                {!collapsed && item.to === '/notifications' && navUnread > 0 && (
+                  <span
+                    className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style={{
+                      background: isActive ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.10)',
+                      color: '#f87171',
+                    }}
+                  >
+                    {navUnread}
+                  </span>
+                )}
 
                 {/* Tooltip for collapsed */}
                 {collapsed && (
@@ -172,6 +213,9 @@ const Sidebar = () => {
                       boxShadow: 'var(--shadow-card)',
                     }}>
                     {item.label}
+                    {item.to === '/notifications' && navUnread > 0 && (
+                      <span className="ml-1.5 text-[9px] font-bold text-red-400">({navUnread})</span>
+                    )}
                   </div>
                 )}
               </>

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell, X, CheckCheck, Trash2,
   AlertTriangle, Calendar, ShoppingCart,
-  RefreshCw, BellOff, Loader2,
+  RefreshCw, BellOff, Loader2, ArrowRight,
 } from 'lucide-react';
 import {
   getNotifications,
@@ -23,6 +24,8 @@ const TYPE_CONFIG = {
     bg: 'bg-amber-500/10 border-amber-500/20',
     label: 'Low Stock',
     dot: 'bg-amber-400',
+    route: '/inventory?filter=lowStock',
+    routeLabel: 'View low stock',
   },
   EXPIRY: {
     icon: Calendar,
@@ -30,6 +33,8 @@ const TYPE_CONFIG = {
     bg: 'bg-rose-500/10 border-rose-500/20',
     label: 'Expiry',
     dot: 'bg-rose-400',
+    route: '/inventory?filter=expiring',
+    routeLabel: 'View expiring items',
   },
   PURCHASE_ALERT: {
     icon: ShoppingCart,
@@ -37,6 +42,8 @@ const TYPE_CONFIG = {
     bg: 'bg-sky-500/10 border-sky-500/20',
     label: 'Purchase',
     dot: 'bg-sky-400',
+    route: '/purchase-orders',
+    routeLabel: 'View purchase orders',
   },
 };
 
@@ -53,6 +60,7 @@ function timeAgo(dateStr) {
 /* ── NotificationPanel ───────────────────────────────────────── */
 
 export default function NotificationPanel({ onUnreadCountChange }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -193,6 +201,24 @@ export default function NotificationPanel({ onUnreadCountChange }) {
     setMarkingAll(false);
   };
 
+  /* Navigate on notification click — also marks as read and closes panel */
+  const handleNotificationClick = async (n) => {
+    const cfg = TYPE_CONFIG[n.type] || TYPE_CONFIG.PURCHASE_ALERT;
+    if (!cfg.route) return;
+    // Mark as read silently
+    if (n.status === 'UNREAD') {
+      try {
+        await markNotificationRead(n.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === n.id ? { ...item, status: 'READ' } : item))
+        );
+        setUnreadCount((c) => Math.max(0, c - 1));
+      } catch (_) {}
+    }
+    setOpen(false);
+    navigate(cfg.route);
+  };
+
   /* ── Panel content (portaled) ──────────────────────────────── */
   const panelContent = (
     <AnimatePresence>
@@ -318,12 +344,13 @@ export default function NotificationPanel({ onUnreadCountChange }) {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.18 }}
-                          className="group relative mx-2 mb-1 rounded-xl px-3 py-2.5 cursor-default transition-all duration-150"
+                          className="group relative mx-2 mb-1 rounded-xl px-3 py-2.5 cursor-pointer transition-all duration-150"
                           style={{
                             background: isUnread ? 'rgba(14,165,233,0.05)' : 'transparent',
                             border: isUnread ? '1px solid rgba(14,165,233,0.1)' : '1px solid transparent',
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-subtle)'; }}
+                          onClick={() => handleNotificationClick(n)}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(14,165,233,0.08)'; }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = isUnread ? 'rgba(14,165,233,0.05)' : 'transparent';
                           }}
@@ -335,7 +362,7 @@ export default function NotificationPanel({ onUnreadCountChange }) {
                             </div>
 
                             {/* Text */}
-                            <div className="flex-1 min-w-0 pr-6">
+                            <div className="flex-1 min-w-0 pr-14">
                               <p
                                 className="text-[12px] leading-[1.5] break-words"
                                 style={{
@@ -354,6 +381,14 @@ export default function NotificationPanel({ onUnreadCountChange }) {
                                 <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                                   · {timeAgo(n.createdAt)}
                                 </span>
+                                {/* Navigate hint — visible on hover */}
+                                <span
+                                  className="text-[10px] font-semibold flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                                  style={{ color: '#38bdf8' }}
+                                >
+                                  {cfg.routeLabel}
+                                  <ArrowRight className="w-2.5 h-2.5" />
+                                </span>
                               </div>
                             </div>
 
@@ -363,12 +398,12 @@ export default function NotificationPanel({ onUnreadCountChange }) {
                             )}
                           </div>
 
-                          {/* Hover actions */}
+                          {/* Hover actions — stop propagation so they don't trigger navigation */}
                           <div className="absolute right-2 top-2 flex items-center gap-1
                                           opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                             {isUnread && (
                               <button
-                                onClick={() => handleMarkRead(n.id)}
+                                onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
                                 title="Mark as read"
                                 className="w-5 h-5 rounded-md flex items-center justify-center transition-all"
                                 style={{ color: 'var(--text-muted)' }}
@@ -385,7 +420,7 @@ export default function NotificationPanel({ onUnreadCountChange }) {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDismiss(n.id)}
+                              onClick={(e) => { e.stopPropagation(); handleDismiss(n.id); }}
                               title="Dismiss"
                               disabled={isDismissing}
                               className="w-5 h-5 rounded-md flex items-center justify-center transition-all"

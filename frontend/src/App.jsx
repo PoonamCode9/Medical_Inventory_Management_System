@@ -10,6 +10,7 @@ import Suppliers from './pages/Suppliers';
 import Users from './pages/Users';
 import Reports from './pages/Reports';
 import PurchaseOrders from './pages/PurchaseOrders';
+import Notifications from './pages/Notifications';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -129,6 +130,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'PHARMACIST']}>
                 <Users />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
               </ProtectedRoute>
             }
           />
