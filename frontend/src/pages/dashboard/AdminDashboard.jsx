@@ -6,7 +6,7 @@ import InventoryAnalytics from '../../components/analytics/InventoryAnalytics';
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   // Stats variables from dashboard summary API
   const [medicinesCount, setMedicinesCount] = useState(0);

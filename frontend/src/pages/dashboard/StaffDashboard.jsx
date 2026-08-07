@@ -4,7 +4,7 @@ import InventoryAnalytics from '../../components/analytics/InventoryAnalytics';
 
 export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   // States
   const [tasks, setTasks] = useState([]);

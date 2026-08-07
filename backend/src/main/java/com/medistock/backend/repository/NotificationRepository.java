@@ -31,4 +31,16 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
 
     @Query("SELECT n FROM Notification n WHERE (n.user = :user OR n.user IS NULL) AND (LOWER(n.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(n.message) LIKE LOWER(CONCAT('%', :query, '%'))) ORDER BY n.createdAt DESC")
     List<Notification> searchNotifications(@Param("user") User user, @Param("query") String query);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.createdAt >= :dateTime")
+    long countNotificationsSince(@Param("dateTime") java.time.LocalDateTime dateTime);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.isRead = :isRead")
+    long countNotificationsByIsRead(@Param("isRead") boolean isRead);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.type IN :types")
+    long countNotificationsByTypes(@Param("types") List<String> types);
+
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.type IN ('LOW_STOCK', 'OUT_OF_STOCK', 'EXPIRY_ALERT', 'EXPIRED', 'PURCHASE_DELIVERED') OR n.priority = 'HIGH' OR n.relatedModule = 'MEDICINE'")
+    long countImportantNotifications();
 }

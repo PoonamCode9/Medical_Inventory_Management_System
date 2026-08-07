@@ -6,7 +6,7 @@ import InventoryAnalytics from '../../components/analytics/InventoryAnalytics';
 export default function PharmacistDashboard() {
   const { triggerToast } = useContext(NotificationContext);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('analytics');
 
   // States
   const [availableCount, setAvailableCount] = useState(0);

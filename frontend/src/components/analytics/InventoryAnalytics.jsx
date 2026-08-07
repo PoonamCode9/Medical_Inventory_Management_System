@@ -16,498 +16,600 @@ import {
   LineChart,
   Line
 } from 'recharts';
+import {
+  Package,
+  Users,
+  Layers,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
+  AlertOctagon,
+  Clock,
+  Calendar,
+  ShoppingBag,
+  Bell,
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw,
+  Mail,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight
+} from 'lucide-react';
 
-const CHART_COLORS = ['#0F766E', '#0D9488', '#14B8A6', '#2DD4BF', '#99F6E4', '#CCFBF1'];
-const EXPIRES_COLORS = ['#DC2626', '#F59E0B', '#10B981'];
-const STATUS_COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444'];
+const HEALTH_COLORS = ['#10B981', '#F59E0B', '#F97316', '#EF4444']; // Good, Low, Critical, Out of Stock
+const EXPIRES_COLORS = ['#991B1B', '#EF4444', '#F59E0B', '#10B981']; // Expired, 7 Days, 30 Days, Safe
+const STATUS_COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444']; // Pending, Approved, Completed, Cancelled
 
 export default function InventoryAnalytics() {
   const { triggerToast } = useContext(NotificationContext);
 
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
+  const [data, setData] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshIntervalSec, setRefreshIntervalSec] = useState(15);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
 
-  // Filters State
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [supplierId, setSupplierId] = useState('');
-  const [stockStatus, setStockStatus] = useState('ALL');
-  const [expiryStatus, setExpiryStatus] = useState('ALL');
-
-  // Load Categories & Suppliers once
-  useEffect(() => {
-    const loadFilterData = async () => {
-      try {
-        const [catsRes, suppsRes] = await Promise.all([
-          api.get('/api/categories').catch(() => ({ data: { data: [] } })),
-          api.get('/api/suppliers').catch(() => ({ data: { data: [] } }))
-        ]);
-        setCategories(catsRes.data.data || []);
-        setSuppliers(suppsRes.data.data || []);
-      } catch (err) {
-        console.error('Error loading analytics filters:', err);
-      }
-    };
-    loadFilterData();
-  }, []);
-
-  // Fetch Analytics on filter change
-  const fetchAnalytics = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      if (categoryId) params.categoryId = categoryId;
-      if (supplierId) params.supplierId = supplierId;
-      if (stockStatus !== 'ALL') params.stockStatus = stockStatus;
-      if (expiryStatus !== 'ALL') params.expiryStatus = expiryStatus;
-
-      const res = await api.get('/api/analytics/dashboard', { params });
+      const res = await api.get('/api/dashboard/summary');
       if (res.data && res.data.success) {
-        setAnalytics(res.data.analytics);
+        setData(res.data.data);
+        setLastUpdatedTime(new Date());
       } else {
-        triggerToast('Failed to retrieve analytics payload.', 'DANGER');
+        triggerToast('Failed to retrieve dashboard analytics.', 'DANGER');
       }
     } catch (err) {
-      console.error('Error fetching analytics:', err);
-      triggerToast('Error connecting to Analytics Service.', 'DANGER');
+      console.error('Error fetching dashboard summary:', err);
+      triggerToast('Error connecting to Inventory Analytics Service.', 'DANGER');
     } finally {
-      setTimeout(() => setLoading(false), 300);
+      setLoading(false);
     }
   };
 
+  // Initial load
   useEffect(() => {
-    fetchAnalytics();
-  }, [startDate, endDate, categoryId, supplierId, stockStatus, expiryStatus]);
+    fetchDashboardData();
+  }, []);
 
-  const handleResetFilters = () => {
-    setStartDate('');
-    setEndDate('');
-    setCategoryId('');
-    setSupplierId('');
-    setStockStatus('ALL');
-    setExpiryStatus('ALL');
-  };
+  // Auto-refresh logic
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, refreshIntervalSec * 1000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, refreshIntervalSec]);
 
-  const renderCard = (title, value, subtitle, colorClass = 'text-gray-800', borderLeft = '') => {
+  // Listen to write events to trigger immediate refresh
+  useEffect(() => {
+    const handleWriteSuccess = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener('api-write-success', handleWriteSuccess);
+    return () => {
+      window.removeEventListener('api-write-success', handleWriteSuccess);
+    };
+  }, []);
+
+  if (loading && !data) {
     return (
-      <div className={`bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 ${borderLeft}`}>
-        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">{title}</span>
-        <div className="flex items-baseline space-x-1.5 mt-1">
-          <span className={`text-2xl font-bold ${colorClass}`}>{value}</span>
+      <div className="space-y-6 animate-pulse p-4">
+        <div className="h-8 bg-slate-200 rounded w-1/4 mb-4"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="h-24 bg-slate-100 rounded-[12px]"></div>
+          ))}
         </div>
-        <span className="text-[10px] text-gray-400 mt-2 font-medium">{subtitle}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-64 bg-slate-100 rounded-[12px]"></div>
+          <div className="h-64 bg-slate-100 rounded-[12px]"></div>
+          <div className="h-64 bg-slate-100 rounded-[12px]"></div>
+        </div>
       </div>
     );
-  };
+  }
 
-  const CardSkeleton = () => (
-    <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between animate-pulse">
-      <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
-      <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
-      <div className="h-2 bg-gray-100 rounded w-1/2"></div>
-    </div>
-  );
+  // Pre-calculated metrics safely mapped
+  const totalMeds = data?.totalMedicines || 0;
+  const totalSuppliers = data?.suppliers || 0;
+  const totalInvQuantity = data?.totalInventoryQuantity || 0;
+  const totalInvValue = data?.inventoryValue || 0;
+  const availableStock = data?.availableStock || 0;
+  const lowStockMeds = data?.lowStock || 0;
+  const outOfStockMeds = data?.outOfStock || 0;
+  const nearExpiryMeds = data?.criticalMedicines || 0;
+  const expiredMeds = data?.expiredMedicines || 0;
+  const totalPurchaseOrders = data?.purchaseOrders || 0;
+  const notificationsToday = data?.notificationsToday || 0;
+
+  // Chart 1: Category distribution
+  const categoryChartData = data?.categoryMetrics?.map(c => ({
+    name: c.name,
+    count: c.count
+  })) || [];
+
+  // Chart 2: Stock Health
+  const stockHealthChartData = [
+    { name: 'Good Stock', value: data?.goodStock || 0 },
+    { name: 'Low Stock', value: data?.lowStock || 0 },
+    { name: 'Critical Stock', value: data?.criticalStock || 0 },
+    { name: 'Out of Stock', value: data?.outOfStock || 0 }
+  ].filter(item => item.value > 0);
+
+  // Chart 3: Expiry Analytics
+  const expiryChartData = [
+    { name: 'Expired', value: data?.expiredMedicines || 0 },
+    { name: 'Expiring 7 Days', value: data?.expiring7Days || 0 },
+    { name: 'Expiring 30 Days', value: data?.expiring30Days || 0 },
+    { name: 'Safe', value: data?.safeMedicines || 0 }
+  ].filter(item => item.value > 0);
 
   return (
-    <div className="space-y-6">
-      {/* Dynamic Filter Panel */}
-      <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400">Search & Analytics Filters</h2>
+    <div className="space-y-6 font-sans">
+      {/* Top Banner Control Board */}
+      <div className="flex flex-wrap justify-between items-center bg-slate-900 text-white p-4 rounded-[12px] shadow-lg gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="bg-teal-500 p-2 rounded-[8px] animate-pulse">
+            <Activity className="w-5 h-5 text-slate-900" />
+          </div>
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-widest text-teal-400">Enterprise Monitoring Console</h2>
+            <p className="text-[10px] text-slate-350">
+              Live Connection Status: <span className="text-emerald-400 font-bold">Stable</span> | Last Sync: {lastUpdatedTime.toLocaleTimeString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-4 text-xs font-semibold">
+          <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-[8px] border border-slate-700">
+            <span className="text-slate-400 mr-1">Auto Refresh</span>
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className="focus:outline-none transition-colors text-teal-400 hover:text-teal-350 cursor-pointer"
+            >
+              {autoRefresh ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6 text-slate-500" />}
+            </button>
+          </div>
+
           <button
-            onClick={handleResetFilters}
-            className="text-[10px] font-bold text-teal-700 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 py-1.5 px-3 rounded-[8px] border border-teal-200 cursor-pointer transition-colors"
+            onClick={fetchDashboardData}
+            className="flex items-center space-x-1 bg-teal-600 hover:bg-teal-700 text-slate-900 font-extrabold px-3 py-1.5 rounded-[8px] cursor-pointer transition-colors shadow-md border-none"
           >
-            Clear Filters
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Sync</span>
           </button>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 font-sans text-xs">
-          {/* Start Date */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            />
+      {/* 1. Executive KPI Cards Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {/* Total Medicines */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Package className="w-12 h-12 text-slate-900" />
           </div>
-
-          {/* End Date */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            />
+          <span className="text-[10px] uppercase font-bold text-slate-450 tracking-wider">Total Medicines</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-slate-850">{totalMeds}</span>
+            <span className="text-[9px] block text-slate-400 font-semibold mt-1">Unique catalog entries</span>
           </div>
+        </div>
 
-          {/* Category */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">Category</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            >
-              <option value="">All Categories</option>
-              {categories.map((c) => (
-                <option key={c.categoryId} value={c.categoryId}>
-                  {c.categoryName}
-                </option>
-              ))}
-            </select>
+        {/* Total Suppliers */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Users className="w-12 h-12 text-slate-900" />
           </div>
-
-          {/* Supplier */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">Supplier</label>
-            <select
-              value={supplierId}
-              onChange={(e) => setSupplierId(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            >
-              <option value="">All Suppliers</option>
-              {suppliers.map((s) => (
-                <option key={s.supplierId} value={s.supplierId}>
-                  {s.supplierName}
-                </option>
-              ))}
-            </select>
+          <span className="text-[10px] uppercase font-bold text-slate-450 tracking-wider">Total Suppliers</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-slate-850">{totalSuppliers}</span>
+            <span className="text-[9px] block text-emerald-650 font-semibold mt-1">Active global labs</span>
           </div>
+        </div>
 
-          {/* Stock Status */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">Stock Status</label>
-            <select
-              value={stockStatus}
-              onChange={(e) => setStockStatus(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            >
-              <option value="ALL">All Levels</option>
-              <option value="LOW_STOCK">Low Stock</option>
-              <option value="OUT_OF_STOCK">Out of Stock</option>
-              <option value="NORMAL">Normal / Good</option>
-            </select>
+        {/* Total Inventory Items */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Layers className="w-12 h-12 text-slate-900" />
           </div>
+          <span className="text-[10px] uppercase font-bold text-slate-450 tracking-wider">Total Items</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-slate-850">{totalInvQuantity}</span>
+            <span className="text-[9px] block text-slate-400 font-semibold mt-1">Cumulative product count</span>
+          </div>
+        </div>
 
-          {/* Expiry Status */}
-          <div className="flex flex-col space-y-1">
-            <label className="font-semibold text-gray-600">Expiry Status</label>
-            <select
-              value={expiryStatus}
-              onChange={(e) => setExpiryStatus(e.target.value)}
-              className="border border-gray-300 rounded-[8px] p-2 focus:ring-1 focus:ring-teal-500 focus:outline-none bg-slate-50 font-medium text-gray-700"
-            >
-              <option value="ALL">All Expiries</option>
-              <option value="EXPIRING_SOON">Expiring Soon (60d)</option>
-              <option value="EXPIRED">Expired</option>
-              <option value="VALID">Safe / Non-expired</option>
-            </select>
+        {/* Current Inventory Value */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-teal-600">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <DollarSign className="w-12 h-12 text-teal-600" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-teal-800 tracking-wider">Inventory Value</span>
+          <div className="mt-2">
+            <span className="text-xl font-extrabold text-teal-700">₹{totalInvValue.toLocaleString('en-IN')}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Total valuation cost</span>
+          </div>
+        </div>
+
+        {/* Available Stock */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-emerald-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <CheckCircle className="w-12 h-12 text-emerald-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Available Stock</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-emerald-600">{availableStock}</span>
+            <span className="text-[9px] block text-slate-400 font-semibold mt-1">Healthy stock lines</span>
+          </div>
+        </div>
+
+        {/* Low Stock Medicines */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-amber-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <AlertTriangle className="w-12 h-12 text-amber-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider">Low Stock</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-amber-600">{lowStockMeds}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Below minimum target</span>
+          </div>
+        </div>
+
+        {/* Out of Stock Medicines */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-red-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <AlertOctagon className="w-12 h-12 text-red-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-red-800 tracking-wider">Out Of Stock</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-red-650">{outOfStockMeds}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Zero units remaining</span>
+          </div>
+        </div>
+
+        {/* Near Expiry Medicines */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-rose-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Clock className="w-12 h-12 text-rose-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-rose-800 tracking-wider">Near Expiry</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-rose-600">{nearExpiryMeds}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Expiring within 30d</span>
+          </div>
+        </div>
+
+        {/* Expired Medicines */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-red-850">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Calendar className="w-12 h-12 text-red-800" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-red-900 tracking-wider">Expired Medicines</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-red-800">{expiredMeds}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Require immediate disposal</span>
+          </div>
+        </div>
+
+        {/* Purchase Orders */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <ShoppingBag className="w-12 h-12 text-slate-900" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-slate-450 tracking-wider">Purchase Orders</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-slate-850">{totalPurchaseOrders}</span>
+            <span className="text-[9px] block text-slate-400 font-semibold mt-1">Total orders created</span>
+          </div>
+        </div>
+
+        {/* Notifications Today */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-blue-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Bell className="w-12 h-12 text-blue-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-blue-800 tracking-wider">Alerts Today</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-blue-600">{notificationsToday}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Generated alerts today</span>
+          </div>
+        </div>
+
+        {/* Email Notifications Sent */}
+        <div className="bg-white border border-slate-150 p-4 rounded-[12px] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 border-l-indigo-500">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+            <Mail className="w-12 h-12 text-indigo-500" />
+          </div>
+          <span className="text-[10px] uppercase font-bold text-indigo-800 tracking-wider">Emails Dispatched</span>
+          <div className="mt-2">
+            <span className="text-2xl font-extrabold text-indigo-600">{data?.emailNotificationsSent || 0}</span>
+            <span className="text-[9px] block text-slate-450 font-semibold mt-1">Admin/Pharmacist alerts</span>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {loading || !analytics ? (
-          <>
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-          </>
-        ) : (
-          <>
-            {renderCard('Total Medicines', analytics.totalMedicines, 'Unique medicines', 'text-slate-800')}
-            {renderCard('Suppliers Count', analytics.totalSuppliers, 'Distinct manufacturers')}
-            {renderCard('Categories Count', analytics.totalCategories, 'Distinct therapeutic classes')}
-            {renderCard('Inventory Value', `₹${analytics.totalInventoryValue.toLocaleString('en-IN')}`, 'Current valuation cost', 'text-teal-700')}
-            {renderCard('Total Quantity', analytics.totalInventoryQuantity, 'Total inventory item count')}
-            {renderCard('Low Stock', analytics.lowStockMedicines, 'Items near threshold', 'text-red-500', 'border-l-4 border-l-red-500')}
-            {renderCard('Out Of Stock', analytics.outOfStockMedicines, 'Items depleted (0 units)', 'text-red-650', 'border-l-4 border-l-red-650')}
-            {renderCard('Expiring Soon', analytics.expiringSoonMedicines, 'Expiring in 60 days', 'text-amber-500', 'border-l-4 border-l-amber-500')}
-            {renderCard('Expired Medicines', analytics.expiredMedicines, 'Passed expiration dates', 'text-red-750', 'border-l-4 border-l-red-750')}
-            {renderCard('Growth (30d)', `${analytics.inventoryGrowthPercentage.toFixed(1)}%`, 'Stock replenishment trend', analytics.inventoryGrowthPercentage >= 0 ? 'text-teal-600' : 'text-rose-500')}
-          </>
-        )}
-      </div>
-
-      {/* Advanced Charts Grid */}
-      {!loading && analytics && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Chart 1: Inventory by Category */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Inventory by Category</h3>
-              <div className="h-64">
+      {/* 2. Category Distribution, 3. Stock Health & 4. Expiry Analytics Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Category Product Distribution Chart */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Medicine distribution by category</h3>
+            {categoryChartData.length === 0 ? (
+              <div className="flex flex-col justify-center items-center py-12 text-center h-56">
+                <Package className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-xs text-slate-400 font-bold">No category data mapped.</p>
+              </div>
+            ) : (
+              <div className="h-64 font-sans text-xs">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={analytics.inventoryByCategory || []}
-                      dataKey="quantity"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={30}
-                      outerRadius={80}
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    >
-                      {(analytics.inventoryByCategory || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} units`, 'Quantity']} />
-                  </PieChart>
+                  <BarChart data={categoryChartData} margin={{ left: -25, right: 5, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="name" tickLine={false} tick={{ fill: '#64748B', fontSize: 10 }} />
+                    <YAxis tickLine={false} tick={{ fill: '#64748B', fontSize: 10 }} />
+                    <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
+                    <Bar dataKey="count" fill="#0F766E" radius={[4, 4, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Chart 2: Purchase Orders by Status */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Purchase Orders Status</h3>
+        {/* Stock Health Analytics Pie Chart */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Stock Health Analytics</h3>
+            {stockHealthChartData.length === 0 ? (
+              <div className="flex flex-col justify-center items-center py-12 text-center h-56">
+                <AlertOctagon className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-xs text-slate-400 font-bold">No active stock lines mapped.</p>
+              </div>
+            ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={analytics.purchaseOrdersByStatus || []}
-                      dataKey="count"
+                      data={stockHealthChartData}
+                      dataKey="value"
                       nameKey="name"
                       cx="50%"
                       cy="50%"
                       innerRadius={50}
                       outerRadius={80}
                       paddingAngle={3}
-                      label={({ name, value }) => `${name}: ${value}`}
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                     >
-                      {(analytics.purchaseOrdersByStatus || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
-                      ))}
+                      {stockHealthChartData.map((entry, index) => {
+                        let colorIndex = 0;
+                        if (entry.name === 'Good Stock') colorIndex = 0;
+                        else if (entry.name === 'Low Stock') colorIndex = 1;
+                        else if (entry.name === 'Critical Stock') colorIndex = 2;
+                        else if (entry.name === 'Out of Stock') colorIndex = 3;
+                        return <Cell key={`cell-${index}`} fill={HEALTH_COLORS[colorIndex]} />;
+                      })}
                     </Pie>
-                    <Tooltip formatter={(value) => [`${value} orders`, 'Count']} />
+                    <Tooltip formatter={(value) => [`${value} items`, 'Count']} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Chart 3: Monthly Stock Movement */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Monthly Stock Movement</h3>
-              <div className="h-64 font-sans text-xs">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analytics.monthlyStockMovementChart || []} margin={{ left: -20, right: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tickLine={false} />
-                    <YAxis tickLine={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="stockIn" name="Stock In" fill="#0F766E" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="stockOut" name="Stock Out" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+        {/* Expiry Analytics Doughnut Chart */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Expiry status analytics</h3>
+            {expiryChartData.length === 0 ? (
+              <div className="flex flex-col justify-center items-center py-12 text-center h-56">
+                <Clock className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-xs text-slate-400 font-bold">No expiry dates set.</p>
               </div>
-            </div>
-          </div>
-
-          {/* Chart 4: Expiry Status */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Medicine Expiration Status</h3>
+            ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={analytics.expiryStatus || []}
-                      dataKey="count"
+                      data={expiryChartData}
+                      dataKey="value"
                       nameKey="name"
                       cx="50%"
                       cy="50%"
+                      innerRadius={50}
                       outerRadius={80}
+                      paddingAngle={4}
                       label={({ name, value }) => `${name}: ${value}`}
                     >
-                      {(analytics.expiryStatus || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={EXPIRES_COLORS[index % EXPIRES_COLORS.length]} />
-                      ))}
+                      {expiryChartData.map((entry, index) => {
+                        let colorIndex = 3;
+                        if (entry.name === 'Expired') colorIndex = 0;
+                        else if (entry.name === 'Expiring 7 Days') colorIndex = 1;
+                        else if (entry.name === 'Expiring 30 Days') colorIndex = 2;
+                        else if (entry.name === 'Safe') colorIndex = 3;
+                        return <Cell key={`cell-${index}`} fill={EXPIRES_COLORS[colorIndex]} />;
+                      })}
                     </Pie>
-                    <Tooltip formatter={(value) => [`${value} lines`, 'Count']} />
+                    <Tooltip formatter={(value) => [`${value} medicines`, 'Count']} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Chart 5: Supplier Contribution */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Supplier Product Contribution (Top 10)</h3>
-              <div className="h-64 font-sans text-xs">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    layout="vertical"
-                    data={analytics.supplierContribution || []}
-                    margin={{ left: 20, right: 10, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <XAxis type="number" tickLine={false} />
-                    <YAxis dataKey="name" type="category" tickLine={false} width={100} />
-                    <Tooltip />
-                    <Bar dataKey="value" name="Medicines Supplied" fill="#0D9488" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+      {/* 5. Purchase Order Analytics & 6. Supplier Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Purchase Order Analytics */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Purchase Order Analytics</h3>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 font-sans text-center">
+            <div className="bg-slate-50 border border-slate-150 p-3 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[8px] font-bold text-slate-400 uppercase">Total Orders</span>
+              <span className="block text-lg font-extrabold text-slate-800">{totalPurchaseOrders}</span>
             </div>
-          </div>
+            
+            <div className="bg-amber-50 border border-amber-150 p-3 rounded-[8px]">
+              <span className="block text-[8px] font-bold text-amber-500 uppercase">Pending</span>
+              <span className="block text-lg font-extrabold text-amber-600">{data?.pendingPurchaseOrders || 0}</span>
+              <span className="block text-[8px] text-amber-400 font-semibold">
+                {totalPurchaseOrders > 0 ? `${Math.round(((data?.pendingPurchaseOrders || 0) / totalPurchaseOrders) * 100)}%` : '0%'}
+              </span>
+            </div>
 
-          {/* Chart 6: Weekly Inventory Trend */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm flex flex-col justify-between min-h-[350px]">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Weekly Inventory Quantity Trend</h3>
-              <div className="h-64 font-sans text-xs">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analytics.weeklyInventoryTrend || []} margin={{ left: -10, right: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tickFormatter={(str) => str.substring(5)} tickLine={false} />
-                    <YAxis tickLine={false} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="quantity" name="Inventory Qty" stroke="#0F766E" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+            <div className="bg-blue-50 border border-blue-150 p-3 rounded-[8px]">
+              <span className="block text-[8px] font-bold text-blue-500 uppercase">Approved</span>
+              <span className="block text-lg font-extrabold text-blue-600">{data?.approvedPurchaseOrders || 0}</span>
+              <span className="block text-[8px] text-blue-400 font-semibold">
+                {totalPurchaseOrders > 0 ? `${Math.round(((data?.approvedPurchaseOrders || 0) / totalPurchaseOrders) * 100)}%` : '0%'}
+              </span>
+            </div>
+
+            <div className="bg-emerald-50 border border-emerald-150 p-3 rounded-[8px]">
+              <span className="block text-[8px] font-bold text-emerald-600 uppercase">Completed</span>
+              <span className="block text-lg font-extrabold text-emerald-600">{data?.completedPurchaseOrders || 0}</span>
+              <span className="block text-[8px] text-emerald-500 font-semibold">
+                {totalPurchaseOrders > 0 ? `${Math.round(((data?.completedPurchaseOrders || 0) / totalPurchaseOrders) * 100)}%` : '0%'}
+              </span>
+            </div>
+
+            <div className="bg-rose-50 border border-rose-150 p-3 rounded-[8px]">
+              <span className="block text-[8px] font-bold text-rose-500 uppercase">Cancelled</span>
+              <span className="block text-lg font-extrabold text-rose-600">{data?.cancelledPurchaseOrders || 0}</span>
+              <span className="block text-[8px] text-rose-450 font-semibold">
+                {totalPurchaseOrders > 0 ? `${Math.round(((data?.cancelledPurchaseOrders || 0) / totalPurchaseOrders) * 100)}%` : '0%'}
+              </span>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Row 3: Transaction logs & Notification Analytics */}
-      {!loading && analytics && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {/* Recent stock movements */}
-          <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm min-h-[300px]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Filtered Stock Movements</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs font-medium text-gray-700">
-                <thead>
-                  <tr className="border-b border-gray-200 text-gray-400 uppercase tracking-wider text-[10px]">
-                    <th className="py-2 text-left">Medicine</th>
-                    <th className="py-2 text-left">Action</th>
-                    <th className="py-2 text-left">Qty Shift</th>
-                    <th className="py-2 text-left">Reason</th>
-                    <th className="py-2 text-left">Time</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 font-sans">
-                  {analytics.recentStockTransactions.length > 0 ? (
-                    analytics.recentStockTransactions.map((log) => {
-                      const qtyDiff = log.newQuantity - log.oldQuantity;
-                      const absDiff = Math.abs(qtyDiff);
-                      return (
-                        <tr key={log.stockLogId} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-2.5 font-semibold text-gray-800">{log.medicine?.medicineName}</td>
-                          <td className="py-2.5">
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
-                              log.action === 'STOCK_IN' ? 'bg-teal-50 text-teal-700' :
-                              log.action === 'STOCK_OUT' ? 'bg-rose-50 text-rose-600' :
-                              'bg-indigo-50 text-indigo-700'
-                            }`}>
-                              {log.action}
-                            </span>
-                          </td>
-                          <td className="py-2.5 font-bold">
-                            {qtyDiff >= 0 ? '+' : '-'}{absDiff}
-                          </td>
-                          <td className="py-2.5 text-gray-500 max-w-[150px] truncate" title={log.reason}>
-                            {log.reason || 'N/A'}
-                          </td>
-                          <td className="py-2.5 text-gray-400 font-medium">
-                            {new Date(log.updatedAt).toLocaleString()}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="py-8 text-center text-gray-400 font-bold">
-                        No movement logs matched.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Supplier Metrics & Notification Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Top suppliers stats */}
-            <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Supplier Leaderboard</h3>
-              
-              <div className="space-y-3 font-sans text-xs">
-                <div>
-                  <span className="block text-[10px] text-gray-450 font-bold uppercase">Largest Catalog Supplier</span>
-                  <span className="text-sm font-bold text-gray-800">
-                    {analytics.supplierHighestMedicines?.supplierName || 'None'}
-                  </span>
-                  <span className="block text-[10px] text-teal-600 font-medium">
-                    {analytics.supplierHighestMedicines ? 'Most diverse medicinal items' : 'No suppliers registered'}
-                  </span>
-                </div>
-
-                <div className="border-t border-gray-150 pt-3">
-                  <span className="block text-[10px] text-gray-450 font-bold uppercase">Highest PO Frequency</span>
-                  <span className="text-sm font-bold text-gray-800">
-                    {analytics.supplierHighestPurchases?.supplierName || 'None'}
-                  </span>
-                  <span className="block text-[10px] text-teal-600 font-medium">
-                    {analytics.supplierHighestPurchases ? 'Most frequent procurement partner' : 'No purchases processed'}
-                  </span>
-                </div>
-              </div>
+        {/* Supplier Analytics */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Supplier Analytics</h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 font-sans text-xs">
+            <div>
+              <span className="block text-[9px] text-slate-400 font-bold uppercase">Total / Active / Inactive</span>
+              <span className="text-base font-extrabold text-slate-800">
+                {totalSuppliers} <span className="text-slate-400 font-medium">/</span> <span className="text-emerald-600">{data?.activeSuppliers || 0}</span> <span className="text-slate-400 font-medium">/</span> <span className="text-red-500">{data?.inactiveSuppliers || 0}</span>
+              </span>
             </div>
 
-            {/* Notification logs count */}
-            <div className="bg-white border border-gray-200 p-5 rounded-[12px] shadow-sm space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Alerts System Load</h3>
+            <div>
+              <span className="block text-[9px] text-slate-400 font-bold uppercase">Top Performing Supplier</span>
+              <span className="text-xs font-extrabold text-slate-850 truncate block" title={data?.topPerformingSupplier}>
+                {data?.topPerformingSupplier || 'N/A'}
+              </span>
+              <span className="text-[8px] text-teal-600 block">Highest completed procurement value</span>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <div className="bg-slate-50 border border-gray-200 p-3 rounded-[8px]">
-                  <span className="block text-[9px] font-bold text-gray-400 uppercase">Unread</span>
-                  <span className="block text-lg font-extrabold text-red-500">{analytics.unreadNotifications}</span>
-                </div>
-                <div className="bg-slate-50 border border-gray-200 p-3 rounded-[8px]">
-                  <span className="block text-[9px] font-bold text-gray-400 uppercase">Total Logged</span>
-                  <span className="block text-lg font-extrabold text-slate-700">{analytics.totalNotifications}</span>
-                </div>
-                <div className="bg-slate-50 border border-gray-200 p-3 rounded-[8px]">
-                  <span className="block text-[9px] font-bold text-gray-400 uppercase">Alerts Today</span>
-                  <span className="block text-lg font-extrabold text-amber-500">{analytics.notificationsToday}</span>
-                </div>
-                <div className="bg-slate-50 border border-gray-200 p-3 rounded-[8px]">
-                  <span className="block text-[9px] font-bold text-gray-400 uppercase">This Week</span>
-                  <span className="block text-lg font-extrabold text-blue-500">{analytics.notificationsThisWeek}</span>
-                </div>
-              </div>
+            <div>
+              <span className="block text-[9px] text-slate-400 font-bold uppercase">Largest Catalog Supplier</span>
+              <span className="text-xs font-extrabold text-slate-850 truncate block" title={data?.supplierHighestMedicines}>
+                {data?.supplierHighestMedicines || 'N/A'}
+              </span>
+              <span className="text-[8px] text-teal-600 block">Supplies most diverse medicines</span>
+            </div>
+
+            <div className="border-t border-slate-100 pt-3 md:col-span-3">
+              <span className="block text-[9px] text-slate-400 font-bold uppercase">Average Purchase Order Value</span>
+              <span className="text-sm font-extrabold text-slate-850">
+                ₹{Math.round(data?.averagePurchaseVolume || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[8px] text-slate-450 block">Average valuation cost per PO</span>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* 7. Notification Analytics & 8. Recent Activity Timeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Notification Analytics */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Notification Analytics</h3>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="bg-blue-50/50 border border-blue-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-blue-500 uppercase">Today's Alerts</span>
+              <span className="block text-base font-extrabold text-blue-600">{notificationsToday}</span>
+            </div>
+
+            <div className="bg-red-50/50 border border-red-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-red-500 uppercase">Unread</span>
+              <span className="block text-base font-extrabold text-red-655">{data?.unreadNotifications || 0}</span>
+            </div>
+
+            <div className="bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-emerald-600 uppercase">Read</span>
+              <span className="block text-base font-extrabold text-emerald-700">{data?.readNotifications || 0}</span>
+            </div>
+
+            <div className="bg-rose-50/50 border border-rose-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-rose-800 uppercase">Expiry Alerts</span>
+              <span className="block text-base font-extrabold text-rose-600">{data?.expiryNotifications || 0}</span>
+            </div>
+
+            <div className="bg-amber-50/50 border border-amber-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-amber-500 uppercase">Low Stock Alerts</span>
+              <span className="block text-base font-extrabold text-amber-600">{data?.lowStockNotifications || 0}</span>
+            </div>
+
+            <div className="bg-indigo-50/50 border border-indigo-100 p-2.5 rounded-[8px] flex flex-col justify-center">
+              <span className="block text-[9px] font-bold text-indigo-550 uppercase">Procurements</span>
+              <span className="block text-base font-extrabold text-indigo-700">{data?.purchaseNotifications || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 8. Recent Activity Timeline */}
+        <div className="bg-white border border-slate-150 p-5 rounded-[12px] shadow-sm flex flex-col">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Recent Activity Timeline</h3>
+          
+          <div className="flex-1 max-h-64 overflow-y-auto pr-1 space-y-4 font-sans text-xs">
+            {data?.recentStockLogs && data.recentStockLogs.length > 0 ? (
+              data.recentStockLogs.map((log, index) => {
+                const qtyDiff = log.newQuantity - log.oldQuantity;
+                const date = log.updatedAt ? new Date(log.updatedAt).toLocaleDateString() : '';
+                const time = log.updatedAt ? new Date(log.updatedAt).toLocaleTimeString() : '';
+                return (
+                  <div key={log.stockLogId} className="flex space-x-3 relative">
+                    {index < data.recentStockLogs.length - 1 && (
+                      <div className="absolute left-[9px] top-6 bottom-[-16px] w-[2px] bg-slate-100"></div>
+                    )}
+                    <div className={`w-[20px] h-[20px] rounded-full flex items-center justify-center font-extrabold text-[8px] border-2 ${
+                      log.action === 'STOCK_IN' ? 'bg-teal-50 border-teal-500 text-teal-600' :
+                      log.action === 'STOCK_OUT' ? 'bg-rose-50 border-rose-500 text-rose-600' :
+                      'bg-amber-50 border-amber-500 text-amber-600'
+                    }`}>
+                      {log.action === 'STOCK_IN' ? 'IN' : log.action === 'STOCK_OUT' ? 'OUT' : 'ADJ'}
+                    </div>
+                    <div className="flex-1 space-y-0.5 bg-slate-50 p-2.5 rounded-[8px] border border-slate-150">
+                      <div className="flex justify-between items-baseline">
+                        <span className="font-extrabold text-slate-800">{log.medicine?.medicineName || 'Unknown Medicine'}</span>
+                        <span className="text-[9px] text-slate-450 font-bold">{date} {time}</span>
+                      </div>
+                      <p className="text-slate-500 font-medium">
+                        Action: <span className="font-bold text-slate-700">{log.action}</span> | Shifts: <span className="font-bold text-slate-850">{qtyDiff >= 0 ? `+${qtyDiff}` : qtyDiff} units</span>
+                      </p>
+                      <p className="text-[10px] text-slate-405 font-semibold">
+                        Logged by: <span className="text-teal-700 font-bold">{log.user?.email || 'System Agent'}</span>
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-10 text-slate-400 font-bold">
+                No recent activities logged in timeline.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

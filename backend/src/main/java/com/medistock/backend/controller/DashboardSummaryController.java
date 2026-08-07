@@ -5,13 +5,7 @@ import com.medistock.backend.entity.Inventory;
 import com.medistock.backend.entity.Category;
 import com.medistock.backend.entity.Medicine;
 import com.medistock.backend.entity.PurchaseOrder;
-import com.medistock.backend.repository.InventoryRepository;
-import com.medistock.backend.repository.MedicineRepository;
-import com.medistock.backend.repository.PurchaseOrderRepository;
-import com.medistock.backend.repository.SupplierRepository;
-import com.medistock.backend.repository.UserRepository;
-import com.medistock.backend.repository.CategoryRepository;
-import com.medistock.backend.service.ExpiryService;
+import com.medistock.backend.repository.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -24,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
+import java.util.stream.Collectors;
 import java.security.Principal;
 
 @RestController
@@ -42,106 +36,108 @@ public class DashboardSummaryController {
     private final UserRepository userRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final CategoryRepository categoryRepository;
-    private final ExpiryService expiryService;
-    private final com.medistock.backend.repository.NotificationRepository notificationRepository;
-    private final com.medistock.backend.repository.StockLogRepository stockLogRepository;
-    private final com.medistock.backend.service.NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
+    private final StockLogRepository stockLogRepository;
 
     @GetMapping("/summary")
     @PreAuthorize("hasAnyRole('ADMIN', 'PHARMACIST', 'VIEWER')")
-    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<DashboardSummary>> getDashboardSummary(Principal principal) {
+        LocalDate today = LocalDate.now();
+
+        // 1. Executive KPIs (Using aggregation queries)
         long totalMedicines = medicineRepository.count();
         long totalSuppliers = supplierRepository.count();
         long totalUsers = userRepository.count();
         long totalPurchaseOrders = purchaseOrderRepository.count();
         long totalCategories = categoryRepository.count();
 
-        // Dynamic Inventory Value and Low Stock computation
-        BigDecimal totalVal = BigDecimal.ZERO;
-        long lowStockCount = 0;
-        long outOfStockCount = 0;
-        long goodStockCount = 0;
-        long totalInventoryQuantity = 0;
+        long totalInventoryQuantity = inventoryRepository.sumTotalQuantity();
+        BigDecimal totalVal = inventoryRepository.sumInventoryValue();
+        long availableStock = inventoryRepository.countAvailableStock();
+        long lowStockCount = inventoryRepository.countLowStock();
+        long outOfStockCount = inventoryRepository.countOutOfStock();
+        long goodStockCount = inventoryRepository.countGoodStock();
+        long criticalStockCount = inventoryRepository.countCriticalStock();
 
-        List<Inventory> inventoryList = inventoryRepository.findAll();
-        for (Inventory item : inventoryList) {
-            BigDecimal price = (item.getMedicine() != null && item.getMedicine().getPurchasePrice() != null)
-                    ? item.getMedicine().getPurchasePrice()
-                    : BigDecimal.ZERO;
-            BigDecimal itemVal = price.multiply(BigDecimal.valueOf(item.getQuantity()));
-            totalVal = totalVal.add(itemVal);
-            totalInventoryQuantity += item.getQuantity();
+        // Expiry aggregation
+        long expiredMedicines = medicineRepository.countExpired(today);
+        long expiring7Days = medicineRepository.countExpiringBetween(today, today.plusDays(7));
+        long expiring30Days = medicineRepository.countExpiringBetween(today.plusDays(8), today.plusDays(30));
+        long expiringSoonMedicines = medicineRepository.countExpiringBetween(today, today.plusDays(60));
+        long criticalMedicines = medicineRepository.countExpiringBetween(today, today.plusDays(30));
+        long safeMedicines = medicineRepository.countSafe(today.plusDays(30));
 
-            int minStock = item.getMinimumStock() != null ? item.getMinimumStock() : 10;
-            if (item.getQuantity() == 0) {
-                outOfStockCount++;
-            } else if (item.getQuantity() <= minStock) {
-                lowStockCount++;
-            } else {
-                goodStockCount++;
-            }
-        }
-
-        // Expiring Medicines count (Expired, Critical, Expiring Soon)
-        java.time.LocalDate today = java.time.LocalDate.now();
-        long expiredMedicines = 0;
-        long expiringSoonMedicines = 0; // 31-60 days
-        long criticalMedicines = 0;     // 0-30 days
-        long safeMedicines = 0;          // >60 days
-
-        List<Medicine> allMedicines = medicineRepository.findAll();
-        for (Medicine med : allMedicines) {
-            if (med.getExpiryDate() != null) {
-                long days = java.time.temporal.ChronoUnit.DAYS.between(today, med.getExpiryDate());
-                if (days < 0) {
-                    expiredMedicines++;
-                } else if (days <= 30) {
-                    criticalMedicines++;
-                } else if (days <= 60) {
-                    expiringSoonMedicines++;
-                } else {
-                    safeMedicines++;
-                }
-            }
-        }
-
-        // Calculate Category distribution metrics
+        // 2. Category Metrics
         List<CategoryMetric> categoryMetrics = new ArrayList<>();
-        List<Category> allCategories = categoryRepository.findAll();
-        for (Category cat : allCategories) {
-            long count = allMedicines.stream()
-                    .filter(m -> m.getCategory() != null && m.getCategory().getCategoryId().equals(cat.getCategoryId()))
-                    .count();
-            if (count > 0) {
-                categoryMetrics.add(new CategoryMetric(cat.getCategoryName(), count));
+        List<Object[]> catMetricsData = medicineRepository.findCategoryMetrics();
+        for (Object[] row : catMetricsData) {
+            categoryMetrics.add(new CategoryMetric((String) row[0], (Long) row[1]));
+        }
+
+        // 3. Purchase Order Metrics
+        long pendingPurchaseOrders = 0;
+        long approvedPurchaseOrders = 0;
+        long completedPurchaseOrders = 0;
+        long cancelledPurchaseOrders = 0;
+
+        List<Object[]> poStatusCounts = purchaseOrderRepository.countOrdersByStatus();
+        for (Object[] row : poStatusCounts) {
+            String status = (String) row[0];
+            long count = (Long) row[1];
+            if ("PENDING".equalsIgnoreCase(status)) {
+                pendingPurchaseOrders = count;
+            } else if ("APPROVED".equalsIgnoreCase(status) || "ORDERED".equalsIgnoreCase(status)) {
+                approvedPurchaseOrders = count;
+            } else if ("DELIVERED".equalsIgnoreCase(status) || "RECEIVED".equalsIgnoreCase(status)) {
+                completedPurchaseOrders = count;
+            } else if ("CANCELLED".equalsIgnoreCase(status)) {
+                cancelledPurchaseOrders = count;
             }
         }
 
-        // Fetch recent notifications
+        // 4. Supplier Metrics
+        long activeSuppliers = supplierRepository.countActiveSuppliers();
+        long inactiveSuppliers = supplierRepository.countInactiveSuppliers();
+        double avgPurchaseVolume = purchaseOrderRepository.getAveragePurchaseVolume();
+
+        String topSupplierVolume = "None";
+        List<Object[]> topSupplierData = purchaseOrderRepository.findTopSupplierByVolume();
+        if (!topSupplierData.isEmpty()) {
+            topSupplierVolume = (String) topSupplierData.get(0)[0];
+        }
+
+        String supplierHighestMeds = "None";
+        List<Object[]> highestMedsData = medicineRepository.findSupplierMedicineCounts();
+        if (!highestMedsData.isEmpty()) {
+            supplierHighestMeds = (String) highestMedsData.get(0)[0];
+        }
+
+        // 5. Notification Metrics
+        LocalDateTime startOfToday = today.atStartOfDay();
+        long notificationsToday = notificationRepository.countNotificationsSince(startOfToday);
+        long unreadNotifications = notificationRepository.countNotificationsByIsRead(false);
+        long readNotifications = notificationRepository.countNotificationsByIsRead(true);
+        long expiryNotifications = notificationRepository.countNotificationsByTypes(List.of("EXPIRY", "EXPIRY_ALERT", "EXPIRED"));
+        long lowStockNotifications = notificationRepository.countNotificationsByTypes(List.of("LOW_STOCK", "OUT_OF_STOCK"));
+        long purchaseNotifications = notificationRepository.countNotificationsByTypes(List.of("PURCHASE", "PURCHASE_DELIVERED"));
+
+        long adminPharmacistCount = userRepository.countAdminsAndPharmacists();
+        long emailNotificationsSent = notificationRepository.countImportantNotifications() * adminPharmacistCount;
+
+        // Recent items (capped at 10)
         List<com.medistock.backend.entity.Notification> recentNotifications = notificationRepository.findAll().stream()
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .limit(10)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
-        // Fetch recent stock activities
         List<com.medistock.backend.dto.response.StockLogResponse> recentStockLogs = stockLogRepository.findAll().stream()
                 .sorted((a, b) -> b.getUpdatedAt().compareTo(a.getUpdatedAt()))
                 .limit(10)
                 .map(this::mapToStockLogResponse)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
-        // Calculate Purchase Order metrics
-        List<PurchaseOrder> allOrders = purchaseOrderRepository.findAll();
-        long pendingPurchaseOrders = allOrders.stream()
-                .filter(po -> "PENDING".equalsIgnoreCase(po.getStatus()))
-                .count();
-        long completedPurchaseOrders = allOrders.stream()
-                .filter(po -> "RECEIVED".equalsIgnoreCase(po.getStatus()) || "DELIVERED".equalsIgnoreCase(po.getStatus()))
-                .count();
-
-        // Fetch recent Purchase Orders
-        List<RecentPurchaseOrderDto> recentPurchaseOrders = allOrders.stream()
+        List<RecentPurchaseOrderDto> recentPurchaseOrders = purchaseOrderRepository.findAll().stream()
                 .sorted((a, b) -> b.getPurchaseOrderId().compareTo(a.getPurchaseOrderId()))
                 .limit(5)
                 .map(po -> RecentPurchaseOrderDto.builder()
@@ -151,7 +147,7 @@ public class DashboardSummaryController {
                         .totalAmount(po.getTotalAmount())
                         .status(po.getStatus())
                         .build())
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
         DashboardSummary summary = DashboardSummary.builder()
                 .totalMedicines(totalMedicines)
@@ -161,6 +157,7 @@ public class DashboardSummaryController {
                 .lowStock(lowStockCount)
                 .outOfStock(outOfStockCount)
                 .goodStock(goodStockCount)
+                .criticalStock(criticalStockCount)
                 .expiringMedicines(criticalMedicines + expiringSoonMedicines)
                 .expiredMedicines(expiredMedicines)
                 .expiringSoonMedicines(expiringSoonMedicines)
@@ -175,6 +172,24 @@ public class DashboardSummaryController {
                 .recentNotifications(recentNotifications)
                 .recentStockLogs(recentStockLogs)
                 .recentPurchaseOrders(recentPurchaseOrders)
+                // New analytics fields
+                .availableStock(availableStock)
+                .expiring7Days(expiring7Days)
+                .expiring30Days(expiring30Days)
+                .approvedPurchaseOrders(approvedPurchaseOrders)
+                .cancelledPurchaseOrders(cancelledPurchaseOrders)
+                .activeSuppliers(activeSuppliers)
+                .inactiveSuppliers(inactiveSuppliers)
+                .topPerformingSupplier(topSupplierVolume)
+                .supplierHighestMedicines(supplierHighestMeds)
+                .averagePurchaseVolume(avgPurchaseVolume)
+                .notificationsToday(notificationsToday)
+                .unreadNotifications(unreadNotifications)
+                .readNotifications(readNotifications)
+                .expiryNotifications(expiryNotifications)
+                .lowStockNotifications(lowStockNotifications)
+                .purchaseNotifications(purchaseNotifications)
+                .emailNotificationsSent(emailNotificationsSent)
                 .build();
 
         return ResponseEntity.ok(ApiResponse.<DashboardSummary>builder()
@@ -194,6 +209,7 @@ public class DashboardSummaryController {
         private long lowStock;
         private long outOfStock;
         private long goodStock;
+        private long criticalStock;
         private long expiringMedicines;
         private long expiredMedicines;
         private long expiringSoonMedicines;
@@ -208,6 +224,25 @@ public class DashboardSummaryController {
         private List<com.medistock.backend.entity.Notification> recentNotifications;
         private List<com.medistock.backend.dto.response.StockLogResponse> recentStockLogs;
         private List<RecentPurchaseOrderDto> recentPurchaseOrders;
+
+        // New analytics fields
+        private long availableStock;
+        private long expiring7Days;
+        private long expiring30Days;
+        private long approvedPurchaseOrders;
+        private long cancelledPurchaseOrders;
+        private long activeSuppliers;
+        private long inactiveSuppliers;
+        private String topPerformingSupplier;
+        private String supplierHighestMedicines;
+        private double averagePurchaseVolume;
+        private long notificationsToday;
+        private long unreadNotifications;
+        private long readNotifications;
+        private long expiryNotifications;
+        private long lowStockNotifications;
+        private long purchaseNotifications;
+        private long emailNotificationsSent;
     }
 
     @Data
@@ -228,6 +263,7 @@ public class DashboardSummaryController {
         private String name;
         private long count;
     }
+
     private com.medistock.backend.dto.response.StockLogResponse mapToStockLogResponse(com.medistock.backend.entity.StockLog logEntry) {
         if (logEntry == null) return null;
 
