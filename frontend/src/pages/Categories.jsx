@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../services/api';
@@ -104,6 +105,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, initialData = null }) =>
 
 const Categories = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
 
   const [categories, setCategories] = useState([]);
@@ -196,7 +198,8 @@ const Categories = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="glass-card rounded-2xl p-5 border border-slate-800/60 hover:border-indigo-500/20 transition-all group"
+                onClick={() => navigate(`/inventory?category=${cat.id}`)}
+                className="glass-card rounded-2xl p-5 border border-slate-800/60 hover:border-indigo-500/20 transition-all group cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -211,12 +214,12 @@ const Categories = () => {
                   {isAdmin && (
                     <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                       <button
-                        onClick={() => setFormModal({ open: true, data: cat })}
+                        onClick={(e) => { e.stopPropagation(); setFormModal({ open: true, data: cat }); }}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-sky-400 hover:bg-sky-500/10 transition-all">
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => setDeleteDialog(cat)}
+                        onClick={(e) => { e.stopPropagation(); setDeleteDialog(cat); }}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

@@ -60,4 +60,28 @@ export const createSupplier = (data) => api.post('/suppliers', data);
 export const updateSupplier = (id, data) => api.put(`/suppliers/${id}`, data);
 export const deleteSupplier = (id) => api.delete(`/suppliers/${id}`);
 
+// ─── Notifications ────────────────────────────────────────────────────────────
+export const getNotifications = () => api.get('/notifications');
+export const getUnreadCount = () => api.get('/notifications/unread-count');
+export const markNotificationRead = (id) => api.put(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.put('/notifications/read-all');
+export const dismissNotification = (id) => api.delete(`/notifications/${id}`);
+export const triggerNotificationScan = () => api.post('/notifications/trigger-scan');
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
+export const getAnalytics = () => api.get('/analytics');
+
+// ─── Stock Logs ───────────────────────────────────────────────────────────────
+export const getStockLogs = (page = 0, size = 20) =>
+  api.get('/stock-logs', { params: { page, size } });
+
+// ─── Purchase Orders ──────────────────────────────────────────────────────────
+export const getPurchaseOrders = (page = 0, size = 10) =>
+  api.get('/purchase-orders', { params: { page, size } });
+export const getPurchaseOrderById = (id) => api.get(`/purchase-orders/${id}`);
+export const createPurchaseOrder = (data) => api.post('/purchase-orders', data);
+export const updatePurchaseOrderStatus = (id, status) =>
+  api.put(`/purchase-orders/${id}/status`, null, { params: { status } });
+export const deletePurchaseOrder = (id) => api.delete(`/purchase-orders/${id}`);
+
 export default api;

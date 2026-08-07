@@ -100,6 +100,37 @@ public class MedicineService {
         return MedicineDTO.fromEntity(saved);
     }
 
+    @Transactional
+    public void adjustStockByName(String medicineName, int quantity, StockMovementType type, String reason, String username, Supplier supplier) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        
+        // Find existing or create placeholder
+        Medicine medicine = medicineRepository.findFirstByNameIgnoreCase(medicineName)
+                .orElseGet(() -> {
+                    Medicine newMed = new Medicine();
+                    newMed.setName(medicineName);
+                    newMed.setQuantity(0);
+                    newMed.setPrice(0.0);
+                    newMed.setSupplier(supplier);
+                    return medicineRepository.save(newMed);
+                });
+
+        if (type == StockMovementType.OUT) {
+            if (medicine.getQuantity() < quantity) {
+                throw new RuntimeException("Insufficient stock. Available: " + medicine.getQuantity());
+            }
+            medicine.setQuantity(medicine.getQuantity() - quantity);
+        } else {
+            medicine.setQuantity(medicine.getQuantity() + quantity);
+        }
+
+        medicine = medicineRepository.save(medicine);
+
+        StockLog log = new StockLog(medicine, user, type, quantity, reason);
+        stockLogRepository.save(log);
+    }
+
     public List<MedicineDTO> getLowStockMedicines(int threshold) {
         return medicineRepository.findByQuantityLessThanEqual(threshold)
                 .stream()

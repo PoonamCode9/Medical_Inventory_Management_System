@@ -10,9 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MedicineRepository extends JpaRepository<Medicine, Long> {
+
+    Optional<Medicine> findFirstByNameIgnoreCase(String name);
 
     Page<Medicine> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
@@ -34,6 +37,21 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
 
     long countByQuantityLessThanEqual(int threshold);
 
+    long countByExpiryDateBefore(LocalDate date);
+
     @Query("SELECT COUNT(m) FROM Medicine m WHERE m.expiryDate BETWEEN :today AND :endDate")
     long countExpiringBetween(@Param("today") LocalDate today, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(m.category.name, 'Uncategorized'), COUNT(m) FROM Medicine m GROUP BY m.category.name ORDER BY COUNT(m) DESC")
+    List<Object[]> countByCategory();
+
+    @Query("SELECT COALESCE(SUM(m.price * m.quantity), 0) FROM Medicine m")
+    Double sumInventoryValue();
+
+    @Query("SELECT m FROM Medicine m WHERE m.quantity <= :threshold ORDER BY m.quantity ASC")
+    List<Medicine> findTopLowStock(@Param("threshold") int threshold, Pageable pageable);
+
+    @Query("SELECT COALESCE(m.supplier.name, 'No Supplier'), COUNT(m) FROM Medicine m GROUP BY m.supplier.name ORDER BY COUNT(m) DESC")
+    List<Object[]> countBySupplier();
 }
+

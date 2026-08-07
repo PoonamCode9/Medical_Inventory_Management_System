@@ -8,6 +8,8 @@ import Inventory from './pages/Inventory';
 import Categories from './pages/Categories';
 import Suppliers from './pages/Suppliers';
 import Users from './pages/Users';
+import Reports from './pages/Reports';
+import PurchaseOrders from './pages/PurchaseOrders';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -95,6 +97,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/purchase-orders"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'PHARMACIST']}>
+                <PurchaseOrders />
+              </ProtectedRoute>
+            }
+          />
 
           {/* ADMIN only */}
           <Route
@@ -105,6 +115,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/users"
             element={

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
+import NotificationPanel from './NotificationPanel';
 import {
   PackageOpen,
   LayoutDashboard,
@@ -13,11 +14,15 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  BarChart2,
+  ShoppingCart,
 } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard',  label: 'Dashboard',  icon: LayoutDashboard, roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
   { to: '/inventory',  label: 'Inventory',   icon: Package,          roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
+  { to: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, roles: ['ADMIN', 'PHARMACIST'] },
+  { to: '/reports',   label: 'Reports',     icon: BarChart2,        roles: ['ADMIN', 'PHARMACIST', 'STAFF'] },
   { to: '/categories', label: 'Categories',  icon: Tag,              roles: ['ADMIN'] },
   { to: '/suppliers',  label: 'Suppliers',   icon: Truck,            roles: ['ADMIN', 'PHARMACIST'] },
   { to: '/users',      label: 'Users',       icon: UserPlus,         roles: ['ADMIN', 'PHARMACIST'] },
@@ -178,6 +183,24 @@ const Sidebar = () => {
       {/* ── Footer ────────────────────────────────────── */}
       <div className={`flex-shrink-0 ${collapsed ? 'px-2' : 'px-3'} pb-4 pt-2 space-y-1`}
         style={{ borderTop: '1px solid var(--border-nav)' }}>
+
+        {/* Notifications */}
+        <div className={`flex items-center ${collapsed ? 'justify-center px-0 py-1' : 'gap-3 px-1 py-1'}`}>
+          <NotificationPanel />
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-[13px] font-medium whitespace-nowrap"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Notifications
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Theme Toggle */}
         <ThemeToggle collapsed={collapsed} />

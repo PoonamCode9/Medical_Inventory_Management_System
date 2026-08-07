@@ -8,7 +8,8 @@ import StockAdjustModal from '../components/StockAdjustModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import {
   getMedicines, createMedicine, updateMedicine,
-  deleteMedicine, adjustStock, getCategories
+  deleteMedicine, adjustStock, getCategories,
+  getLowStockMedicines, getExpiringMedicines
 } from '../services/api';
 import {
   Package, Plus, Search, Filter, Edit2, Trash2,
@@ -66,6 +67,10 @@ const Inventory = () => {
     const params = new URLSearchParams(location.search);
     return params.get('filter') || '';
   };
+  const getUrlCategory = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get('category') || '';
+  };
   const [urlFilter, setUrlFilter] = useState(getUrlFilter);
 
   const [medicines, setMedicines]         = useState([]);
@@ -76,7 +81,7 @@ const Inventory = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [searchInput, setSearchInput]     = useState('');
   const [searchName, setSearchName]       = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState(getUrlCategory);
   const [addModal, setAddModal]           = useState(false);
   const [editModal, setEditModal]         = useState(null);
   const [adjustModal, setAdjustModal]     = useState(null);
@@ -93,6 +98,7 @@ const Inventory = () => {
 
   useEffect(() => {
     setUrlFilter(getUrlFilter());
+    setFilterCategory(getUrlCategory());
     setPage(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
@@ -100,19 +106,41 @@ const Inventory = () => {
   const fetchMedicines = useCallback(async () => {
     setLoading(true);
     try {
-      const params = { page, size: 12, sortBy: 'name', sortDir: 'asc' };
-      if (searchName)     params.name = searchName;
-      if (filterCategory) params.categoryId = filterCategory;
-      const res = await getMedicines(params);
-      setMedicines(res.data.content || []);
-      setTotalPages(res.data.totalPages || 0);
-      setTotalElements(res.data.totalElements || 0);
+      // When a special URL filter is active, call the dedicated endpoint which
+      // returns ALL matching records — not just the current page.
+      if (urlFilter === 'expiring') {
+        const res = await getExpiringMedicines(30);
+        const data = res.data || [];
+        setMedicines(data);
+        setTotalPages(1);
+        setTotalElements(data.length);
+      } else if (urlFilter === 'lowStock') {
+        const res = await getLowStockMedicines(LOW_STOCK);
+        const data = res.data || [];
+        setMedicines(data);
+        setTotalPages(1);
+        setTotalElements(data.length);
+      } else if (urlFilter === 'outOfStock') {
+        const res = await getLowStockMedicines(0);
+        const data = (res.data || []).filter((m) => m.quantity === 0);
+        setMedicines(data);
+        setTotalPages(1);
+        setTotalElements(data.length);
+      } else {
+        const params = { page, size: 12, sortBy: 'name', sortDir: 'asc' };
+        if (searchName)     params.name = searchName;
+        if (filterCategory) params.categoryId = filterCategory;
+        const res = await getMedicines(params);
+        setMedicines(res.data.content || []);
+        setTotalPages(res.data.totalPages || 0);
+        setTotalElements(res.data.totalElements || 0);
+      }
     } catch {
       setMedicines([]);
     } finally {
       setLoading(false);
     }
-  }, [page, searchName, filterCategory]);
+  }, [page, searchName, filterCategory, urlFilter]);
 
   useEffect(() => { fetchMedicines(); }, [fetchMedicines]);
   useEffect(() => {
@@ -120,12 +148,26 @@ const Inventory = () => {
   }, []);
 
   const handleSearch = (e) => { e.preventDefault(); setSearchName(searchInput); setPage(0); setShowSuggestions(false); };
+
+  // Change stock status filter from the dropdown in the filter bar
+  const handleStockStatusChange = (value) => {
+    setPage(0);
+    if (value) {
+      setUrlFilter(value);
+      navigate(`/inventory?filter=${value}`, { replace: true });
+    } else {
+      setUrlFilter('');
+      navigate('/inventory', { replace: true });
+    }
+  };
+
   const resetFilters = () => {
     setSearchInput(''); setSearchName(''); setFilterCategory(''); setPage(0);
     setSuggestions([]); setShowSuggestions(false);
-    if (urlFilter) { setUrlFilter(''); navigate('/inventory', { replace: true }); }
+    setUrlFilter('');
+    navigate('/inventory', { replace: true });
   };
-  const hasFilters   = searchName || filterCategory || urlFilter;
+  const hasFilters = searchName || filterCategory || urlFilter;
 
   // Debounced suggestion fetch
   const handleSearchInputChange = (e) => {
@@ -178,17 +220,14 @@ const Inventory = () => {
     catch (err) { setActionError(err.response?.data || 'Delete failed'); }
   };
 
-  // Apply URL-based client-side filter on top of API results
-  const displayedMedicines = urlFilter === 'lowStock'
-    ? medicines.filter((m) => m.quantity <= LOW_STOCK)
-    : urlFilter === 'expiring'
-      ? medicines.filter((m) => m.expiryDate && daysUntilExpiry(m.expiryDate) <= EXPIRY_DAYS && daysUntilExpiry(m.expiryDate) > 0)
-      : medicines;
+  // medicines already comes pre-filtered from the backend when a URL filter is active
+  const displayedMedicines = medicines;
 
   // Active filter display config
   const filterConfig = {
-    lowStock: { label: 'Low Stock Items', icon: ShieldAlert, color: 'amber', borderColor: 'rgba(245,158,11,0.25)', bg: 'rgba(245,158,11,0.07)', iconColor: '#f59e0b', textColor: '#fbbf24' },
-    expiring:  { label: 'Expiring Within 30 Days', icon: Clock,       color: 'rose',  borderColor: 'rgba(244,63,94,0.25)',  bg: 'rgba(244,63,94,0.07)',  iconColor: '#f43f5e', textColor: '#fb7185' },
+    lowStock:   { label: 'Low Stock Items',          icon: ShieldAlert,    color: 'amber', borderColor: 'rgba(245,158,11,0.25)', bg: 'rgba(245,158,11,0.07)', iconColor: '#f59e0b', textColor: '#fbbf24' },
+    expiring:   { label: 'Expiring Within 30 Days',  icon: Clock,          color: 'rose',  borderColor: 'rgba(244,63,94,0.25)',  bg: 'rgba(244,63,94,0.07)',  iconColor: '#f43f5e', textColor: '#fb7185' },
+    outOfStock: { label: 'Out of Stock',             icon: AlertTriangle,  color: 'red',   borderColor: 'rgba(239,68,68,0.25)',  bg: 'rgba(239,68,68,0.07)',  iconColor: '#ef4444', textColor: '#f87171' },
   };
   const activeFilter = urlFilter ? filterConfig[urlFilter] : null;
 
@@ -356,12 +395,33 @@ const Inventory = () => {
             <select
               value={filterCategory}
               onChange={(e) => { setFilterCategory(e.target.value); setPage(0); }}
-              className="glass-input py-2.5 px-3 text-sm min-w-[160px] flex-1 sm:flex-initial"
+              className="glass-input py-2.5 px-3 text-sm min-w-[150px] flex-1 sm:flex-initial"
             >
               <option value="">All Categories</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
+            </select>
+          </div>
+
+          {/* Stock Status filter */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <select
+              value={urlFilter}
+              onChange={(e) => handleStockStatusChange(e.target.value)}
+              className="glass-input py-2.5 px-3 text-sm min-w-[155px] flex-1 sm:flex-initial"
+              style={{
+                color: urlFilter === 'lowStock'   ? '#fbbf24'
+                     : urlFilter === 'outOfStock' ? '#f87171'
+                     : urlFilter === 'expiring'   ? '#fb7185'
+                     : 'var(--text-secondary)',
+              }}
+            >
+              <option value="">All Statuses</option>
+              <option value="lowStock">⚠ Low Stock</option>
+              <option value="outOfStock">✕ Out of Stock</option>
+              <option value="expiring">⏰ Expiring Soon</option>
             </select>
           </div>
 
