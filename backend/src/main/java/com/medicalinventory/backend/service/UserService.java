@@ -38,18 +38,24 @@ public class UserService {
 
     // Save User
     public User saveUser(User user) {
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         return userRepository.save(user);
     }
 
     // Update User
     public User updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id).orElse(null);
-        if(existingUser != null ) {
+        if (existingUser != null) {
             existingUser.setFullName(user.getFullName());
             existingUser.setEmail(user.getEmail());
-            existingUser.setPassword(user.getPassword());
             existingUser.setPhone(user.getPhone());
             existingUser.setRole(user.getRole());
+            
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
             return userRepository.save(existingUser);
         }
         return null;
