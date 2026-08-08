@@ -13,10 +13,12 @@ public class UserProfileDTO {
 
     private String email;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
+    @Pattern(regexp = "^$|^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
     private String phone;
 
     private String roleName;
+
+    private Boolean hasPassword;
 
     public UserProfileDTO() {
     }
@@ -27,6 +29,15 @@ public class UserProfileDTO {
         this.email = email;
         this.phone = phone;
         this.roleName = roleName;
+    }
+
+    public UserProfileDTO(Long userId, String fullName, String email, String phone, String roleName, Boolean hasPassword) {
+        this.userId = userId;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+        this.roleName = roleName;
+        this.hasPassword = hasPassword;
     }
 
     public Long getUserId() {
@@ -67,5 +78,13 @@ public class UserProfileDTO {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public Boolean getHasPassword() {
+        return hasPassword;
+    }
+
+    public void setHasPassword(Boolean hasPassword) {
+        this.hasPassword = hasPassword;
     }
 }

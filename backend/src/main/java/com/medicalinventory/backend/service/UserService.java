@@ -18,25 +18,22 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
 
-    public UserService(UserRepository userRepository, 
-                       PasswordEncoder passwordEncoder, 
-                       NotificationService notificationService) {
+    public UserService(UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            NotificationService notificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.notificationService = notificationService;
     }
 
-    // Get All Users
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Get User By ID
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
 
-    // Save User
     public User saveUser(User user) {
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -44,7 +41,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Update User
     public User updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id).orElse(null);
         if (existingUser != null) {
@@ -52,16 +48,21 @@ public class UserService {
             existingUser.setEmail(user.getEmail());
             existingUser.setPhone(user.getPhone());
             existingUser.setRole(user.getRole());
-            
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                boolean isAlreadyEncoded = user.getPassword().startsWith("$2a$") ||
+                        user.getPassword().startsWith("$2b$") ||
+                        user.getPassword().startsWith("$2y$");
+
+                if (!isAlreadyEncoded) {
+                    existingUser.setPassword(passwordEncoder.encode(user.getPassword().trim()));
+                }
             }
             return userRepository.save(existingUser);
         }
         return null;
     }
 
-    // Delete User
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
@@ -71,13 +72,15 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
+        boolean hasPass = user.getPassword() != null && !user.getPassword().trim().isEmpty();
+
         return new UserProfileDTO(
-            user.getUserId(),
-            user.getFullName(),
-            user.getEmail(),
-            user.getPhone(),
-            user.getRole() != null ? user.getRole().getRoleName() : "N/A"
-        );
+                user.getUserId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole() != null ? user.getRole().getRoleName() : "N/A",
+                hasPass);
     }
 
     @Transactional
@@ -86,32 +89,40 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User profile not found."));
 
         user.setFullName(dto.getFullName().trim());
-        if (dto.getPhone() != null) {
+
+        if (dto.getPhone() != null && !dto.getPhone().trim().isEmpty()) {
             user.setPhone(dto.getPhone().trim());
+        } else {
+            user.setPhone(null);
         }
 
         User updatedUser = userRepository.save(user);
 
         notificationService.createNotification(
-            null, 
-            "PROFILE_UPDATED", 
-            "Profile details updated for user: " + updatedUser.getEmail(), 
-            "Push"
-        );
+                null,
+                "PROFILE_UPDATED",
+                "Profile details updated for user: " + updatedUser.getEmail(),
+                "Push");
+
+        boolean hasPass = updatedUser.getPassword() != null && !updatedUser.getPassword().trim().isEmpty();
 
         return new UserProfileDTO(
-            updatedUser.getUserId(),
-            updatedUser.getFullName(),
-            updatedUser.getEmail(),
-            updatedUser.getPhone(),
-            updatedUser.getRole().getRoleName()
-        );
+                updatedUser.getUserId(),
+                updatedUser.getFullName(),
+                updatedUser.getEmail(),
+                updatedUser.getPhone(),
+                updatedUser.getRole() != null ? updatedUser.getRole().getRoleName() : "N/A",
+                hasPass);
     }
 
     @Transactional
     public String changePassword(String email, ChangePasswordRequestDTO request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
+
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("Google users cannot change password directly.");
+        }
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new RuntimeException("Current password provided is incorrect.");
@@ -125,11 +136,10 @@ public class UserService {
         userRepository.save(user);
 
         notificationService.createNotification(
-            null, 
-            "PASSWORD_CHANGED", 
-            "Security Alert: Password changed for " + user.getEmail(), 
-            "Push"
-        );
+                null,
+                "PASSWORD_CHANGED",
+                "Security Alert: Password changed for " + user.getEmail(),
+                "Push");
 
         return "Password changed successfully.";
     }

@@ -165,7 +165,10 @@ const Users = () => {
       const selectedRoleObj = ROLES.find((r) => r.id === Number(updatedRoleId));
 
       const payload = {
-        ...selectedUser,
+        fullName: selectedUser.fullName,
+        email: selectedUser.email,
+        phone: selectedUser.phone,
+        password: "", 
         role: {
           roleId: Number(updatedRoleId),
         },

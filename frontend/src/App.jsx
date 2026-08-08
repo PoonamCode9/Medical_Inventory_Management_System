@@ -25,6 +25,7 @@ import PurchaseOrders from "./pages/PurchaseOrders";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import OAuth2RedirectHandler from "./pages/OAuth2RedirectHandler";
 
 function App() {
   return (
@@ -38,6 +39,8 @@ function App() {
         {/* New Password Reset Routes */}
         <Route path="/forgot-password" element={<ForgotPassword />} ></Route>
         <Route path="/reset-password" element={<ResetPassword />} ></Route>
+
+        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
         <Route 
         path="/dashboard" 

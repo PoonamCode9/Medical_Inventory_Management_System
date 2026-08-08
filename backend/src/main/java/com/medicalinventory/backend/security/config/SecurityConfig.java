@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.medicalinventory.backend.security.jwt.JwtAuthenticationFilter;
+import com.medicalinventory.backend.security.oauth2.OAuth2SuccessHandler;
 import com.medicalinventory.backend.security.service.CustomUserDetailsService;
 
 @Configuration
@@ -25,17 +26,34 @@ import com.medicalinventory.backend.security.service.CustomUserDetailsService;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, 
+                          CustomUserDetailsService customUserDetailsService,
+                          OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customUserDetailsService = customUserDetailsService;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     } 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()).cors(cors -> {})
-        .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll().requestMatchers(HttpMethod.GET, "/api/medicines/**", "/api/suppliers/**", "/api/dashboard", "/api/inventory/**", "/api/stock-logs/**", "/api/notifications/**", "/api/expiry-alerts/**").hasAnyRole("Admin", "Pharmacist", "Staff").requestMatchers(HttpMethod.POST, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**", "/api/reports/**").hasAnyRole("Admin", "Pharmacist").requestMatchers(HttpMethod.POST, "/api/sales/**").hasAnyRole("Admin", "Pharmacist", "Staff").requestMatchers(HttpMethod.PUT, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin", "Pharmacist").requestMatchers(HttpMethod.DELETE, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin").anyRequest().authenticated())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).authenticationProvider(authenticationProvider());
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**", "/login/oauth2/**", "/oauth2/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/medicines/**", "/api/suppliers/**", "/api/dashboard", "/api/inventory/**", "/api/stock-logs/**", "/api/notifications/**", "/api/expiry-alerts/**").hasAnyRole("Admin", "Pharmacist", "Staff")
+            .requestMatchers(HttpMethod.POST, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**", "/api/reports/**").hasAnyRole("Admin", "Pharmacist")
+            .requestMatchers(HttpMethod.POST, "/api/sales/**").hasAnyRole("Admin", "Pharmacist", "Staff")
+            .requestMatchers(HttpMethod.PUT, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin", "Pharmacist")
+            .requestMatchers(HttpMethod.DELETE, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin")
+            .anyRequest().authenticated()
+        )
+        .oauth2Login(oauth2 -> oauth2
+            .successHandler(oAuth2SuccessHandler)
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .authenticationProvider(authenticationProvider());
         
         return http.build();
     }
@@ -68,4 +86,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-} 
+}

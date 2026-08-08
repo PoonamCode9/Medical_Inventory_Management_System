@@ -52,6 +52,10 @@ function Login() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  };
+
   return (
     <div className="flex items-center justify-center h-screen overflow-hidden">
       {/* Left side */}
@@ -167,7 +171,11 @@ function Login() {
 
         <div className="mt-3">
           <p className="mb-3">or</p>
-          <button className="w-full border py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition duration-300 cursor-pointer flex justify-center items-center gap-3">
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full border py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition duration-300 cursor-pointer flex justify-center items-center gap-3"
+          >
             <img src="/google-logo.png" alt="googleLogo" className="w-5" />
             Login with Google
           </button>
