@@ -1,10 +1,3 @@
-import {
-    FaClipboardList,
-    FaBoxes,
-    FaShoppingCart,
-    FaCalendarAlt
-} from "react-icons/fa";
-
 const DashboardCards = ({ reports }) => {
 
     const total = reports.length;

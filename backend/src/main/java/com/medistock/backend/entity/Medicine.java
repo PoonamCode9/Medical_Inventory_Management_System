@@ -38,6 +38,13 @@ public class Medicine {
     @Column(nullable = false)
     private String category;
 
+    // NEW: dosage form (Tablet, Syrup, Injection, Capsule, Ointment, ...).
+    // Nullable on purpose so existing rows don't break — until the create/update
+    // flow starts sending this, it will just read as null ("Unspecified" in the
+    // analytics grouping).
+    @Column(name = "dosage_form")
+    private String dosageForm;
+
     @ManyToOne
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;
@@ -52,5 +59,5 @@ public class Medicine {
     private BigDecimal price;
 
     @Column(nullable = false)
-private Integer quantity;
+    private Integer quantity;
 }

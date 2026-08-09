@@ -222,7 +222,7 @@ const Suppliers = () => {
 
             fetchSuppliers();
 
-        } catch (err) {
+        } catch {
 
             Swal.fire({
                 icon: "error",

@@ -4,6 +4,8 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import DashboardCard from "../../components/DashboardCard/DashboardCard";
 
+import ChatBot from "../../components/ChatBot/ChatBot";
+
 import {
   FaBoxes,
   FaTruck,
@@ -79,27 +81,9 @@ function StaffDashboard() {
 
         const token = localStorage.getItem("token");
 
-        const response = await getDashboardData(token);
+        const response = await getDashboardData(token, "STAFF");
 
-        setDashboardData((prev) => {
-          const data = response.data;
-
-          return {
-            ...prev,
-            ...data,
-            medicines: Array.isArray(data.medicines) ? data.medicines : prev.medicines,
-            recentStockLogs: Array.isArray(data.recentStockLogs)
-              ? data.recentStockLogs
-              : prev.recentStockLogs,
-            purchaseOrdersList: Array.isArray(data.purchaseOrdersList)
-              ? data.purchaseOrdersList
-              : prev.purchaseOrdersList,
-            lowStockAlertsList: Array.isArray(data.lowStockAlertsList)
-              ? data.lowStockAlertsList
-              : prev.lowStockAlertsList,
-            lowStockAlerts: data.lowStockAlerts ?? data.lowStock ?? prev.lowStockAlerts,
-          };
-        });
+        setDashboardData((prev) => ({ ...prev, ...response.data }));
 
       } catch (error) {
 
@@ -159,6 +143,7 @@ function StaffDashboard() {
           <DashboardCard title="Low-Stock Alerts" value={dashboardData.lowStockAlerts} icon={<FaExclamationTriangle />} />
 
         </div>
+  
 
         {/* Scan & search medicines */}
         <div className="panel">
@@ -259,7 +244,7 @@ function StaffDashboard() {
         </div>
 
         {/* Recent stock logs + Purchase orders */}
-        <div className="grid-2">
+        {/* <div className="grid-2">
 
           <div className="panel">
             <h3 className="panel-title"><FaClipboardList /> Recent stock logs</h3>
@@ -313,10 +298,10 @@ function StaffDashboard() {
             </table>
           </div>
 
-        </div>
+        </div> */}
 
       </div>
-
+ <ChatBot />
     </div>
 
   );

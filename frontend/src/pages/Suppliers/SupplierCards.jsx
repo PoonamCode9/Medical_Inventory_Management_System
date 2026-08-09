@@ -1,5 +1,4 @@
 import {
-  FaTruck,
   FaPhoneAlt,
   FaEnvelope,
   FaMapMarkerAlt,

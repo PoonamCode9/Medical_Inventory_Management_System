@@ -4,9 +4,6 @@ import "../Medicines/Medicines.css";
 
 import {
     FaClipboardList,
-    FaArrowUp,
-    FaArrowDown,
-    FaCalendarAlt,
     FaSearch,
     FaEye
 } from "react-icons/fa";

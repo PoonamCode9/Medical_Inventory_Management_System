@@ -73,8 +73,9 @@ function PharmacistDashboard() {
       try {
 
         const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
 
-        const response = await getDashboardData(token);
+        const response = await getDashboardData(token, "PHARMACIST", userId);
 
         setDashboardData((prev) => ({ ...prev, ...response.data }));
 

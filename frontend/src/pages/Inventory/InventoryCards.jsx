@@ -1,10 +1,3 @@
-import {
-  FaBoxes,
-  FaExclamationTriangle,
-  FaWarehouse,
-  FaClock,
-} from "react-icons/fa";
-
 const InventoryCards = ({ inventory }) => {
   const totalItems = inventory.length;
 

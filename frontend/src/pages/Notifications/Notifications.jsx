@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import "../Medicines/Medicines.css";
 import "./Notifications.css";
-import {
-    FaBell,
-    FaCheckCircle,
-    FaExclamationTriangle,
-    FaTrash,
-    FaEnvelopeOpen
-} from "react-icons/fa";
+import { FaTrash, FaEnvelopeOpen } from "react-icons/fa";
 
 import {
     getNotifications,

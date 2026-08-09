@@ -8,11 +8,10 @@ import {
   FaTruck,
   FaBoxes,
   FaChartBar,
-  FaShoppingCart,
-  FaClipboardList,
   FaBell,
-  FaCog,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaShoppingCart,
+  FaUser,
 } from "react-icons/fa";
 
 function Sidebar({ role }) {
@@ -51,12 +50,14 @@ function Sidebar({ role }) {
             <li><NavLink to="/suppliers"><FaTruck /> Suppliers</NavLink></li>
 
             <li><NavLink to="/inventory"><FaBoxes /> Inventory</NavLink></li>
+            <li><NavLink to="/purchase-orders"><FaShoppingCart /> Purchase Orders</NavLink></li>
 
             <li><NavLink to="/reports"><FaChartBar /> Reports</NavLink></li>
 
             <li><NavLink to="/notifications"><FaBell /> Notifications</NavLink></li>
 
             <li><NavLink to="/analytics"><FaChartBar /> Analytics</NavLink></li>
+           
 {/* 
             <li><NavLink to="/settings"><FaCog /> Settings</NavLink></li> */}
           </>
@@ -68,13 +69,15 @@ function Sidebar({ role }) {
           <>
             <li><NavLink to="/medicines"><FaPills /> Medicines</NavLink></li>
 
-            <li><NavLink to="/stock"><FaBoxes /> Stock</NavLink></li>
+            <li><NavLink to="/inventory"><FaBoxes /> Inventory</NavLink></li>
+            <li><NavLink to="/suppliers"><FaTruck /> Suppliers</NavLink></li>
+            <li><NavLink to="/purchase-orders"><FaShoppingCart /> Purchase Orders</NavLink></li>
 
             <li><NavLink to="/notifications"><FaBell /> Notifications</NavLink></li>
+            <li><NavLink to="/analytics"><FaChartBar /> Analytics</NavLink></li>
+            <li><NavLink to="/profile"><FaUser /> Profile</NavLink></li>
           </>
         )}
-
-        {/* Staff */}
 
         {role === "staff" && (
           <>
@@ -87,6 +90,7 @@ function Sidebar({ role }) {
             {/* <li><NavLink to="/stock-logs"><FaClipboardList /> Stock Logs</NavLink></li> */}
 
             <li><NavLink to="/notifications"><FaBell /> Notifications</NavLink></li>
+            <li><NavLink to="/profile"><FaUser /> Profile</NavLink></li>
           </>
         )}
 

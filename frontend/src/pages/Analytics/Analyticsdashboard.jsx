@@ -2,13 +2,13 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import CircularStat from "./CircularStat";
 import { useEffect, useState } from "react";
-import { getDashboardData } from "../../services/authService";
+import { getAnalyticsData } from "../../services/authService";
 
 import {
   PieChart, Pie, Cell,
   BarChart, Bar,
   LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer
 } from "recharts";
 
@@ -156,10 +156,7 @@ function AnalyticsDashboard() {
 
         const token = localStorage.getItem("token");
 
-        // TODO: point this at a dedicated GET /api/analytics endpoint
-        // once available on the backend — for now it reuses the same
-        // dashboard call and merges in whatever fields it returns.
-        const response = await getDashboardData(token);
+        const response = await getAnalyticsData(token);
 
         setData((prev) => ({ ...prev, ...response.data }));
 
@@ -186,7 +183,6 @@ function AnalyticsDashboard() {
 
         {/* ---------------- Inventory Analytics ---------------- */}
         <h2 className="section-heading">📊 Inventory Analytics</h2>
-        <br/>
         <div className="circular-row" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "30px", width: "100%" }}>
           <CircularStat value={data.totalMedicines} label="Medicines" icon={<FaPills />} percent={82} {...RING.green} />
           <CircularStat value={data.totalStock} label="Total Stock" icon={<FaBoxes />} percent={74} {...RING.teal} />
@@ -195,12 +191,9 @@ function AnalyticsDashboard() {
           <CircularStat value={data.expiringSoon} label="Expiring Soon" icon={<FaCalendarAlt />} percent={55} {...RING.indigo} />
           <CircularStat value={data.expired} label="Expired" icon={<FaHourglassEnd />} percent={40} {...RING.purple} />
         </div>
-                <br/>
-        <br/>
 
         {/* ---------------- Medicine Analytics ---------------- */}
         <h2 className="section-heading">🏥 Medicine Analytics</h2>
-        <br/>
         <div className="grid-2">
 
           <div className="panel">
@@ -271,20 +264,15 @@ function AnalyticsDashboard() {
           </div>
 
         </div>
-                <br/>
-        <br/>
 
         {/* ---------------- Purchase Analytics ---------------- */}
         <h2 className="section-heading">💰 Purchase Analytics</h2>
-        <br/>
         <div className="circular-row" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "30px", width: "100%" }}>
           <CircularStat value={data.totalPurchaseOrders} label="Total Orders" icon={<FaShoppingCart />} percent={80} {...RING.teal} />
           <CircularStat value={data.pendingOrders} label="Pending" icon={<FaClock />} percent={25} {...RING.amber} />
           <CircularStat value={data.completedOrders} label="Completed" icon={<FaCheckCircle />} percent={88} {...RING.green} />
           <CircularStat value={data.ordersThisMonth} label="This Month" icon={<FaCalendarCheck />} percent={45} {...RING.blue} />
         </div>
-        <br/>
-        <br/>
 
         <div className="grid-2">
 
@@ -315,23 +303,16 @@ function AnalyticsDashboard() {
           </div>
 
         </div>
-                <br/>
-        <br/>
 
         {/* ---------------- Supplier Analytics ---------------- */}
         <h2 className="section-heading">🚚 Supplier Analytics</h2>
-        <br/>
         <div className="circular-row" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "30px", width: "100%" }}>
           <CircularStat value={data.totalSuppliers} label="Total Suppliers" icon={<FaTruck />} percent={70} {...RING.blue} />
           <CircularStat value={data.mostActiveSupplier} label="Most Active" icon={<FaStar />} percent={90} {...RING.orange} />
         </div>
-                <br/>
-        <br/>
 
         {/* ---------------- Stock Analytics ---------------- */}
         <h2 className="section-heading">📦 Stock Analytics</h2>
-        <br/>
-
         <div className="grid-2">
 
           <div className="panel">
@@ -362,23 +343,18 @@ function AnalyticsDashboard() {
           </div>
 
         </div>
-        <br/>
-        <br/>
+
         {/* ---------------- Notification Analytics ---------------- */}
         <h2 className="section-heading">🔔 Notification Analytics</h2>
-        <br/>
         <div className="circular-row" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "30px", width: "100%" }}>
           <CircularStat value={data.totalNotifications} label="Total" icon={<FaBell />} percent={78} {...RING.teal} />
           <CircularStat value={data.lowStockAlerts} label="Low Stock Alerts" icon={<FaExclamationTriangle />} percent={30} {...RING.amber} />
           <CircularStat value={data.expiryAlerts} label="Expiry Alerts" icon={<FaCalendarAlt />} percent={25} {...RING.indigo} />
           <CircularStat value={data.unreadNotifications} label="Unread" icon={<FaEnvelopeOpenText />} percent={15} {...RING.red} />
         </div>
-                <br/>
-        <br/>
 
         {/* ---------------- User Analytics ---------------- */}
         <h2 className="section-heading">👥 User Analytics</h2>
-        <br/>
         <div className="circular-row" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start", gap: "30px", width: "100%" }}>
           <CircularStat value={data.totalUsers} label="Total Users" icon={<FaUsers />} percent={85} {...RING.teal} />
           <CircularStat value={data.totalAdmins} label="Admins" icon={<FaUserShield />} percent={20} {...RING.purple} />

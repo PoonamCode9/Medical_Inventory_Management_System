@@ -78,6 +78,8 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
         // Public APIs
         .requestMatchers("/api/auth/**")
         .permitAll()
+        .requestMatchers("/api/email/**")
+.permitAll()
 
 
         // =========================
@@ -108,6 +110,11 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
                 "Admin",
                 "Pharmacist"
         )
+        .requestMatchers("/api/chatbot/**")
+.hasAnyAuthority(
+        "Staff"
+)
+
 
 
     // =========================

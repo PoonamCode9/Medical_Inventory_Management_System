@@ -15,8 +15,8 @@ import {
     FaServer,
     FaHistory,
     FaFilePdf,
-    FaFileExcel,
-    FaCircle
+    FaFileExcel
+    ,FaShoppingCart
 } from "react-icons/fa";
 
 import "./AdminDashboard.css";
@@ -41,12 +41,11 @@ const DEFAULT_STATE = {
         { category: "Vitamins", count: 180 },
     ],
 
-    systemStatus: [
-        { label: "API", status: "operational" },
-        { label: "Database", status: "operational" },
-        { label: "Last Backup", status: "2 hours ago" },
-        { label: "Active Sessions", status: "14 users" },
-    ],
+    purchaseSummary: [
+    { orderId: "PO-2291", supplier: "MedSupply Co.", date: "2026-07-29", status: "Delivered", amount: "$4,120" },
+    { orderId: "PO-2298", supplier: "PharmaLink Ltd.", date: "2026-07-30", status: "In transit", amount: "$2,860" },
+    { orderId: "PO-2302", supplier: "Global Health Distributors", date: "2026-08-01", status: "Pending", amount: "$1,540" },
+  ],
 
     stockMovements: [
         { date: "2026-08-01", medicine: "Amoxicillin 500mg", batch: "BAT-22981", type: "IN", qty: 200, by: "S. Rao" },
@@ -84,7 +83,13 @@ function statusDotClass(status) {
     if (typeof status === "string" && status.toLowerCase().includes("ago")) return "dot dot-ok";
     return "dot dot-info";
 }
-
+function statusBadgeClass(status) {
+  const s = String(status).toLowerCase();
+  if (s === "delivered" || s === "reliable") return "badge badge-ok";
+  if (s === "pending" || s === "watch") return "badge badge-warning";
+  if (s === "in transit") return "badge badge-info";
+  return "badge badge-info";
+}
 function AdminDashboard() {
 
     const [dashboardData, setDashboardData] = useState(DEFAULT_STATE);
@@ -97,7 +102,7 @@ function AdminDashboard() {
 
                 const token = localStorage.getItem("token");
 
-                const response = await getDashboardData(token);
+                const response = await getDashboardData(token, "ADMIN");
 
                 // Merge so any field the API doesn't yet return keeps its sample value.
                 setDashboardData((prev) => ({ ...prev, ...response.data }));
@@ -140,7 +145,6 @@ function AdminDashboard() {
                     <DashboardCard title="Inventory" value={dashboardData.inventory} icon={<FaBoxes />} />
                     {/* <DashboardCard title="Low Stock" value={dashboardData.lowStock} icon={<FaExclamationTriangle />} />
                     <DashboardCard title="Expiry Alerts" value={dashboardData.expiryAlerts} icon={<FaCalendarAlt />} /> */}
-                    
 
                 </div>
 
@@ -175,7 +179,8 @@ function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Inventory analytics + System monitoring */}
+              
+                              {/*  Inventory analytics + Supplier analytics */}
                 <div className="grid-2">
 
                     <div className="panel">
@@ -195,8 +200,30 @@ function AdminDashboard() {
                             ))}
                         </div>
                     </div>
-
-                    <div className="panel">
+                  <div className="panel">
+                        <h3 className="panel-title"><FaTruck /> Supplier analytics</h3>
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Supplier</th>
+                                    <th>Orders</th>
+                                    <th>On-time</th>
+                                    <th>Last order</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dashboardData.supplierAnalytics.map((s) => (
+                                    <tr key={s.supplier}>
+                                        <td>{s.supplier}</td>
+                                        <td>{s.orders}</td>
+                                        <td>{s.onTime}</td>
+                                        <td>{s.lastOrder}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* <div className="panel">
                         <h3 className="panel-title"><FaServer /> System monitoring</h3>
                         <ul className="status-list">
                             {dashboardData.systemStatus.map((s) => (
@@ -207,11 +234,11 @@ function AdminDashboard() {
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </div> */}
 
                 </div>
 
-                {/* Stock movement + Supplier analytics */}
+                {/* Stock movement + purchase summary */}
                 <div className="grid-2">
 
                     <div className="panel">
@@ -243,30 +270,33 @@ function AdminDashboard() {
                             </tbody>
                         </table>
                     </div>
-
-                    <div className="panel">
-                        <h3 className="panel-title"><FaTruck /> Supplier analytics</h3>
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Supplier</th>
-                                    <th>Orders</th>
-                                    <th>On-time</th>
-                                    <th>Last order</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {dashboardData.supplierAnalytics.map((s) => (
-                                    <tr key={s.supplier}>
-                                        <td>{s.supplier}</td>
-                                        <td>{s.orders}</td>
-                                        <td>{s.onTime}</td>
-                                        <td>{s.lastOrder}</td>
+                              <div className="panel">
+                                <h3 className="panel-title"><FaShoppingCart /> Purchase summary</h3>
+                                <table className="table">
+                                  <thead>
+                                    <tr>
+                                      <th>Order</th>
+                                      <th>Supplier</th>
+                                      <th>Date</th>
+                                      <th>Status</th>
+                                      <th>Amount</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                  </thead>
+                                  <tbody>
+                                    {dashboardData.purchaseSummary.map((p) => (
+                                      <tr key={p.orderId}>
+                                        <td className="mono">{p.orderId}</td>
+                                        <td>{p.supplier}</td>
+                                        <td>{p.date}</td>
+                                        <td><span className={statusBadgeClass(p.status)}>{p.status}</span></td>
+                                        <td>{p.amount}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+
+  
 
                 </div>
 

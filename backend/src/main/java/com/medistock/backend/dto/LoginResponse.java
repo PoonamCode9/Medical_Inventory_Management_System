@@ -14,4 +14,9 @@ public class LoginResponse {
     private String roleName;
     private String fullName;
 
+    // NEW — the frontend currently has no way to know which user is logged
+    // in (only role/name), which blocks anything that needs to be scoped to
+    // "this user" (their own notifications, who performed an action, etc.)
+    private Integer userId;
+
 }

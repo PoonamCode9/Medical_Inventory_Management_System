@@ -22,32 +22,33 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final RoleRepository roleRepository;
 
-public AuthServiceImpl(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService,
-                       RoleRepository roleRepository) {
+    public AuthServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtService jwtService,
+                           RoleRepository roleRepository) {
 
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-    this.jwtService = jwtService;
-    this.roleRepository = roleRepository;
-}
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.roleRepository = roleRepository;
+    }
 
- @Override
-public User register(User user) {
+    @Override
+    public User register(User user) {
 
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-    user.setCreatedAt(LocalDateTime.now());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreatedAt(LocalDateTime.now());
 
-    Integer roleId = user.getRole().getRoleId();
+        Integer roleId = user.getRole().getRoleId();
 
-    Role role = roleRepository.findById(roleId)
-            .orElseThrow(() -> new RuntimeException("Role not found"));
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
-    user.setRole(role);
+        user.setRole(role);
 
-    return userRepository.save(user);
-}
+        return userRepository.save(user);
+    }
+
     @Override
     public LoginResponse login(LoginRequest request) {
 
@@ -63,12 +64,13 @@ public User register(User user) {
 
         String token = jwtService.generateToken(user.getEmail());
 
-return new LoginResponse(
-        token,
-        user.getRole().getRoleId(),
-        user.getRole().getRoleName(),
-        user.getFullName()
-);
+        return new LoginResponse(
+                token,
+                user.getRole().getRoleId(),
+                user.getRole().getRoleName(),
+                user.getFullName(),
+                user.getUserId()
+        );
     }
 
 }

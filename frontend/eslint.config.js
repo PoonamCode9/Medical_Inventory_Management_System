@@ -17,5 +17,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // API requests begin asynchronously in effects; the state updates occur after completion.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

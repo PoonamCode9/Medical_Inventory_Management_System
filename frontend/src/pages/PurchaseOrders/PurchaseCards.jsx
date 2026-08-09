@@ -1,11 +1,4 @@
 import "../Medicines/Medicines.css";
-import {
-    FaShoppingCart,
-    FaClock,
-    FaCheckCircle,
-    FaTruck
-} from "react-icons/fa";
-
 const PurchaseCards = ({ purchaseOrders }) => {
 
     const totalOrders = purchaseOrders.length;

@@ -8,13 +8,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MedicineRequestdto{
+public class MedicineRequestdto {
 
     private String medicineName;
 
     private String batchNumber;
 
     private String category;
+
+    // NEW — see Medicine.dosageForm
+    private String dosageForm;
 
     private Integer supplierId;
 

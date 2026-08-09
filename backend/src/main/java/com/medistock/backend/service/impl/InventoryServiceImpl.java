@@ -11,6 +11,7 @@ import com.medistock.backend.entity.Medicine;
 import com.medistock.backend.repository.InventoryRepository;
 import com.medistock.backend.repository.MedicineRepository;
 import com.medistock.backend.service.InventoryService;
+import com.medistock.backend.service.LowStockAlertService;
 import com.medistock.backend.service.NotificationService;
 import com.medistock.backend.service.StockLogService;
 
@@ -23,6 +24,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final MedicineRepository medicineRepository;
     private final NotificationService notificationService;
+    private final LowStockAlertService lowStockAlertService;
 private final StockLogService stockLogService;
     @Override
     public List<Inventory> getAllInventory() {
@@ -69,16 +71,27 @@ private final StockLogService stockLogService;
         savedInventory.getInventoryId()
 );
 
-        if (savedInventory.getQuantityAvailable() <= savedInventory.getMinimumStock()) {
+if (savedInventory.getQuantityAvailable() <= savedInventory.getMinimumStock()) {
 
-            notificationService.createNotification(
-                    1,
-                    savedInventory.getMedicine().getMedicineName()
-                            + " stock is LOW. Remaining quantity: "
-                            + savedInventory.getQuantityAvailable(),
-                    "LOW_STOCK"
-            );
-        }
+    notificationService.createNotification(
+            1,
+            savedInventory.getMedicine().getMedicineName()
+                    + " stock is LOW. Remaining quantity: "
+                    + savedInventory.getQuantityAvailable(),
+            "LOW_STOCK"
+    );
+
+    try {
+
+        lowStockAlertService.checkLowStock(savedInventory);
+
+    } catch (Exception e) {
+
+        System.out.println("Low stock email could not be sent.");
+        e.printStackTrace();
+
+    }
+}
 
         return convertToDTO(savedInventory);
     }
@@ -112,17 +125,30 @@ private final StockLogService stockLogService;
             );
 
         } else if (updatedInventory.getQuantityAvailable()
-                <= updatedInventory.getMinimumStock()) {
+        <= updatedInventory.getMinimumStock()) {
 
-            notificationService.createNotification(
-                    1,
-                    updatedInventory.getMedicine().getMedicineName()
-                            + " stock is LOW. Remaining quantity: "
-                            + updatedInventory.getQuantityAvailable(),
-                    "LOW_STOCK"
-            );
+    notificationService.createNotification(
+            1,
+            updatedInventory.getMedicine().getMedicineName()
+                    + " stock is LOW. Remaining quantity: "
+                    + updatedInventory.getQuantityAvailable(),
+            "LOW_STOCK"
+    );
 
-        } else {
+    try {
+
+        lowStockAlertService.checkLowStock(updatedInventory);
+
+    } catch (Exception e) {
+
+        System.out.println("Low stock email could not be sent.");
+        e.printStackTrace();
+
+    }
+
+}
+
+        else {
 
             notificationService.createNotification(
                     1,

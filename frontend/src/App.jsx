@@ -17,6 +17,8 @@ import StockLogs from "./pages/StockLogs/StockLogs";
 import Notifications from "./pages/Notifications/Notifications";
 import Stock from "./pages/stock/Stock";
 import AnalyticsDashboard from "./pages/Analytics/Analyticsdashboard";
+import purchaseOrders from "./pages/PurchaseOrders/PurchaseOrders";
+import Profile from "./pages/Profile/Profile";
 function App() {
 
   return (
@@ -31,30 +33,30 @@ function App() {
 
         <Route path="/login" element={<Login />} />
 <Route
-  path="/admin"
-  element={
-    <ProtectedRoute allowedRole="Admin">
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
+    path="/admin"
+    element={
+        <ProtectedRoute allowedRoles={["Admin"]}>
+            <AdminDashboard />
+        </ProtectedRoute>
+    }
 />
 
 <Route
-  path="/pharmacist"
-  element={
-    <ProtectedRoute allowedRole="Pharmacist">
-      <PharmacistDashboard />
-    </ProtectedRoute>
-  }
+    path="/pharmacist"
+    element={
+        <ProtectedRoute allowedRoles={["Pharmacist"]}>
+            <PharmacistDashboard />
+        </ProtectedRoute>
+    }
 />
 
 <Route
-  path="/staff"
-  element={
-    <ProtectedRoute allowedRole="Staff">
-      <StaffDashboard />
-    </ProtectedRoute>
-  }
+    path="/staff"
+    element={
+        <ProtectedRoute allowedRoles={["Staff"]}>
+            <StaffDashboard />
+        </ProtectedRoute>
+    }
 />
  <Route path="/medicines" element={<ProtectedRoute><Medicines /></ProtectedRoute>} />
 
@@ -72,9 +74,11 @@ function App() {
 
 <Route path="/stock" element={<ProtectedRoute><Stock /></ProtectedRoute>} />
 <Route path="/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+  <Route path="/purchase-orders" element={<ProtectedRoute><PurchaseOrders /></ProtectedRoute>} />
       </Routes>
 
-     
+
 
 {/* <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
 

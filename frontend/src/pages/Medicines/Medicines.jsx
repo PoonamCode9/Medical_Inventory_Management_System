@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import "./Medicines.css";
-import "../../components/Sidebar/Sidebar.jsx";
 import {
-    FaSearch,
     FaPlus,
     FaEdit,
     FaTrash,
@@ -13,7 +11,6 @@ import {
 } from "react-icons/fa";
 import DashboardCards from "./DashboardCards";
 import SearchFilter from "./SearchFilter";
-import Sidebar from "../../components/Sidebar/Sidebar.jsx";
 
 const Medicines = () => {
     const [medicines, setMedicines] = useState([]);
@@ -224,7 +221,7 @@ const fetchSuppliers = async () => {
             medicine.category?.toLowerCase().includes(search.toLowerCase()) ||
             medicine.batchNumber?.toLowerCase().includes(search.toLowerCase());
 
-        let matchesFilter = true;
+        let matchesFilter;
 
         switch (activeFilter) {
             case "INSTOCK":

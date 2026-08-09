@@ -28,11 +28,15 @@ function Navbar({ userName }) {
 
             <div className="navbar-right">
 
-                <FaBell className="nav-icon" />
+                <a href="/notifications">
+                    <FaBell className="nav-icon" />
+                </a>
 
                 <div className="profile">
 
-                    <FaUserCircle className="profile-icon" />
+                    <a href="/profile">
+                        <FaUserCircle className="profile-icon" />
+                    </a>
 
                     <div className="profile-info">
                         <span>{userName}</span>

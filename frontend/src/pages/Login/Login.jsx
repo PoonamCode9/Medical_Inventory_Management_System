@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import AuthLayout from "./AuthLayout";
 import "./login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import GoogleLoginButton from "../../components/GoogleLoginButton";
 
-export default function LoginPage({ onSubmit }) {
+export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
 const navigate = useNavigate();
 
   function update(field, value) {
@@ -141,6 +142,20 @@ const navigate = useNavigate();
         <button type="submit" className="auth-submit">
           Sign in <LogIn size={16} />
         </button>
+<div
+    style={{
+        marginTop:"20px",
+        display:"flex",
+        justifyContent:"center"
+      
+
+    }}
+>
+
+    <GoogleLoginButton/>
+
+</div>
+        
       </form>
     </AuthLayout>
   );

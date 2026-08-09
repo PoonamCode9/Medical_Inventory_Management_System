@@ -250,7 +250,7 @@ const deleteInventory = async (id) => {
     const matchesSearch =
         item.medicineName?.toLowerCase().includes(search.toLowerCase());
 
-    let matchesFilter = true;
+    let matchesFilter;
 
     switch (activeFilter) {
 

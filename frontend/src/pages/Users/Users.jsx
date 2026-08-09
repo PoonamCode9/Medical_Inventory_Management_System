@@ -5,7 +5,6 @@ import Swal from "sweetalert2";
 import "../Medicines/Medicines.css";
 
 import {
-  FaUsers,
   FaUser,
   FaPlus,
   FaEdit,

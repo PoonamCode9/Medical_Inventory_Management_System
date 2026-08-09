@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, EyeOff, UserPlus, UserCog, Stethoscope, ClipboardList } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ const ROLES = [
   { id: "Staff", name: "Staff", desc: "Day-to-day stock updates", icon: ClipboardList },
 ];
 
-export default function RegisterPage({ onSubmit }) {
+export default function RegisterPage() {
     const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: "",
@@ -24,7 +24,7 @@ export default function RegisterPage({ onSubmit }) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
