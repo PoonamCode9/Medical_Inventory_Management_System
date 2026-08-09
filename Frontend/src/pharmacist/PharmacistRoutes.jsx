@@ -9,6 +9,7 @@ import CreatePurchaseOrder from './CreatePurchaseOrder.jsx'
 import TasksPharmacist from './TasksPharmacist.jsx'
 import PharmacistNotifications from './PharmacistNotifications.jsx'
 import ReportsPharmacist from './ReportsPharmacist.jsx'
+import Settings from './Settings.jsx'
 
 
 export default function PharmacistRoutes() {
@@ -48,7 +49,7 @@ export default function PharmacistRoutes() {
       <Route path="alerts" element={<AlertsPharmacist />} />
 
       {/* Settings */}
-      <Route path="settings" element={<Placeholder title="Settings" />} />
+      <Route path="settings" element={<Settings />} />
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="dashboard" replace />} />

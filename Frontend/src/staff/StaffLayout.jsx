@@ -276,7 +276,12 @@ export default function StaffLayout({ children }) {
               </div>
             </div>
 
-            <button type="button" className="bb-icon-btn" aria-label="Settings shortcut">
+            <button
+              type="button"
+              className="bb-icon-btn"
+              aria-label="Settings shortcut"
+              onClick={() => navigate('/staff/dashboard/settings')}
+            >
               <Icon kind="cog" className="bb-icon" />
             </button>
 

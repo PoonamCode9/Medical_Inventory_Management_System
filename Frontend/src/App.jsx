@@ -28,8 +28,10 @@ import CreatePurchaseOrder from './pharmacist/CreatePurchaseOrder.jsx'
 import TasksPharmacist from './pharmacist/TasksPharmacist.jsx'
 import PharmacistNotifications from './pharmacist/PharmacistNotifications.jsx'
 import PharmacistReports from "./pharmacist/ReportsPharmacist.jsx"
+import PharmacistSettings from "./pharmacist/Settings.jsx"
 
 import PurchaseOrderTimeline from './admin/PurchaseOrderTimeline.jsx'
+import AdminSettings from './admin/Settings.jsx'
 
 
 <Route path="/admin/*" element={<AdminRoutes />} />
@@ -39,6 +41,7 @@ import StaffInventoryStockOverview from './staff/StaffInventoryStockOverview.jsx
 import StaffAlerts from './staff/StaffAlerts.jsx'
 import StaffTasks from './staff/StaffTasks.jsx'
 import StaffNotifications from './staff/StaffNotifications.jsx'
+import Settings from './staff/Settings.jsx'
 
 
 function App() {
@@ -72,6 +75,7 @@ function App() {
         <Route path="/admin/notifications" element={<AdminNotifications />} />
         <Route path="/admin/inventory/movements" element={<StockMovements />} />
         <Route path="/admin/reports" element={<Reports />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
 
         {/* role-based default */}
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
@@ -84,6 +88,7 @@ function App() {
         <Route path="/pharmacist/tasks" element={<TasksPharmacist />} />
         <Route path="/pharmacist/notifications" element={<PharmacistNotifications />} />
         <Route path="/pharmacist/reports" element={<PharmacistReports />} />
+        <Route path="/pharmacist/settings" element={<PharmacistSettings />} />
 
 
 
@@ -92,6 +97,7 @@ function App() {
         <Route path="/staff/dashboard/alerts" element={<StaffAlerts />} />
         <Route path="/staff/dashboard/tasks" element={<StaffTasks />} />
         <Route path="/staff/dashboard/notifications" element={<StaffNotifications />} />
+        <Route path="/staff/dashboard/settings" element={<Settings />} />
 
       </Routes>
     </Router>

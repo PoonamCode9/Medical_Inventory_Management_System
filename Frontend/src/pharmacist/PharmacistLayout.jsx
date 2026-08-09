@@ -316,7 +316,12 @@ export default function PharmacistLayout({ children }) {
               </div>
             </div>
 
-            <button type="button" className="bb-icon-btn" aria-label="Settings shortcut">
+            <button
+              type="button"
+              className="bb-icon-btn"
+              aria-label="Settings shortcut"
+              onClick={() => navigate('/pharmacist/settings')}
+            >
               <Icon kind="cog" className="bb-icon" />
             </button>
 

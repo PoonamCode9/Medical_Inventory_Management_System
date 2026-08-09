@@ -14,6 +14,7 @@ import StockMovements from './StockMovements.jsx'
 import Tasks from './Tasks.jsx'
 import AdminNotifications from './AdminNotifications.jsx'
 import Reports from './Reports.jsx'
+import Settings from './Settings.jsx'
 
 // currently placeholder for received page in Admin sidebar
 import ReceiveInventoryAdminPlaceholder from './Placeholder.jsx'
@@ -68,7 +69,7 @@ export default function AdminRoutes() {
       <Route path="*alerts" element={<Alerts />} />
 
       {/* Settings */}
-      <Route path="settings" element={<Placeholder title="Settings" />} />
+      <Route path="settings" element={<Settings />} />
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="dashboard" replace />} />

@@ -72,6 +72,15 @@ export function logoutUser() {
   localStorage.removeItem('authToken')
 }
 
+// ─── Settings (current user) ─────────────────────────
+export function fetchCurrentUser() {
+  return requestJson('GET', `${API_BASE_URL}/settings/me`)
+}
+
+export function changePassword(payload) {
+  return requestJson('PUT', `${API_BASE_URL}/settings/password`, payload)
+}
+
 // Admin
 export function fetchAdminUsers() {
   return requestJson('GET', `${API_BASE_URL}/admin/users`)

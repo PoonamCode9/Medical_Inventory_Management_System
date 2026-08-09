@@ -7,6 +7,7 @@ import StaffInventoryStockOverview from './StaffInventoryStockOverview.jsx'
 import StaffAlerts from './StaffAlerts.jsx'
 import StaffTasks from './StaffTasks.jsx'
 import StaffNotifications from './StaffNotifications.jsx'
+import Settings from './Settings.jsx'
 
 
 export default function StaffRoutes() {
@@ -28,7 +29,7 @@ export default function StaffRoutes() {
       <Route path="returns" element={<PlaceholderStaffPage title="Returns" />} />
       <Route path="notifications" element={<StaffNotifications />} />
       <Route path="alerts" element={<StaffAlerts />} />
-      <Route path="settings" element={<PlaceholderStaffPage title="Settings" />} />
+      <Route path="settings" element={<Settings />} />
 
       <Route path="*" element={<Navigate to="." replace />} />
     </Routes>
