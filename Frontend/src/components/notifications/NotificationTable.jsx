@@ -12,11 +12,14 @@ import {
     Typography
 } from "@mui/material";
 
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+
 function NotificationTable({
     notifications,
     canManage,
+    canDelete,
     onReview,
-    onResolve
+    onDelete
 }) {
 
     const getAlertColor = (alertType) => {
@@ -72,7 +75,9 @@ function NotificationTable({
             >
 
                 <Typography color="text.secondary">
+
                     No notifications found.
+
                 </Typography>
 
             </Paper>
@@ -81,11 +86,26 @@ function NotificationTable({
 
     }
 
+    /*
+     * Admin can:
+     * - Review ACTIVE notifications
+     * - Delete RESOLVED notifications
+     *
+     * Pharmacist can:
+     * - Review ACTIVE notifications
+     */
+    const showActionColumn =
+        canManage || canDelete;
+
     return (
 
         <TableContainer
             component={Paper}
             elevation={3}
+            sx={{
+                borderRadius: 3,
+                overflowX: "auto"
+            }}
         >
 
             <Table>
@@ -98,19 +118,23 @@ function NotificationTable({
                             <strong>Medicine</strong>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell
+                            sx={{
+                                minWidth: 105
+                            }}
+                        >
                             <strong>Batch</strong>
-                        </TableCell>
-
-                        <TableCell>
-                            <strong>Category</strong>
                         </TableCell>
 
                         <TableCell align="center">
                             <strong>Quantity</strong>
                         </TableCell>
 
-                        <TableCell>
+                        <TableCell
+                            sx={{
+                                minWidth: 130
+                            }}
+                        >
                             <strong>Expiry</strong>
                         </TableCell>
 
@@ -126,15 +150,29 @@ function NotificationTable({
                             <strong>Status</strong>
                         </TableCell>
 
-                        {
-                            canManage
-                            &&
-                            (
-                                <TableCell align="center">
-                                    <strong>Action</strong>
-                                </TableCell>
-                            )
-                        }
+                        {/*
+                         * Review remarks are displayed
+                         * to Admin only.
+                         */}
+                        {canDelete && (
+
+                            <TableCell
+                                sx={{
+                                    minWidth: 220
+                                }}
+                            >
+                                <strong>Remarks</strong>
+                            </TableCell>
+
+                        )}
+
+                        {showActionColumn && (
+
+                            <TableCell align="center">
+                                <strong>Action</strong>
+                            </TableCell>
+
+                        )}
 
                     </TableRow>
 
@@ -142,43 +180,80 @@ function NotificationTable({
 
                 <TableBody>
 
-                    {
-                        notifications.map((notification) => (
+                    {notifications.map(
+                        (notification) => (
 
                             <TableRow
                                 hover
-                                key={notification.notificationId}
+                                key={
+                                    notification.notificationId
+                                }
                             >
 
                                 <TableCell>
-                                    {notification.medicineName}
+
+                                    <Typography
+                                        fontWeight={600}
+                                    >
+
+                                        {
+                                            notification
+                                                .medicineName
+                                        }
+
+                                    </Typography>
+
                                 </TableCell>
 
-                                <TableCell>
+                                <TableCell
+                                    sx={{
+                                        minWidth: 105
+                                    }}
+                                >
+
                                     {notification.batchNumber}
-                                </TableCell>
 
-                                <TableCell>
-                                    {notification.category}
                                 </TableCell>
 
                                 <TableCell align="center">
+
                                     {notification.quantity}
+
                                 </TableCell>
 
-                                <TableCell>
+                                <TableCell
+                                    sx={{
+                                        minWidth: 130
+                                    }}
+                                >
+
                                     {notification.expDate}
+
                                 </TableCell>
 
                                 <TableCell align="center">
+
                                     {notification.daysRemaining}
+
                                 </TableCell>
 
                                 <TableCell>
 
                                     <Chip
-                                        label={notification.alertType.replaceAll("_", " ")}
-                                        color={getAlertColor(notification.alertType)}
+                                        label={
+                                            notification
+                                                .alertType
+                                                .replaceAll(
+                                                    "_",
+                                                    " "
+                                                )
+                                        }
+                                        color={
+                                            getAlertColor(
+                                                notification
+                                                    .alertType
+                                            )
+                                        }
                                         size="small"
                                     />
 
@@ -187,69 +262,148 @@ function NotificationTable({
                                 <TableCell>
 
                                     <Chip
-                                        label={notification.status}
-                                        color={getStatusColor(notification.status)}
+                                        label={
+                                            notification.status
+                                        }
+                                        color={
+                                            getStatusColor(
+                                                notification
+                                                    .status
+                                            )
+                                        }
                                         size="small"
                                     />
 
                                 </TableCell>
 
-                                {
-                                    canManage
-                                    &&
-                                    (
-                                        <TableCell align="center">
+                                {/*
+                                 * Admin can see review remarks.
+                                 */}
+                                {canDelete && (
 
-                                            <Box
+                                    <TableCell
+                                        sx={{
+                                            minWidth: 220,
+                                            maxWidth: 320
+                                        }}
+                                    >
+
+                                        {notification.remarks ? (
+
+                                            <Typography
+                                                variant="body2"
                                                 sx={{
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    gap: 1
+                                                    whiteSpace:
+                                                        "normal",
+                                                    wordBreak:
+                                                        "break-word"
                                                 }}
                                             >
 
                                                 {
-                                                    notification.status === "ACTIVE"
-                                                    &&
-                                                    (
-                                                        <Button
-                                                            variant="outlined"
-                                                            size="small"
-                                                            onClick={() =>
-                                                                onReview(notification)
-                                                            }
-                                                        >
-                                                            Review
-                                                        </Button>
-                                                    )
+                                                    notification
+                                                        .remarks
                                                 }
 
-                                                {
-                                                    notification.status !== "RESOLVED"
-                                                    &&
-                                                    (
-                                                        <Button
-                                                            variant="contained"
-                                                            size="small"
-                                                            onClick={() =>
-                                                                onResolve(notification)
-                                                            }
-                                                        >
-                                                            Resolve
-                                                        </Button>
-                                                    )
-                                                }
+                                            </Typography>
 
-                                            </Box>
+                                        ) : (
 
-                                        </TableCell>
-                                    )
-                                }
+                                            <Typography
+                                                variant="body2"
+                                                color="text.secondary"
+                                            >
+
+                                                No remarks
+
+                                            </Typography>
+
+                                        )}
+
+                                    </TableCell>
+
+                                )}
+
+                                {showActionColumn && (
+
+                                    <TableCell align="center">
+
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent:
+                                                    "center",
+                                                gap: 1,
+                                                flexWrap: "wrap"
+                                            }}
+                                        >
+
+                                            {/*
+                                             * ACTIVE notifications
+                                             * can be reviewed by
+                                             * Admin or Pharmacist.
+                                             */}
+                                            {canManage &&
+
+                                                notification.status ===
+                                                "ACTIVE" && (
+
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={() =>
+                                                            onReview(
+                                                                notification
+                                                            )
+                                                        }
+                                                    >
+
+                                                        Review
+
+                                                    </Button>
+
+                                                )}
+
+                                            {/*
+                                             * Only Admin can delete
+                                             * automatically resolved
+                                             * notifications.
+                                             */}
+                                            {canDelete &&
+
+                                                notification.status ===
+                                                "RESOLVED" && (
+
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        size="small"
+                                                        startIcon={
+                                                            <DeleteOutlineRoundedIcon />
+                                                        }
+                                                        onClick={() =>
+                                                            onDelete(
+                                                                notification
+                                                            )
+                                                        }
+                                                    >
+
+                                                        Delete
+
+                                                    </Button>
+
+                                                )}
+
+                                        </Box>
+
+                                    </TableCell>
+
+                                )}
 
                             </TableRow>
 
-                        ))
-                    }
+                        )
+                    )}
 
                 </TableBody>
 

@@ -5,6 +5,8 @@ import com.MediStock.app.dto.InventoryResponse;
 import com.MediStock.app.dto.InventorySummaryResponse;
 import com.MediStock.app.entities.Inventory;
 import com.MediStock.app.entities.Medicine;
+import com.MediStock.app.enums.ActivityAction;
+import com.MediStock.app.enums.ActivityModule;
 import com.MediStock.app.enums.StockStatus;
 import com.MediStock.app.repositories.InventoryRepository;
 import com.MediStock.app.repositories.MedicineRepository;
@@ -20,13 +22,27 @@ public class InventoryServiceImpl implements InventoryService {
     private static final int LOW_STOCK_THRESHOLD = 10;
 
     private final InventoryRepository inventoryRepository;
+
     private final MedicineRepository medicineRepository;
 
-    public InventoryServiceImpl(InventoryRepository inventoryRepository,
-                                MedicineRepository medicineRepository) {
+    private final ActivityLogService activityLogService;
+
+    public InventoryServiceImpl(
+
+            InventoryRepository inventoryRepository,
+
+            MedicineRepository medicineRepository,
+
+            ActivityLogService activityLogService
+
+    ) {
 
         this.inventoryRepository = inventoryRepository;
+
         this.medicineRepository = medicineRepository;
+
+        this.activityLogService = activityLogService;
+
     }
 
     @Override
@@ -36,6 +52,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .stream()
                 .map(this::convertToResponse)
                 .toList();
+
     }
 
     @Override
@@ -46,6 +63,7 @@ public class InventoryServiceImpl implements InventoryService {
                         new RuntimeException("Inventory batch not found."));
 
         return convertToResponse(inventory);
+
     }
 
     @Override
@@ -79,14 +97,38 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setMfgDate(request.getMfgDate());
         inventory.setExpDate(request.getExpDate());
 
-        Inventory savedInventory = inventoryRepository.save(inventory);
+        Inventory savedInventory =
+                inventoryRepository.save(inventory);
+
+        activityLogService.logActivity(
+
+                ActivityModule.INVENTORY,
+
+                ActivityAction.CREATED,
+
+                savedInventory.getBatchId(),
+
+                savedInventory.getBatchNumber(),
+
+                "Added inventory batch " +
+                        savedInventory.getBatchNumber() +
+                        " for medicine " +
+                        savedInventory.getMedicine().getName()
+
+        );
 
         return convertToResponse(savedInventory);
+
     }
 
     @Override
-    public InventoryResponse updateInventory(Long batchId,
-                                             InventoryRequest request) {
+    public InventoryResponse updateInventory(
+
+            Long batchId,
+
+            InventoryRequest request
+
+    ) {
 
         Inventory inventory = inventoryRepository.findById(batchId)
                 .orElseThrow(() ->
@@ -112,9 +154,26 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setMfgDate(request.getMfgDate());
         inventory.setExpDate(request.getExpDate());
 
-        Inventory updatedInventory = inventoryRepository.save(inventory);
+        Inventory updatedInventory =
+                inventoryRepository.save(inventory);
+
+        activityLogService.logActivity(
+
+                ActivityModule.INVENTORY,
+
+                ActivityAction.UPDATED,
+
+                updatedInventory.getBatchId(),
+
+                updatedInventory.getBatchNumber(),
+
+                "Updated inventory batch " +
+                        updatedInventory.getBatchNumber()
+
+        );
 
         return convertToResponse(updatedInventory);
+
     }
 
     @Override
@@ -124,10 +183,26 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() ->
                         new RuntimeException("Inventory batch not found."));
 
+        activityLogService.logActivity(
+
+                ActivityModule.INVENTORY,
+
+                ActivityAction.DELETED,
+
+                inventory.getBatchId(),
+
+                inventory.getBatchNumber(),
+
+                "Deleted inventory batch " +
+                        inventory.getBatchNumber()
+
+        );
+
         inventoryRepository.delete(inventory);
+
     }
 
-        @Override
+    @Override
     public InventorySummaryResponse getInventorySummary() {
 
         List<Inventory> inventoryList = inventoryRepository.findAll();
@@ -190,9 +265,10 @@ public class InventoryServiceImpl implements InventoryService {
                 calculateLowestStockQuantity(inventoryList));
 
         return summary;
+
     }
 
-    @Override
+        @Override
     public List<InventoryResponse> searchByMedicineName(String name) {
 
         return inventoryRepository
@@ -200,6 +276,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .stream()
                 .map(this::convertToResponse)
                 .toList();
+
     }
 
     @Override
@@ -210,142 +287,228 @@ public class InventoryServiceImpl implements InventoryService {
                 .stream()
                 .map(this::convertToResponse)
                 .toList();
+
     }
 
-   private BigDecimal calculateInventoryValue(List<Inventory> inventoryList) {
+    private BigDecimal calculateInventoryValue(
+            List<Inventory> inventoryList
+    ) {
 
-    BigDecimal totalValue = BigDecimal.ZERO;
+        BigDecimal totalValue = BigDecimal.ZERO;
 
-    for (Inventory inventory : inventoryList) {
+        for (Inventory inventory : inventoryList) {
 
-        BigDecimal batchValue = inventory.getMedicine()
-                .getPrice()
-                .multiply(BigDecimal.valueOf(inventory.getQuantity()));
+            BigDecimal batchValue = inventory.getMedicine()
+                    .getPrice()
+                    .multiply(
+                            BigDecimal.valueOf(
+                                    inventory.getQuantity()
+                            )
+                    );
 
-        totalValue = totalValue.add(batchValue);
+            totalValue = totalValue.add(batchValue);
+
+        }
+
+        return totalValue;
+
     }
-
-    return totalValue;
-}
 
     private String calculateHighestValueMedicine(
-            List<Inventory> inventoryList) {
+            List<Inventory> inventoryList
+    ) {
 
         return inventoryList.stream()
-                .max((a, b) -> a.getMedicine()
-                        .getPrice()
-                        .multiply(BigDecimal.valueOf(a.getQuantity()))
-                        .compareTo(
-                                b.getMedicine()
-                                        .getPrice()
-                                        .multiply(BigDecimal.valueOf(
-                                                b.getQuantity()))))
+                .max((a, b) ->
+
+                        a.getMedicine()
+                                .getPrice()
+                                .multiply(
+                                        BigDecimal.valueOf(
+                                                a.getQuantity()
+                                        )
+                                )
+                                .compareTo(
+
+                                        b.getMedicine()
+                                                .getPrice()
+                                                .multiply(
+                                                        BigDecimal.valueOf(
+                                                                b.getQuantity()
+                                                        )
+                                                )
+
+                                )
+
+                )
                 .map(inventory ->
-                        inventory.getMedicine().getName())
+                        inventory.getMedicine().getName()
+                )
                 .orElse("N/A");
+
     }
 
- private BigDecimal calculateHighestValue(List<Inventory> inventoryList) {
+    private BigDecimal calculateHighestValue(
+            List<Inventory> inventoryList
+    ) {
 
-    BigDecimal highestValue = BigDecimal.ZERO;
+        BigDecimal highestValue = BigDecimal.ZERO;
 
-    for (Inventory inventory : inventoryList) {
+        for (Inventory inventory : inventoryList) {
 
-        BigDecimal batchValue = inventory.getMedicine()
-                .getPrice()
-                .multiply(BigDecimal.valueOf(inventory.getQuantity()));
+            BigDecimal batchValue = inventory.getMedicine()
+                    .getPrice()
+                    .multiply(
+                            BigDecimal.valueOf(
+                                    inventory.getQuantity()
+                            )
+                    );
 
-        if (batchValue.compareTo(highestValue) > 0) {
-            highestValue = batchValue;
+            if (batchValue.compareTo(highestValue) > 0) {
+
+                highestValue = batchValue;
+
+            }
+
         }
-    }
 
-    return highestValue;
-}
+        return highestValue;
+
+    }
 
     private String calculateLowestStockMedicine(
-            List<Inventory> inventoryList) {
+            List<Inventory> inventoryList
+    ) {
 
         return inventoryList.stream()
+
                 .min((a, b) ->
+
                         Integer.compare(
                                 a.getQuantity(),
-                                b.getQuantity()))
+                                b.getQuantity()
+                        )
+
+                )
+
                 .map(inventory ->
-                        inventory.getMedicine().getName())
+                        inventory.getMedicine().getName()
+                )
+
                 .orElse("N/A");
+
     }
 
-   private Integer calculateLowestStockQuantity(
-        List<Inventory> inventoryList) {
+    private Integer calculateLowestStockQuantity(
+        List<Inventory> inventoryList
+) {
 
     return inventoryList.stream()
-            .mapToInt(inventory -> inventory.getQuantity())
+
+            .mapToInt(inventory ->
+                    inventory.getQuantity() == null
+                            ? 0
+                            : inventory.getQuantity()
+            )
+
             .min()
+
             .orElse(0);
+
 }
 
-        private InventoryResponse convertToResponse(Inventory inventory) {
+    private InventoryResponse convertToResponse(
+            Inventory inventory
+    ) {
 
-        InventoryResponse response = new InventoryResponse();
+        InventoryResponse response =
+                new InventoryResponse();
 
-        response.setBatchId(inventory.getBatchId());
+        response.setBatchId(
+                inventory.getBatchId()
+        );
 
         response.setMedicineId(
-                inventory.getMedicine().getMedicineId());
+                inventory.getMedicine().getMedicineId()
+        );
 
         response.setMedicineName(
-                inventory.getMedicine().getName());
+                inventory.getMedicine().getName()
+        );
 
         response.setCategory(
-                inventory.getMedicine().getCategory());
+                inventory.getMedicine().getCategory()
+        );
 
         response.setBatchNumber(
-                inventory.getBatchNumber());
+                inventory.getBatchNumber()
+        );
 
         response.setQuantity(
-                inventory.getQuantity());
+                inventory.getQuantity()
+        );
 
         response.setMedicinePrice(
-                inventory.getMedicine().getPrice());
+                inventory.getMedicine().getPrice()
+        );
 
         BigDecimal batchValue =
                 inventory.getMedicine()
                         .getPrice()
-                        .multiply(BigDecimal.valueOf(
-                                inventory.getQuantity()));
+                        .multiply(
+                                BigDecimal.valueOf(
+                                        inventory.getQuantity()
+                                )
+                        );
 
-        response.setBatchValue(batchValue);
+        response.setBatchValue(
+                batchValue
+        );
 
         response.setMfgDate(
-                inventory.getMfgDate());
+                inventory.getMfgDate()
+        );
 
         response.setExpDate(
-                inventory.getExpDate());
+                inventory.getExpDate()
+        );
 
         response.setStatus(
-                determineStockStatus(inventory));
+                determineStockStatus(inventory)
+        );
 
         return response;
+
     }
 
-    private StockStatus determineStockStatus(Inventory inventory) {
+    private StockStatus determineStockStatus(
+            Inventory inventory
+    ) {
 
         LocalDate today = LocalDate.now();
 
         if (inventory.getExpDate().isBefore(today)) {
+
             return StockStatus.EXPIRED;
+
         }
 
-        if (!inventory.getExpDate().isAfter(today.plusDays(30))) {
+        if (!inventory.getExpDate().isAfter(
+                today.plusDays(30)
+        )) {
+
             return StockStatus.EXPIRING_SOON;
+
         }
 
         if (inventory.getQuantity() <= LOW_STOCK_THRESHOLD) {
+
             return StockStatus.LOW_STOCK;
+
         }
 
         return StockStatus.HEALTHY;
+
     }
 
 }

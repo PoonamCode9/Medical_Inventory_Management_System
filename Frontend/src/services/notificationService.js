@@ -1,12 +1,25 @@
 import api from "./api";
 
+/*
+|--------------------------------------------------------------------------
+| Get All Notifications
+|--------------------------------------------------------------------------
+*/
+
 export const getNotifications = async () => {
 
-    const response = await api.get("/notifications");
+    const response = await api.get(
+        "/notifications"
+    );
 
     return response.data;
-
 };
+
+/*
+|--------------------------------------------------------------------------
+| Get Notification By ID
+|--------------------------------------------------------------------------
+*/
 
 export const getNotificationById = async (
     notificationId
@@ -17,8 +30,13 @@ export const getNotificationById = async (
     );
 
     return response.data;
-
 };
+
+/*
+|--------------------------------------------------------------------------
+| Get Notifications By Status
+|--------------------------------------------------------------------------
+*/
 
 export const getNotificationsByStatus = async (
     status
@@ -29,8 +47,13 @@ export const getNotificationsByStatus = async (
     );
 
     return response.data;
-
 };
+
+/*
+|--------------------------------------------------------------------------
+| Get Notifications By Alert Type
+|--------------------------------------------------------------------------
+*/
 
 export const getNotificationsByAlertType = async (
     alertType
@@ -41,22 +64,13 @@ export const getNotificationsByAlertType = async (
     );
 
     return response.data;
-
 };
 
-export const resolveNotification = async (
-    notificationId,
-    resolveData
-) => {
-
-    const response = await api.put(
-        `/notifications/${notificationId}/resolve`,
-        resolveData
-    );
-
-    return response.data;
-
-};
+/*
+|--------------------------------------------------------------------------
+| Review Notification
+|--------------------------------------------------------------------------
+*/
 
 export const reviewNotification = async (
     notificationId,
@@ -69,8 +83,38 @@ export const reviewNotification = async (
     );
 
     return response.data;
-
 };
+
+/*
+|--------------------------------------------------------------------------
+| Delete Notification
+|--------------------------------------------------------------------------
+|
+| The backend only permits ADMIN users to delete
+| notifications that are already RESOLVED.
+|
+*/
+
+export const deleteNotification = async (
+    notificationId
+) => {
+
+    const response = await api.delete(
+        `/notifications/${notificationId}`
+    );
+
+    return response.data;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Run Notification Check
+|--------------------------------------------------------------------------
+|
+| Only ADMIN users are authorized by the backend
+| to run the notification synchronization.
+|
+*/
 
 export const runNotificationCheck = async () => {
 
@@ -79,5 +123,4 @@ export const runNotificationCheck = async () => {
     );
 
     return response.data;
-
 };

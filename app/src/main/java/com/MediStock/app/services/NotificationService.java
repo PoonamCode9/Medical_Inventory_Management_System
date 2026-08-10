@@ -35,9 +35,8 @@ public interface NotificationService {
             ResolveNotificationRequest request
     );
 
-    NotificationResponse resolveNotification(
-            Long notificationId,
-            ResolveNotificationRequest request
+    void deleteNotification(
+            Long notificationId
     );
 
     boolean notificationExists(
@@ -46,5 +45,4 @@ public interface NotificationService {
     );
 
     void synchronizeNotifications();
-
 }

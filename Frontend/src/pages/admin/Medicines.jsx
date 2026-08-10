@@ -24,10 +24,12 @@ function Medicines() {
     const [searchTerm, setSearchTerm] = useState("");
 
     const [dialogOpen, setDialogOpen] = useState(false);
-
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const [selectedMedicine, setSelectedMedicine] = useState(null);
+
+    // Get logged-in user's role
+    const role = localStorage.getItem("role");
 
     const loadMedicines = async () => {
 
@@ -58,7 +60,9 @@ function Medicines() {
     useEffect(() => {
 
         const timer = setTimeout(() => {
+
             loadMedicines();
+
         }, 0);
 
         return () => clearTimeout(timer);
@@ -126,6 +130,7 @@ function Medicines() {
         <Box>
 
             <MedicineToolbar
+                role={role}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onAdd={handleOpenAdd}
@@ -151,11 +156,15 @@ function Medicines() {
                         mt: 8
                     }}
                 >
+
                     <CircularProgress />
+
                 </Box>
 
             ) : (
-                                <MedicineTable
+
+                <MedicineTable
+                    role={role}
                     medicines={filteredMedicines}
                     onEdit={handleOpenEdit}
                     onDelete={handleOpenDelete}

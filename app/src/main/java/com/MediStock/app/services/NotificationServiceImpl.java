@@ -6,6 +6,8 @@ import com.MediStock.app.dto.ResolveNotificationRequest;
 import com.MediStock.app.entities.Inventory;
 import com.MediStock.app.entities.Notification;
 import com.MediStock.app.entities.User;
+import com.MediStock.app.enums.ActivityAction;
+import com.MediStock.app.enums.ActivityModule;
 import com.MediStock.app.enums.AlertType;
 import com.MediStock.app.enums.NotificationStatus;
 import com.MediStock.app.repositories.InventoryRepository;
@@ -24,21 +26,51 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+
     private final InventoryRepository inventoryRepository;
+
     private final UserRepository userRepository;
+
     private final EmailService emailService;
 
+    private final ActivityLogService activityLogService;
+
     public NotificationServiceImpl(
+
             NotificationRepository notificationRepository,
+
             InventoryRepository inventoryRepository,
+
             UserRepository userRepository,
-            EmailService emailService
+
+            EmailService emailService,
+
+            ActivityLogService activityLogService
+
     ) {
-        this.notificationRepository = notificationRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.userRepository = userRepository;
-        this.emailService = emailService;
+
+        this.notificationRepository =
+                notificationRepository;
+
+        this.inventoryRepository =
+                inventoryRepository;
+
+        this.userRepository =
+                userRepository;
+
+        this.emailService =
+                emailService;
+
+        this.activityLogService =
+                activityLogService;
+
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get All Notifications
+    |--------------------------------------------------------------------------
+    */
 
     @Override
     public List<NotificationResponse> getAllNotifications() {
@@ -51,17 +83,35 @@ public class NotificationServiceImpl implements NotificationService {
 
     }
 
-    @Override
-    public NotificationResponse getNotificationById(Long notificationId) {
+    /*
+    |--------------------------------------------------------------------------
+    | Get Notification By ID
+    |--------------------------------------------------------------------------
+    */
 
-        Notification notification = notificationRepository
-                .findById(notificationId)
-                .orElseThrow(() ->
-                        new RuntimeException("Notification not found."));
+    @Override
+    public NotificationResponse getNotificationById(
+            Long notificationId
+    ) {
+
+        Notification notification =
+                notificationRepository
+                        .findById(notificationId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Notification not found."
+                                )
+                        );
 
         return mapToResponse(notification);
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Notifications By Status
+    |--------------------------------------------------------------------------
+    */
 
     @Override
     public List<NotificationResponse> getNotificationsByStatus(
@@ -76,6 +126,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Get Notifications By Alert Type
+    |--------------------------------------------------------------------------
+    */
+
     @Override
     public List<NotificationResponse> getNotificationsByAlertType(
             AlertType alertType
@@ -89,26 +145,82 @@ public class NotificationServiceImpl implements NotificationService {
 
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Create Notification
+    |--------------------------------------------------------------------------
+    */
+
     @Override
     public Notification createNotification(
             Inventory inventory,
             AlertType alertType
     ) {
 
-        if (notificationExists(inventory, alertType)) {
+        /*
+         * Do not create another notification if
+         * an ACTIVE or REVIEWED notification already
+         * exists for this inventory and alert type.
+         */
+        if (
+                notificationExists(
+                        inventory,
+                        alertType
+                )
+        ) {
+
             return null;
+
         }
 
-        Notification notification = new Notification();
+        Notification notification =
+                new Notification();
 
-        notification.setInventory(inventory);
-        notification.setAlertType(alertType);
-        notification.setStatus(NotificationStatus.ACTIVE);
-        notification.setCreatedDate(LocalDateTime.now());
+        notification.setInventory(
+                inventory
+        );
 
-        return notificationRepository.save(notification);
+        notification.setAlertType(
+                alertType
+        );
+
+        notification.setStatus(
+                NotificationStatus.ACTIVE
+        );
+
+        notification.setCreatedDate(
+                LocalDateTime.now()
+        );
+
+        /*
+         * Save the notification.
+         */
+        Notification savedNotification =
+                notificationRepository.save(
+                        notification
+                );
+
+        /*
+         * IMPORTANT:
+         *
+         * Notifications are normally created automatically
+         * during synchronization.
+         *
+         * We therefore do NOT create a user-attributed
+         * ActivityLog here. Otherwise the admin who presses
+         * "Run Check" would incorrectly appear as the person
+         * who created the notification.
+         */
+
+        return savedNotification;
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Review Notification
+    |--------------------------------------------------------------------------
+    */
 
     @Override
     public NotificationResponse reviewNotification(
@@ -116,61 +228,195 @@ public class NotificationServiceImpl implements NotificationService {
             ResolveNotificationRequest request
     ) {
 
-        Notification notification = notificationRepository
-                .findById(notificationId)
-                .orElseThrow(() ->
-                        new RuntimeException("Notification not found."));
+        Notification notification =
+                notificationRepository
+                        .findById(notificationId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Notification not found."
+                                )
+                        );
 
-        if (notification.getStatus() == NotificationStatus.RESOLVED) {
+        /*
+         * A resolved notification cannot be reviewed.
+         */
+        if (
+                notification.getStatus()
+                        == NotificationStatus.RESOLVED
+        ) {
+
             throw new RuntimeException(
                     "Resolved notifications cannot be reviewed."
             );
+
         }
 
-        User user = userRepository
-                .findById(request.getUserId())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found."));
+        /*
+         * Find the user who performed the review.
+         */
+        User user =
+                userRepository
+                        .findById(
+                                request.getUserId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found."
+                                )
+                        );
 
-        notification.setStatus(NotificationStatus.REVIEWED);
-        notification.setReviewedBy(user);
-        notification.setReviewedDate(LocalDateTime.now());
-        notification.setRemarks(request.getRemarks());
+        /*
+         * Update notification.
+         */
+        notification.setStatus(
+                NotificationStatus.REVIEWED
+        );
+
+        notification.setReviewedBy(
+                user
+        );
+
+        notification.setReviewedDate(
+                LocalDateTime.now()
+        );
+
+        notification.setRemarks(
+                request.getRemarks()
+        );
 
         Notification saved =
-                notificationRepository.save(notification);
+                notificationRepository.save(
+                        notification
+                );
+
+        /*
+         * Record the human review action.
+         */
+        activityLogService.logActivity(
+
+                ActivityModule.NOTIFICATION,
+
+                ActivityAction.UPDATED,
+
+                saved.getNotificationId(),
+
+                buildNotificationReference(
+                        saved
+                ),
+
+                "Reviewed "
+                        + saved.getAlertType()
+                        + " notification for medicine "
+                        + saved.getInventory()
+                                .getMedicine()
+                                .getName()
+                        + " (Batch: "
+                        + saved.getInventory()
+                                .getBatchNumber()
+                        + ")"
+
+        );
 
         return mapToResponse(saved);
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Notification
+    |--------------------------------------------------------------------------
+    */
 
     @Override
-    public NotificationResponse resolveNotification(
-            Long notificationId,
-            ResolveNotificationRequest request
+    public void deleteNotification(
+            Long notificationId
     ) {
 
-        Notification notification = notificationRepository
-                .findById(notificationId)
-                .orElseThrow(() ->
-                        new RuntimeException("Notification not found."));
+        Notification notification =
+                notificationRepository
+                        .findById(notificationId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Notification not found."
+                                )
+                        );
 
-        User user = userRepository
-                .findById(request.getUserId())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found."));
+        /*
+         * Only resolved notifications can be
+         * permanently deleted.
+         */
+        if (
+                notification.getStatus()
+                        != NotificationStatus.RESOLVED
+        ) {
 
-        notification.setStatus(NotificationStatus.RESOLVED);
-        notification.setResolvedBy(user);
-        notification.setResolvedDate(LocalDateTime.now());
-        notification.setRemarks(request.getRemarks());
+            throw new RuntimeException(
+                    "Only resolved notifications can be deleted."
+            );
 
-        Notification saved =
-                notificationRepository.save(notification);
+        }
 
-        return mapToResponse(saved);
+        /*
+         * Capture the information before deleting
+         * the database record.
+         */
+        String referenceName =
+                buildNotificationReference(
+                        notification
+                );
+
+        String medicineName =
+                notification
+                        .getInventory()
+                        .getMedicine()
+                        .getName();
+
+        String batchNumber =
+                notification
+                        .getInventory()
+                        .getBatchNumber();
+
+        /*
+         * Delete the notification.
+         */
+        notificationRepository.delete(
+                notification
+        );
+
+        /*
+         * Record the human deletion action.
+         *
+         * This happens AFTER the notification is deleted,
+         * but the required identifying information was saved
+         * above.
+         */
+        activityLogService.logActivity(
+
+                ActivityModule.NOTIFICATION,
+
+                ActivityAction.DELETED,
+
+                notificationId,
+
+                referenceName,
+
+                "Deleted resolved "
+                        + notification.getAlertType()
+                        + " notification for medicine "
+                        + medicineName
+                        + " (Batch: "
+                        + batchNumber
+                        + ")"
+
+        );
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Check Whether Notification Exists
+    |--------------------------------------------------------------------------
+    */
 
     @Override
     public boolean notificationExists(
@@ -178,13 +424,21 @@ public class NotificationServiceImpl implements NotificationService {
             AlertType alertType
     ) {
 
-        return notificationRepository
-                .existsByInventoryAndAlertTypeAndStatus(
-                        inventory,
-                        alertType,
-                        NotificationStatus.ACTIVE
-                )
-                ||
+        /*
+         * ACTIVE notification exists.
+         */
+        boolean activeExists =
+                notificationRepository
+                        .existsByInventoryAndAlertTypeAndStatus(
+                                inventory,
+                                alertType,
+                                NotificationStatus.ACTIVE
+                        );
+
+        /*
+         * REVIEWED notification exists.
+         */
+        boolean reviewedExists =
                 notificationRepository
                         .existsByInventoryAndAlertTypeAndStatus(
                                 inventory,
@@ -192,30 +446,128 @@ public class NotificationServiceImpl implements NotificationService {
                                 NotificationStatus.REVIEWED
                         );
 
+        return activeExists || reviewedExists;
+
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Synchronize Notifications
+    |--------------------------------------------------------------------------
+    */
 
     @Override
     public void synchronizeNotifications() {
 
-        LocalDate today = LocalDate.now();
+        System.out.println();
+
+        System.out.println(
+                "=========================================="
+        );
+
+        System.out.println(
+                "SynchronizeNotifications() CALLED"
+        );
+
+        System.out.println(
+                "=========================================="
+        );
+
+        LocalDate today =
+                LocalDate.now();
 
         List<Notification> newNotifications =
                 new ArrayList<>();
 
-        for (Inventory inventory : inventoryRepository.findAll()) {
+        List<Inventory> inventoryList =
+                inventoryRepository.findAll();
 
-            for (AlertType alertType : AlertType.values()) {
+        System.out.println(
+                "Inventory records checked: "
+                        + inventoryList.size()
+        );
 
-                if (isIssuePresent(inventory, alertType, today)) {
+        /*
+         * Check every inventory record against
+         * every available alert type.
+         */
+        for (
+                Inventory inventory :
+                inventoryList
+        ) {
+
+            for (
+                    AlertType alertType :
+                    AlertType.values()
+            ) {
+
+                /*
+                 * The issue still exists.
+                 */
+                if (
+                        isIssuePresent(
+                                inventory,
+                                alertType,
+                                today
+                        )
+                ) {
+
+                    System.out.println(
+                            "Issue detected: "
+                                    + alertType
+                                    + " | Medicine: "
+                                    + inventory
+                                            .getMedicine()
+                                            .getName()
+                                    + " | Batch: "
+                                    + inventory
+                                            .getBatchNumber()
+                    );
 
                     Notification notification =
-                            createNotification(inventory, alertType);
+                            createNotification(
+                                    inventory,
+                                    alertType
+                            );
 
-                    if (notification != null) {
-                        newNotifications.add(notification);
+                    /*
+                     * A new notification was created.
+                     */
+                    if (
+                            notification != null
+                    ) {
+
+                        System.out.println(
+                                "NEW NOTIFICATION CREATED: "
+                                        + notification
+                                                .getNotificationId()
+                        );
+
+                        newNotifications.add(
+                                notification
+                        );
+
+                    } else {
+
+                        System.out.println(
+                                "Notification already exists for: "
+                                        + alertType
+                                        + " | Batch: "
+                                        + inventory
+                                                .getBatchNumber()
+                        );
+
                     }
 
-                } else {
+                }
+
+                /*
+                 * The issue no longer exists.
+                 *
+                 * Automatically resolve any ACTIVE
+                 * or REVIEWED notifications.
+                 */
+                else {
 
                     autoResolveOpenNotifications(
                             inventory,
@@ -228,11 +580,84 @@ public class NotificationServiceImpl implements NotificationService {
 
         }
 
-        if (!newNotifications.isEmpty()) {
-            emailService.sendInventoryAlert(newNotifications);
+        System.out.println(
+                "New notifications created: "
+                        + newNotifications.size()
+        );
+
+        /*
+         * Send email only when new notifications
+         * were created.
+         */
+        if (
+                !newNotifications.isEmpty()
+        ) {
+
+            System.out.println();
+
+            System.out.println(
+                    "Calling EmailService.sendInventoryAlert()..."
+            );
+
+            try {
+
+                emailService.sendInventoryAlert(
+                        newNotifications
+                );
+
+                System.out.println(
+                        "EmailService.sendInventoryAlert() RETURNED"
+                );
+
+            } catch (
+                    Exception exception
+            ) {
+
+                System.err.println();
+
+                System.err.println(
+                        "EMAIL SERVICE CALL FAILED"
+                );
+
+                exception.printStackTrace();
+
+            }
+
         }
 
+        else {
+
+            System.out.println(
+                    "No NEW notifications found."
+            );
+
+            System.out.println(
+                    "Email service will NOT be called."
+            );
+
+        }
+
+        System.out.println(
+                "=========================================="
+        );
+
+        System.out.println(
+                "Notification synchronization completed."
+        );
+
+        System.out.println(
+                "=========================================="
+        );
+
+        System.out.println();
+
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Determine Whether An Issue Still Exists
+    |--------------------------------------------------------------------------
+    */
 
     private boolean isIssuePresent(
             Inventory inventory,
@@ -243,27 +668,44 @@ public class NotificationServiceImpl implements NotificationService {
         switch (alertType) {
 
             case LOW_STOCK:
+
                 return inventory.getQuantity()
-                        <= NotificationConstants.LOW_STOCK_THRESHOLD;
+                        <= NotificationConstants
+                                .LOW_STOCK_THRESHOLD;
 
             case EXPIRED:
-                return inventory.getExpDate().isBefore(today);
+
+                return inventory.getExpDate()
+                        .isBefore(today);
 
             case EXPIRING_SOON:
-                return !inventory.getExpDate().isBefore(today)
+
+                return !inventory.getExpDate()
+                        .isBefore(today)
+
                         &&
-                        !inventory.getExpDate().isAfter(
-                                today.plusDays(
-                                        NotificationConstants.EXPIRY_WARNING_DAYS
-                                )
-                        );
+
+                        !inventory.getExpDate()
+                                .isAfter(
+                                        today.plusDays(
+                                                NotificationConstants
+                                                        .EXPIRY_WARNING_DAYS
+                                        )
+                                );
 
             default:
+
                 return false;
 
         }
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Automatically Resolve Notifications
+    |--------------------------------------------------------------------------
+    */
 
     private void autoResolveOpenNotifications(
             Inventory inventory,
@@ -277,35 +719,102 @@ public class NotificationServiceImpl implements NotificationService {
                                 alertType
                         )
                         .stream()
-                        .filter(notification ->
-                                notification.getStatus()
-                                        == NotificationStatus.ACTIVE
-                                ||
-                                notification.getStatus()
-                                        == NotificationStatus.REVIEWED
+                        .filter(
+                                notification ->
+
+                                        notification
+                                                .getStatus()
+                                                == NotificationStatus.ACTIVE
+
+                                        ||
+
+                                        notification
+                                                .getStatus()
+                                                == NotificationStatus.REVIEWED
                         )
-                        .collect(Collectors.toList());
+                        .collect(
+                                Collectors.toList()
+                        );
 
-        for (Notification notification : openNotifications) {
+        /*
+         * Resolve every ACTIVE or REVIEWED
+         * notification whose issue no longer exists.
+         */
+        for (
+                Notification notification :
+                openNotifications
+        ) {
 
-            notification.setStatus(NotificationStatus.RESOLVED);
-            notification.setResolvedDate(LocalDateTime.now());
+            notification.setStatus(
+                    NotificationStatus.RESOLVED
+            );
 
+            notification.setResolvedDate(
+                    LocalDateTime.now()
+            );
+
+            /*
+             * Do not overwrite existing review remarks.
+             */
             if (
                     notification.getRemarks() == null
-                    ||
-                    notification.getRemarks().trim().isEmpty()
+
+                            ||
+
+                    notification.getRemarks()
+                            .trim()
+                            .isEmpty()
             ) {
+
                 notification.setRemarks(
                         "Automatically resolved after inventory update."
                 );
+
             }
 
         }
 
-        notificationRepository.saveAll(openNotifications);
+        /*
+         * Save automatically resolved notifications.
+         */
+        if (
+                !openNotifications.isEmpty()
+        ) {
+
+            notificationRepository.saveAll(
+                    openNotifications
+            );
+
+        }
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Build Notification Reference
+    |--------------------------------------------------------------------------
+    */
+
+    private String buildNotificationReference(
+            Notification notification
+    ) {
+
+        return "Notification #"
+                + notification.getNotificationId()
+                + " - "
+                + notification.getAlertType()
+                + " - Batch "
+                + notification
+                        .getInventory()
+                        .getBatchNumber();
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Map Entity To Response DTO
+    |--------------------------------------------------------------------------
+    */
 
     private NotificationResponse mapToResponse(
             Notification notification
@@ -314,59 +823,124 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationResponse response =
                 new NotificationResponse();
 
-        Inventory inventory = notification.getInventory();
+        Inventory inventory =
+                notification.getInventory();
 
-        response.setNotificationId(notification.getNotificationId());
-        response.setBatchId(inventory.getBatchId());
-        response.setBatchNumber(inventory.getBatchNumber());
+        response.setNotificationId(
+                notification.getNotificationId()
+        );
+
+        response.setBatchId(
+                inventory.getBatchId()
+        );
+
+        response.setBatchNumber(
+                inventory.getBatchNumber()
+        );
 
         response.setMedicineId(
-                inventory.getMedicine().getMedicineId()
+                inventory
+                        .getMedicine()
+                        .getMedicineId()
         );
 
         response.setMedicineName(
-                inventory.getMedicine().getName()
+                inventory
+                        .getMedicine()
+                        .getName()
         );
 
         response.setCategory(
-                inventory.getMedicine().getCategory()
+                inventory
+                        .getMedicine()
+                        .getCategory()
         );
 
-        response.setQuantity(inventory.getQuantity());
-        response.setMfgDate(inventory.getMfgDate());
-        response.setExpDate(inventory.getExpDate());
+        response.setQuantity(
+                inventory.getQuantity()
+        );
 
-        response.setAlertType(notification.getAlertType());
-        response.setStatus(notification.getStatus());
+        response.setMfgDate(
+                inventory.getMfgDate()
+        );
 
-        response.setCreatedDate(notification.getCreatedDate());
-        response.setReviewedDate(notification.getReviewedDate());
-        response.setResolvedDate(notification.getResolvedDate());
-        response.setRemarks(notification.getRemarks());
+        response.setExpDate(
+                inventory.getExpDate()
+        );
 
-        if (notification.getReviewedBy() != null) {
+        response.setAlertType(
+                notification.getAlertType()
+        );
+
+        response.setStatus(
+                notification.getStatus()
+        );
+
+        response.setCreatedDate(
+                notification.getCreatedDate()
+        );
+
+        response.setReviewedDate(
+                notification.getReviewedDate()
+        );
+
+        response.setResolvedDate(
+                notification.getResolvedDate()
+        );
+
+        /*
+         * Review remarks are returned to the frontend.
+         */
+        response.setRemarks(
+                notification.getRemarks()
+        );
+
+        /*
+         * Reviewer name.
+         */
+        if (
+                notification.getReviewedBy() != null
+        ) {
 
             response.setReviewedBy(
-                    notification.getReviewedBy().getName()
+                    notification
+                            .getReviewedBy()
+                            .getName()
             );
 
         }
 
-        if (notification.getResolvedBy() != null) {
+        /*
+         * Resolver name.
+         *
+         * Automatic resolution does not assign a
+         * resolvedBy user, so this remains null for
+         * automatically resolved notifications.
+         */
+        if (
+                notification.getResolvedBy() != null
+        ) {
 
             response.setResolvedBy(
-                    notification.getResolvedBy().getName()
+                    notification
+                            .getResolvedBy()
+                            .getName()
             );
 
         }
 
+        /*
+         * Calculate remaining days until expiry.
+         */
         long daysRemaining =
                 ChronoUnit.DAYS.between(
                         LocalDate.now(),
                         inventory.getExpDate()
                 );
 
-        response.setDaysRemaining(daysRemaining);
+        response.setDaysRemaining(
+                daysRemaining
+        );
 
         return response;
 

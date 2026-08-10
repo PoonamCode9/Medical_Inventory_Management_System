@@ -1,8 +1,10 @@
+import UserList from "../../components/users/UserList";
+
 function Users() {
 
     return (
 
-        <h1>Users-Admin</h1>
+        <UserList />
 
     );
 

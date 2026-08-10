@@ -18,28 +18,80 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter
+    ) {
+        this.jwtAuthenticationFilter =
+                jwtAuthenticationFilter;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
-    .cors(cors -> {})
-    .csrf(csrf -> csrf.disable())
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                /*
+                 * Use the existing CorsConfig bean.
+                 */
+                .cors(cors -> {})
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/api/roles/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                /*
+                 * JWT authentication is stateless,
+                 * so CSRF protection is disabled.
+                 */
+                .csrf(csrf ->
+                        csrf.disable()
                 )
 
+                /*
+                 * Do not create HTTP sessions.
+                 */
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
+                /*
+                 * Authorization rules.
+                 */
+                .authorizeHttpRequests(auth ->
+                        auth
+
+                                /*
+                                 * Authentication and role
+                                 * endpoints are publicly accessible.
+                                 */
+                                .requestMatchers(
+                                        "/api/auth/**",
+                                        "/api/roles/**"
+                                )
+                                .permitAll()
+
+                                /*
+                                 * Allow browser CORS preflight
+                                 * requests.
+                                 */
+                                .requestMatchers(
+                                        org.springframework.http.HttpMethod.OPTIONS,
+                                        "/**"
+                                )
+                                .permitAll()
+
+                                /*
+                                 * Everything else requires
+                                 * authentication.
+                                 */
+                                .anyRequest()
+                                .authenticated()
+                )
+
+                /*
+                 * JWT filter runs before the standard
+                 * username/password authentication filter.
+                 */
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -48,8 +100,15 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Encoder
+    |--------------------------------------------------------------------------
+    */
+
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 }

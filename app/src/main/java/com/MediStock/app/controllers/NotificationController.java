@@ -30,13 +30,15 @@ public class NotificationController {
     */
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','STAFF')")
-    public ResponseEntity<List<NotificationResponse>> getAllNotifications() {
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','PHARMACIST','STAFF')"
+    )
+    public ResponseEntity<List<NotificationResponse>>
+    getAllNotifications() {
 
         return ResponseEntity.ok(
                 notificationService.getAllNotifications()
         );
-
     }
 
     /*
@@ -46,15 +48,19 @@ public class NotificationController {
     */
 
     @GetMapping("/{notificationId}")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','STAFF')")
-    public ResponseEntity<NotificationResponse> getNotificationById(
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','PHARMACIST','STAFF')"
+    )
+    public ResponseEntity<NotificationResponse>
+    getNotificationById(
             @PathVariable Long notificationId
     ) {
 
         return ResponseEntity.ok(
-                notificationService.getNotificationById(notificationId)
+                notificationService.getNotificationById(
+                        notificationId
+                )
         );
-
     }
 
     /*
@@ -64,8 +70,11 @@ public class NotificationController {
     */
 
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','STAFF')")
-    public ResponseEntity<List<NotificationResponse>> getNotificationsByStatus(
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','PHARMACIST','STAFF')"
+    )
+    public ResponseEntity<List<NotificationResponse>>
+    getNotificationsByStatus(
             @PathVariable String status
     ) {
 
@@ -74,12 +83,15 @@ public class NotificationController {
         try {
 
             notificationStatus =
-                    NotificationStatus.valueOf(status.toUpperCase());
+                    NotificationStatus.valueOf(
+                            status.toUpperCase()
+                    );
 
         } catch (IllegalArgumentException ex) {
 
-            throw new RuntimeException("Invalid Notification Status.");
-
+            throw new RuntimeException(
+                    "Invalid Notification Status."
+            );
         }
 
         return ResponseEntity.ok(
@@ -87,7 +99,6 @@ public class NotificationController {
                         notificationStatus
                 )
         );
-
     }
 
     /*
@@ -97,8 +108,11 @@ public class NotificationController {
     */
 
     @GetMapping("/alert/{alertType}")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST','STAFF')")
-    public ResponseEntity<List<NotificationResponse>> getNotificationsByAlertType(
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','PHARMACIST','STAFF')"
+    )
+    public ResponseEntity<List<NotificationResponse>>
+    getNotificationsByAlertType(
             @PathVariable String alertType
     ) {
 
@@ -106,18 +120,23 @@ public class NotificationController {
 
         try {
 
-            type = AlertType.valueOf(alertType.toUpperCase());
+            type =
+                    AlertType.valueOf(
+                            alertType.toUpperCase()
+                    );
 
         } catch (IllegalArgumentException ex) {
 
-            throw new RuntimeException("Invalid Alert Type.");
-
+            throw new RuntimeException(
+                    "Invalid Alert Type."
+            );
         }
 
         return ResponseEntity.ok(
-                notificationService.getNotificationsByAlertType(type)
+                notificationService.getNotificationsByAlertType(
+                        type
+                )
         );
-
     }
 
     /*
@@ -127,8 +146,11 @@ public class NotificationController {
     */
 
     @PutMapping("/{notificationId}/review")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
-    public ResponseEntity<NotificationResponse> reviewNotification(
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','PHARMACIST')"
+    )
+    public ResponseEntity<NotificationResponse>
+    reviewNotification(
 
             @PathVariable Long notificationId,
 
@@ -137,41 +159,33 @@ public class NotificationController {
     ) {
 
         return ResponseEntity.ok(
-
                 notificationService.reviewNotification(
                         notificationId,
                         request
                 )
-
         );
-
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Resolve Notification
+    | Delete Notification
     |--------------------------------------------------------------------------
     */
 
-    @PutMapping("/{notificationId}/resolve")
-    @PreAuthorize("hasAnyRole('ADMIN','PHARMACIST')")
-    public ResponseEntity<NotificationResponse> resolveNotification(
-
-            @PathVariable Long notificationId,
-
-            @RequestBody ResolveNotificationRequest request
-
+    @DeleteMapping("/{notificationId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String>
+    deleteNotification(
+            @PathVariable Long notificationId
     ) {
 
-        return ResponseEntity.ok(
-
-                notificationService.resolveNotification(
-                        notificationId,
-                        request
-                )
-
+        notificationService.deleteNotification(
+                notificationId
         );
 
+        return ResponseEntity.ok(
+                "Notification deleted successfully."
+        );
     }
 
     /*
@@ -182,14 +196,13 @@ public class NotificationController {
 
     @PostMapping("/check")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> runNotificationCheck() {
+    public ResponseEntity<String>
+    runNotificationCheck() {
 
         notificationService.synchronizeNotifications();
 
         return ResponseEntity.ok(
                 "Notification check completed successfully."
         );
-
     }
-
 }
