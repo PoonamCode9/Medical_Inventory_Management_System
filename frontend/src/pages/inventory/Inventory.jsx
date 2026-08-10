@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../api/Api";
 import {
   AlertTriangle,
@@ -15,17 +15,19 @@ import {
 
 const Inventory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const role = localStorage.getItem("role") || sessionStorage.getItem("role");
   const [inventoryList, setInventoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL"); 
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [showDamagedModal, setShowDamagedModal] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [damagedQty, setDamagedQty] = useState("");
   const [reason, setReason] = useState("");
-  
+
   const [threshold, setThreshold] = useState(10);
+  const [highlightedId, setHighlightedId] = useState(null);
 
   const fetchInventoryAndSettings = async () => {
     try {
@@ -48,9 +50,29 @@ const Inventory = () => {
     fetchInventoryAndSettings();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.highlightId && inventoryList.length > 0) {
+      const id = location.state.highlightId;
+      setHighlightedId(id);
+
+      setTimeout(() => {
+        const element = document.getElementById(`inventory-row-${id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
+
+      const timer = setTimeout(() => {
+        setHighlightedId(null);
+      }, 3500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, inventoryList]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this inventory item?"
+      "Are you sure you want to delete this inventory item?",
     );
     if (!confirmDelete) return;
 
@@ -86,10 +108,12 @@ const Inventory = () => {
 
     try {
       await API.post(
-        `/inventory/${selectedInventory.inventoryId}/damaged?quantity=${damagedQty}&reason=${encodeURIComponent(reason)}`
+        `/inventory/${selectedInventory.inventoryId}/damaged?quantity=${damagedQty}&reason=${encodeURIComponent(
+          reason,
+        )}`,
       );
       setShowDamagedModal(false);
-      fetchInventoryAndSettings(); 
+      fetchInventoryAndSettings();
       alert("Damaged stock reported & log updated successfully!");
     } catch (err) {
       alert(err.response?.data || "Failed to report damaged stock");
@@ -98,25 +122,25 @@ const Inventory = () => {
 
   const getStockStatus = (quantity) => {
     if (quantity === 0) {
-      return { 
-        label: "Out of Stock", 
+      return {
+        label: "Out of Stock",
         badgeClass: "bg-red-100 text-red-700 border-red-200",
         stockBadge: "bg-red-50 text-red-700 border-red-200",
-        Icon: XCircle 
+        Icon: XCircle,
       };
     } else if (quantity <= threshold) {
-      return { 
-        label: "Low Stock", 
+      return {
+        label: "Low Stock",
         badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
         stockBadge: "bg-amber-50 text-amber-700 border-amber-200",
-        Icon: AlertTriangle 
+        Icon: AlertTriangle,
       };
     } else {
-      return { 
-        label: "In Stock", 
+      return {
+        label: "In Stock",
         badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
         stockBadge: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        Icon: CheckCircle2 
+        Icon: CheckCircle2,
       };
     }
   };
@@ -161,7 +185,8 @@ const Inventory = () => {
             Inventory Stock
           </h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Manage medicine stock levels, filter low stock, and report damaged items
+            Manage medicine stock levels, filter low stock, and report damaged
+            items
           </p>
         </div>
 
@@ -251,10 +276,21 @@ const Inventory = () => {
               filteredInventory.map((item) => {
                 const status = getStockStatus(item.quantity);
                 const IconComponent = status.Icon;
+
+                const isHighlighted =
+                  highlightedId !== null &&
+                  highlightedId !== undefined &&
+                  String(item.inventoryId) === String(highlightedId);
+
                 return (
                   <tr
                     key={item.inventoryId}
-                    className="hover:bg-slate-50/50 transition-colors"
+                    id={`inventory-row-${item.inventoryId}`}
+                    className={`transition-all duration-700 ease-in-out ${
+                      isHighlighted
+                        ? "bg-blue-50/90 border-l-4 border-l-blue-600 shadow-sm font-semibold"
+                        : "hover:bg-slate-50/50 border-l-4 border-l-transparent"
+                    }`}
                   >
                     <td className="p-4 font-semibold text-slate-800">
                       {item.medicine?.medicineName || "N/A"}
@@ -263,7 +299,9 @@ const Inventory = () => {
                       {item.medicine?.batchNo || item.batchNo || "N/A"}
                     </td>
                     <td className="p-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md border font-semibold text-xs ${status.stockBadge}`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md border font-semibold text-xs ${status.stockBadge}`}
+                      >
                         <IconComponent className="w-3.5 h-3.5" />
                         {item.quantity} Units
                       </span>
@@ -312,7 +350,7 @@ const Inventory = () => {
                           <button
                             onClick={() =>
                               navigate(
-                                `/dashboard/inventory/edit/${item.inventoryId}`
+                                `/dashboard/inventory/edit/${item.inventoryId}`,
                               )
                             }
                             className="p-1.5 text-slate-500 hover:text-blue-600 border border-slate-200 rounded-lg hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer"
