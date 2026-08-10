@@ -66,7 +66,7 @@ function App() {
           </Route>
           <Route path="reports" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><Reports /></ProtectedRoute>} />
           <Route path="notifications" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Notifications /></ProtectedRoute>} />
-          <Route path="settings" element={<ProtectedRoute allowedRoles={["Admin"]}><Settings /></ProtectedRoute>} />
+          <Route path="settings" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Settings /></ProtectedRoute>} />
           <Route path="expiry-tracker" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><ExpiryTracker /></ProtectedRoute>} />
           <Route path="stock-logs" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><StockLogs /></ProtectedRoute>} />
           <Route path="sales" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DispenseSale /></ProtectedRoute>} />

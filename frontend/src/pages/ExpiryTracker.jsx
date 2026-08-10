@@ -21,13 +21,29 @@ function ExpiryTracker() {
   const [sortBy, setSortBy] = useState("days");
   const [removingId, setRemovingId] = useState(null);
 
+  const [settings, setSettings] = useState({
+    urgentExpiryDays: 7,
+    expiryAlertDays: 60,
+  });
+
   const fetchExpiryData = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/expiry-alerts");
-      setData(res.data || []);
+      const [expiryRes, settingsRes] = await Promise.all([
+        API.get("/expiry-alerts"),
+        API.get("/settings"),
+      ]);
+      
+      setData(expiryRes.data || []);
+      
+      if (settingsRes.data) {
+        setSettings({
+          urgentExpiryDays: settingsRes.data.urgentExpiryDays || 7,
+          expiryAlertDays: settingsRes.data.expiryAlertDays || 60,
+        });
+      }
     } catch (error) {
-      console.error("Error fetching expiry alerts:", error);
+      console.error("Error fetching expiry alerts or settings:", error);
     } finally {
       setLoading(false);
     }
@@ -131,7 +147,6 @@ function ExpiryTracker() {
         </button>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm flex items-center justify-between">
           <div>
@@ -150,7 +165,7 @@ function ExpiryTracker() {
         <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Urgent (&le; 7 Days)
+              Urgent (&le; {settings.urgentExpiryDays} Days)
             </p>
             <h2 className="text-2xl font-bold text-orange-600 mt-1">
               {stats.urgent}
@@ -164,7 +179,7 @@ function ExpiryTracker() {
         <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Expiring Soon (&le; 30 Days)
+              Expiring Soon (&le; {settings.expiryAlertDays} Days)
             </p>
             <h2 className="text-2xl font-bold text-amber-600 mt-1">
               {stats.expiringSoon}
@@ -275,12 +290,12 @@ function ExpiryTracker() {
                       <td className="p-4 font-semibold">
                         <span
                           className={
-                            item.daysLeft <= 0
+                            item.daysLeft < 0
                               ? "text-rose-600 font-bold"
-                              : item.daysLeft <= 7
-                              ? "text-orange-600"
-                              : item.daysLeft <= 30
-                              ? "text-amber-600"
+                              : item.daysLeft <= settings.urgentExpiryDays
+                              ? "text-orange-600 font-bold"
+                              : item.daysLeft <= settings.expiryAlertDays
+                              ? "text-amber-600 font-semibold"
                               : "text-emerald-600"
                           }
                         >

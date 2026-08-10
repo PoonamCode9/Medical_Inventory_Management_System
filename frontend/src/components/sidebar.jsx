@@ -73,7 +73,7 @@ function Sidebar() {
             name: "Settings",
             path: "/dashboard/settings",
             icon: <Settings size={19} className="text-slate-500" />,
-            roles: ["Admin"]
+            roles: ["Admin", "Pharmacist", "Staff"]
         }
     ];
 

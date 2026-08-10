@@ -19,25 +19,33 @@ const Inventory = () => {
   const [inventoryList, setInventoryList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, LOW_STOCK, OUT_OF_STOCK, IN_STOCK
+  const [statusFilter, setStatusFilter] = useState("ALL"); 
   const [showDamagedModal, setShowDamagedModal] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [damagedQty, setDamagedQty] = useState("");
   const [reason, setReason] = useState("");
+  
+  const [threshold, setThreshold] = useState(10);
 
-  const fetchInventory = async () => {
+  const fetchInventoryAndSettings = async () => {
     try {
-      const res = await API.get("/inventory");
-      setInventoryList(res.data);
+      const [invRes, settingsRes] = await Promise.all([
+        API.get("/inventory"),
+        API.get("/settings"),
+      ]);
+      setInventoryList(invRes.data);
+      if (settingsRes.data && settingsRes.data.lowStockThreshold) {
+        setThreshold(settingsRes.data.lowStockThreshold);
+      }
     } catch (err) {
-      console.error("Error fetching inventory:", err);
+      console.error("Error fetching inventory or settings:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInventory();
+    fetchInventoryAndSettings();
   }, []);
 
   const handleDelete = async (id) => {
@@ -49,7 +57,7 @@ const Inventory = () => {
     try {
       await API.delete(`/inventory/${id}`);
       alert("Inventory deleted successfully");
-      fetchInventory();
+      fetchInventoryAndSettings();
     } catch (error) {
       console.error("Delete error:", error);
       alert(error.response?.data || "Something went wrong while deleting");
@@ -81,14 +89,13 @@ const Inventory = () => {
         `/inventory/${selectedInventory.inventoryId}/damaged?quantity=${damagedQty}&reason=${encodeURIComponent(reason)}`
       );
       setShowDamagedModal(false);
-      fetchInventory(); // Stock Refresh
+      fetchInventoryAndSettings(); 
       alert("Damaged stock reported & log updated successfully!");
     } catch (err) {
       alert(err.response?.data || "Failed to report damaged stock");
     }
   };
 
-  // Helper function to get Status Details
   const getStockStatus = (quantity) => {
     if (quantity === 0) {
       return { 
@@ -97,7 +104,7 @@ const Inventory = () => {
         stockBadge: "bg-red-50 text-red-700 border-red-200",
         Icon: XCircle 
       };
-    } else if (quantity <= 20) {
+    } else if (quantity <= threshold) {
       return { 
         label: "Low Stock", 
         badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
@@ -114,7 +121,6 @@ const Inventory = () => {
     }
   };
 
-  // Filter Logic (Search + Status Filter)
   const filteredInventory = inventoryList.filter((item) => {
     const matchesSearch =
       item.medicine?.medicineName
@@ -125,16 +131,16 @@ const Inventory = () => {
     if (!matchesSearch) return false;
 
     if (statusFilter === "LOW_STOCK") {
-      return item.quantity > 0 && item.quantity <= 20;
+      return item.quantity > 0 && item.quantity <= threshold;
     }
     if (statusFilter === "OUT_OF_STOCK") {
       return item.quantity === 0;
     }
     if (statusFilter === "IN_STOCK") {
-      return item.quantity > 20;
+      return item.quantity > threshold;
     }
 
-    return true; // "ALL"
+    return true;
   });
 
   if (loading) {
@@ -203,7 +209,7 @@ const Inventory = () => {
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            Low Stock (&le; 20)
+            Low Stock (&le; {threshold})
           </button>
           <button
             onClick={() => setStatusFilter("OUT_OF_STOCK")}

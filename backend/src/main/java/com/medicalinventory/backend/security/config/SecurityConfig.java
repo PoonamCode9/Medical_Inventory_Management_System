@@ -46,6 +46,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/sales/**").hasAnyRole("Admin", "Pharmacist", "Staff")
             .requestMatchers(HttpMethod.PUT, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin", "Pharmacist")
             .requestMatchers(HttpMethod.DELETE, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**").hasAnyRole("Admin")
+            .requestMatchers(HttpMethod.GET, "/api/settings").hasAnyRole("Admin", "Pharmacist", "Staff")
+            .requestMatchers(HttpMethod.PUT, "/api/settings").hasRole("Admin")
             .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 -> oauth2
