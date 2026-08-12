@@ -19,6 +19,12 @@ public class MedicineService {
     @Autowired
     private StockLogRepository stockLogRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
+
     public Medicine addMedicine(MedicineRequest request) {
         Medicine medicine = new Medicine();
         medicine.setName(request.getName());
@@ -31,6 +37,70 @@ public class MedicineService {
         medicine.setPrice(request.getPrice());
         medicine.setStatus(getStatus(request.getQuantity()));
         Medicine saved = medicineRepository.save(medicine);
+        // Immediately check and notify
+        if (saved.getQuantity() == 0) {
+          notificationService.createNotification(
+           "Out of Stock Alert!",
+           saved.getName() +
+           " is OUT OF STOCK! Please restock immediately!",
+           "OUT_OF_STOCK"
+        );
+          emailService.sendLowStockAlert(
+            saved.getName(),
+            saved.getQuantity()
+          );
+        }
+        else if (saved.getQuantity() < 10) {
+          notificationService.createNotification(
+          "Low Stock Alert!",
+          saved.getName() +
+          " is LOW on stock! Current quantity: " +
+          saved.getQuantity(),
+          "LOW_STOCK"
+          );
+          emailService.sendLowStockAlert(
+          saved.getName(),
+          saved.getQuantity()
+          );
+        }
+
+        // Check expiry immediately
+        if (saved.getExpiryDate() != null) {
+          java.time.LocalDate today =
+          java.time.LocalDate.now();
+          java.time.LocalDate thirtyDays =
+          today.plusDays(30);
+        if (saved.getExpiryDate().isBefore(thirtyDays) &&
+          !saved.getExpiryDate().isBefore(today)) {
+          long daysLeft = today.until(
+            saved.getExpiryDate(),
+            java.time.temporal.ChronoUnit.DAYS
+          );
+          notificationService.createNotification(
+            "Expiry Alert!",
+            saved.getName() +
+            " expires in " + daysLeft +
+            " days! Expiry date: " +
+            saved.getExpiryDate(),
+            "EXPIRY"
+        );
+        emailService.sendExpiryAlert(
+            saved.getName(),
+            saved.getExpiryDate().toString(),
+            daysLeft
+        );
+    }
+    // Already expired
+    if (saved.getExpiryDate().isBefore(today)) {
+        notificationService.createNotification(
+            "Medicine Already Expired!",
+            saved.getName() +
+            " is ALREADY EXPIRED! Expiry date: " +
+            saved.getExpiryDate(),
+            "EXPIRY"
+        );
+    }
+}
 
         // Log the action
         StockLog log = new StockLog();
@@ -70,6 +140,33 @@ public class MedicineService {
         medicine.setPrice(request.getPrice());
         medicine.setStatus(getStatus(request.getQuantity()));
         Medicine updated = medicineRepository.save(medicine);
+
+        // Check stock after update
+if (updated.getQuantity() == 0) {
+    notificationService.createNotification(
+        "Out of Stock Alert!",
+        updated.getName() +
+        " is OUT OF STOCK after stock update!",
+        "OUT_OF_STOCK"
+    );
+    emailService.sendLowStockAlert(
+        updated.getName(),
+        updated.getQuantity()
+    );
+}
+else if (updated.getQuantity() < 10) {
+    notificationService.createNotification(
+        "Low Stock Alert!",
+        updated.getName() +
+        " stock updated — now LOW on stock! Quantity: " +
+        updated.getQuantity(),
+        "LOW_STOCK"
+    );
+    emailService.sendLowStockAlert(
+        updated.getName(),
+        updated.getQuantity()
+    );
+}
 
         // Log the action
         StockLog log = new StockLog();
