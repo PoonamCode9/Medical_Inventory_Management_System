@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Sparkles,
   FileSpreadsheet,
+  Activity
 } from "lucide-react";
 
 function Reports() {
@@ -58,7 +59,7 @@ function Reports() {
       id: "EXPIRY",
       title: "Expiry Tracking Report",
       description:
-        "Detailed list of expired items or medicines nearing their expiry date within the next 30 days.",
+        "Detailed list of expired items or medicines nearing their expiry threshold.",
       icon: Clock,
       badge: "Urgent",
       badgeStyle: "bg-rose-50 text-rose-700 border-rose-200/80",
@@ -76,6 +77,17 @@ function Reports() {
       activeBorder: "border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500/30",
       iconBg: "bg-emerald-100 text-emerald-600",
     },
+    {
+      id: "STOCK_MOVEMENT",
+      title: "Stock Movement Log Report",
+      description:
+        "Comprehensive audit log of stock sales, expiry removals, damaged items, and additions.",
+      icon: Activity,
+      badge: "Audit Log",
+      badgeStyle: "bg-indigo-50 text-indigo-700 border-indigo-200/80",
+      activeBorder: "border-indigo-500 bg-indigo-50/20 ring-1 ring-indigo-500/30",
+      iconBg: "bg-indigo-100 text-indigo-600",
+    }
   ];
 
   return (
@@ -104,7 +116,7 @@ function Reports() {
             1. Select Report Type
           </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {reportOptions.map((item) => {
               const IconComponent = item.icon;
               const isSelected = reportType === item.id;

@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 import { ChartPie } from "lucide-react";
 import API from "../../api/Api";
 
@@ -19,27 +26,27 @@ function CategoryChart() {
     fetchData();
   }, []);
 
-  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
+  const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-xs">
-      <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full">
+      <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
             <ChartPie size={18} />
           </div>
           <div>
-            <h2 className="text-xl font-medium text-gray-900">
-              Medicine Categories
+            <h2 className="text-base font-bold text-slate-800">
+              Category Distribution
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Category-wise stock distribution
+            <p className="text-[11px] text-slate-400">
+              Stock breakdown by medicine category
             </p>
           </div>
         </div>
       </div>
 
-      <div className="w-full h-[300px]">
+      <div className="w-full h-[280px]">
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -49,8 +56,8 @@ function CategoryChart() {
                 nameKey="name"
                 cx="50%"
                 cy="45%"
-                innerRadius={56}
-                outerRadius={93}
+                innerRadius={60}
+                outerRadius={90}
                 paddingAngle={4}
                 cornerRadius={6}
               >
@@ -66,24 +73,29 @@ function CategoryChart() {
 
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#f8fcff",
-                  borderRadius: "8px",
-                  color: "#fff",
-                  fontSize: "14px",
+                  backgroundColor: "#0f172a",
+                  borderRadius: "12px",
+                  color: "#ffffff",
+                  fontSize: "12px",
                   border: "none",
+                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                 }}
-                itemStyle={{ color: "#259acc" }}
+                itemStyle={{ color: "#a5b4fc" }}
               />
 
               <Legend
                 iconType="circle"
-                wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
+                wrapperStyle={{
+                  fontSize: "11px",
+                  paddingTop: "8px",
+                  fontWeight: 500,
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-            No category data available.
+          <div className="h-full flex items-center justify-center text-slate-400 text-xs">
+            No category distribution data available.
           </div>
         )}
       </div>
