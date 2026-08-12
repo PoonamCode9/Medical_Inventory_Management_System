@@ -5,179 +5,637 @@ import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 
 import {
-  FaEye,
-  FaEyeSlash,
-  FaLock,
-  FaArrowLeft,
-  FaUserShield,
-  FaUserNurse,
-  FaUserTie,
-  FaEnvelope,
-  FaMobileAlt,
-  FaKey,
-  FaHeartbeat,
-  FaShieldAlt,
-  FaCapsules,
-  FaChartLine,
-  FaHospital,
-  FaUserMd,
-  FaSignInAlt,
-  FaGoogle,
+    FaEye,
+    FaEyeSlash,
+    FaLock,
+    FaArrowLeft,
+    FaUserShield,
+    FaUserNurse,
+    FaUserTie,
+    FaEnvelope,
+    FaMobileAlt,
+    FaKey,
+    FaHeartbeat,
+    FaShieldAlt,
+    FaCapsules,
+    FaChartLine,
+    FaHospital,
+    FaUserMd,
+    FaSignInAlt
 } from "react-icons/fa";
 
 import loginBg from "../assets/login-bg.jpg";
 import "../styles/Login.css";
 
+
 function Login() {
-  const navigate = useNavigate();
 
-  const [mode, setMode] = useState("LOGIN");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-    role: "STAFF",
-    secretCode: "",
-  });
 
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+    // ==========================================
+    // MODE
+    // ==========================================
 
-  // ==========================================
-  // Save Login
-  // ==========================================
+    const [mode, setMode] = useState("LOGIN");
 
-  const saveLoginData = (response) => {
-    localStorage.setItem("token", response.data.token);
-    localStorage.setItem("role", response.data.role);
-    localStorage.setItem("userId", response.data.userId);
 
-    redirectUser(response.data.role);
-  };
+    // ==========================================
+    // LOGIN STATES
+    // ==========================================
 
-  // ==========================================
-  // Google Login
-  // ==========================================
+    const [showPassword, setShowPassword] = useState(false);
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/google",
-        {
-          token: credentialResponse.credential,
+    const [loading, setLoading] = useState(false);
+
+
+    const [data, setData] = useState({
+        email: "",
+        password: "",
+        role: "STAFF",
+        secretCode: ""
+    });
+
+
+    // ==========================================
+    // OTP LOGIN STATES
+    // ==========================================
+
+    const [phone, setPhone] = useState("");
+
+    const [otp, setOtp] = useState("");
+
+
+    // ==========================================
+    // FORGOT PASSWORD STATES
+    // ==========================================
+
+    const [resetEmail, setResetEmail] = useState("");
+
+    const [resetOtp, setResetOtp] = useState("");
+
+    const [newPassword, setNewPassword] = useState("");
+
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [resetLoading, setResetLoading] = useState(false);
+
+    const [resetOtpVerified, setResetOtpVerified] = useState(false);
+
+
+    // ==========================================
+    // SAVE LOGIN DATA
+    // ==========================================
+
+    const saveLoginData = (response) => {
+
+        localStorage.setItem(
+            "token",
+            response.data.token
+        );
+
+        localStorage.setItem(
+            "role",
+            response.data.role
+        );
+
+        localStorage.setItem(
+            "userId",
+            response.data.userId
+        );
+
+        redirectUser(
+            response.data.role
+        );
+    };
+
+
+    // ==========================================
+    // GOOGLE LOGIN
+    // ==========================================
+
+    const handleGoogleLogin = async (
+        credentialResponse
+    ) => {
+
+        try {
+
+            setLoading(true);
+
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/google",
+                {
+                    token:
+                        credentialResponse.credential
+                }
+            );
+
+
+            alert(
+                "Google Login Successful"
+            );
+
+
+            saveLoginData(response);
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Google Authentication Failed"
+            );
+
+        } finally {
+
+            setLoading(false);
+
         }
-      );
+    };
 
-      alert("Google Login Successful");
 
-      saveLoginData(response);
-    } catch (error) {
-      console.log(error);
+    // ==========================================
+    // NORMAL LOGIN
+    // ==========================================
 
-      alert("Google Authentication Failed");
-    }
-  };
+    const handleLogin = async (e) => {
 
-  // ==========================================
-  // Login
-  // ==========================================
+        e.preventDefault();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
 
-    try {
-      setLoading(true);
+        try {
 
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          email: data.email,
-          password: data.password,
-          role: data.role,
-          secretCode: data.secretCode,
+            setLoading(true);
+
+
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email: data.email,
+                    password: data.password,
+                    role: data.role,
+                    secretCode: data.secretCode
+                }
+            );
+
+
+            alert(
+                "Login Successful"
+            );
+
+
+            saveLoginData(response);
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Login Failed"
+            );
+
+        } finally {
+
+            setLoading(false);
+
         }
-      );
+    };
 
-      alert("Login Successful");
 
-      saveLoginData(response);
-    } catch (error) {
-      console.log(error);
+    // ==========================================
+    // SEND OTP - NORMAL OTP LOGIN
+    // ==========================================
 
-      alert(error.response?.data || "Login Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const sendOtp = async () => {
 
-  // ==========================================
-  // Send OTP
-  // ==========================================
+        if (!phone.trim()) {
 
-  const sendOtp = async () => {
-    try {
-      await axios.post("http://localhost:8080/api/auth/send-otp", {
-        phone,
-      });
+            alert(
+                "Please enter your mobile number."
+            );
 
-      alert("OTP Sent Successfully");
-    } catch (error) {
-      console.log(error);
-
-      alert("OTP Failed");
-    }
-  };
-
-  // ==========================================
-  // Verify OTP
-  // ==========================================
-
-  const verifyOtp = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/verify-otp",
-        {
-          phone,
-          otp,
+            return;
         }
-      );
 
-      alert("OTP Login Successful");
 
-      saveLoginData(response);
-    } catch (error) {
-      console.log(error);
+        try {
 
-      alert("Invalid OTP");
-    }
-  };
+            setLoading(true);
 
-  // ==========================================
-  // Redirect
-  // ==========================================
 
-  const redirectUser = (role) => {
-    switch (role) {
-      case "ADMIN":
-        navigate("/admin/dashboard");
-        break;
+            await axios.post(
+                "http://localhost:8080/api/auth/send-otp",
+                {
+                    phone: phone
+                }
+            );
 
-      case "PHARMACIST":
-        navigate("/pharmacist/dashboard");
-        break;
 
-      case "STAFF":
-        navigate("/staff/dashboard");
-        break;
+            alert(
+                "OTP Sent Successfully"
+            );
 
-      default:
-        navigate("/");
-    }
-  };
 
-  return (
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "OTP Failed"
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // VERIFY OTP - NORMAL OTP LOGIN
+    // ==========================================
+
+    const verifyOtp = async () => {
+
+        if (!phone.trim()) {
+
+            alert(
+                "Please enter your mobile number."
+            );
+
+            return;
+        }
+
+
+        if (!otp.trim()) {
+
+            alert(
+                "Please enter the OTP."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setLoading(true);
+
+
+            const response = await axios.post(
+                "http://localhost:8080/api/auth/verify-otp",
+                {
+                    phone: phone,
+                    otp: otp
+                }
+            );
+
+
+            alert(
+                "OTP Login Successful"
+            );
+
+
+            saveLoginData(response);
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Invalid OTP"
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // FORGOT PASSWORD
+    // SEND RESET OTP
+    // ==========================================
+
+    const sendForgotPasswordOtp = async () => {
+
+        if (!resetEmail.trim()) {
+
+            alert(
+                "Please enter your registered email address."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setResetLoading(true);
+
+
+            await axios.post(
+                "http://localhost:8080/api/auth/forgot-password/send-otp",
+                {
+                    email: resetEmail
+                }
+            );
+
+
+            alert(
+                "Password reset OTP sent successfully."
+            );
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Unable to send password reset OTP."
+            );
+
+        } finally {
+
+            setResetLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // FORGOT PASSWORD
+    // VERIFY RESET OTP
+    // ==========================================
+
+    const verifyForgotPasswordOtp = async () => {
+
+        if (!resetEmail.trim()) {
+
+            alert(
+                "Please enter your registered email."
+            );
+
+            return;
+        }
+
+
+        if (!resetOtp.trim()) {
+
+            alert(
+                "Please enter the OTP."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setResetLoading(true);
+
+
+            await axios.post(
+                "http://localhost:8080/api/auth/forgot-password/verify-otp",
+                {
+                    email: resetEmail,
+                    otp: resetOtp
+                }
+            );
+
+
+            setResetOtpVerified(true);
+
+
+            alert(
+                "OTP verified successfully."
+            );
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Invalid or expired OTP."
+            );
+
+        } finally {
+
+            setResetLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // RESET PASSWORD
+    // ==========================================
+
+    const resetPassword = async () => {
+
+        if (!newPassword) {
+
+            alert(
+                "Please enter the new password."
+            );
+
+            return;
+        }
+
+
+        if (!confirmPassword) {
+
+            alert(
+                "Please confirm the new password."
+            );
+
+            return;
+        }
+
+
+        if (
+            newPassword !==
+            confirmPassword
+        ) {
+
+            alert(
+                "Passwords do not match."
+            );
+
+            return;
+        }
+
+
+        if (
+            newPassword.length < 6
+        ) {
+
+            alert(
+                "Password must contain at least 6 characters."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            setResetLoading(true);
+
+
+            await axios.post(
+                "http://localhost:8080/api/auth/forgot-password/reset",
+                {
+                    email: resetEmail,
+                    otp: resetOtp,
+                    newPassword: newPassword
+                }
+            );
+
+
+            alert(
+                "Password reset successful. Please login with your new password."
+            );
+
+
+            // Clear reset data
+
+            setResetEmail("");
+
+            setResetOtp("");
+
+            setNewPassword("");
+
+            setConfirmPassword("");
+
+            setResetOtpVerified(false);
+
+
+            // Return to login
+
+            setMode("LOGIN");
+
+
+        } catch (error) {
+
+            console.log(error);
+
+            alert(
+                error.response?.data ||
+                "Password reset failed."
+            );
+
+        } finally {
+
+            setResetLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // OPEN FORGOT PASSWORD
+    // ==========================================
+
+    const openForgotPassword = () => {
+
+        setResetEmail(
+            data.email
+        );
+
+        setResetOtp("");
+
+        setNewPassword("");
+
+        setConfirmPassword("");
+
+        setResetOtpVerified(false);
+
+        setMode("FORGOT");
+    };
+
+
+    // ==========================================
+    // BACK TO LOGIN
+    // ==========================================
+
+    const backToLogin = () => {
+
+        setResetEmail("");
+
+        setResetOtp("");
+
+        setNewPassword("");
+
+        setConfirmPassword("");
+
+        setResetOtpVerified(false);
+
+        setMode("LOGIN");
+    };
+
+
+    // ==========================================
+    // REDIRECT USER
+    // ==========================================
+
+    const redirectUser = (role) => {
+
+        switch (role) {
+
+            case "ADMIN":
+
+                navigate(
+                    "/admin/dashboard"
+                );
+
+                break;
+
+
+            case "PHARMACIST":
+
+                navigate(
+                    "/pharmacist/dashboard"
+                );
+
+                break;
+
+
+            case "STAFF":
+
+                navigate(
+                    "/staff/dashboard"
+                );
+
+                break;
+
+
+            default:
+
+                navigate("/");
+
+        }
+    };
+
+
+    // ==========================================
+    // PAGE
+    // ==========================================
+
+    return (
 
         <div
             className="login-page"
@@ -196,24 +654,35 @@ function Login() {
             <div className="background-overlay"></div>
 
             <div className="floating-circle one"></div>
+
             <div className="floating-circle two"></div>
+
             <div className="floating-circle three"></div>
+
 
             <div className="login-wrapper">
 
+
                 {/* ==========================================
-                        LEFT PANEL
-                =========================================== */}
+                    LEFT PANEL
+                ========================================== */}
 
                 <div className="login-left">
+
 
                     <div className="brand-section">
 
                         <div className="hospital-logo">
+
                             <FaHospital />
+
                         </div>
 
-                        <h1>MediStock</h1>
+
+                        <h1>
+                            MediStock
+                        </h1>
+
 
                         <p>
                             Smart Healthcare Inventory
@@ -222,9 +691,13 @@ function Login() {
 
                     </div>
 
+
                     <div className="welcome-content">
 
-                        <h2>Welcome Back</h2>
+                        <h2>
+                            Welcome Back
+                        </h2>
+
 
                         <p>
                             Securely manage medicines,
@@ -235,460 +708,975 @@ function Login() {
 
                     </div>
 
+
                     <div className="feature-grid">
 
+
                         <div className="feature-card">
+
                             <FaCapsules />
+
                             <div>
-                                <h4>Medicine Tracking</h4>
+
+                                <h4>
+                                    Medicine Tracking
+                                </h4>
+
                                 <span>
                                     Real-time inventory monitoring
                                 </span>
+
                             </div>
+
                         </div>
 
+
                         <div className="feature-card">
+
                             <FaHeartbeat />
+
                             <div>
-                                <h4>Expiry Management</h4>
+
+                                <h4>
+                                    Expiry Management
+                                </h4>
+
                                 <span>
                                     Smart expiry alerts
                                 </span>
+
                             </div>
+
                         </div>
 
+
                         <div className="feature-card">
+
                             <FaShieldAlt />
+
                             <div>
-                                <h4>Secure Login</h4>
+
+                                <h4>
+                                    Secure Login
+                                </h4>
+
                                 <span>
                                     Role based authentication
                                 </span>
+
                             </div>
+
                         </div>
 
+
                         <div className="feature-card">
+
                             <FaChartLine />
+
                             <div>
-                                <h4>Analytics Reports</h4>
+
+                                <h4>
+                                    Analytics Reports
+                                </h4>
+
                                 <span>
                                     Sales and stock insights
                                 </span>
+
                             </div>
+
                         </div>
+
 
                     </div>
 
                 </div>
 
+
                 {/* ==========================================
-                        RIGHT PANEL
-                =========================================== */}
+                    RIGHT PANEL
+                ========================================== */}
 
                 <div className="login-right">
 
+
                     <div className="login-card">
+
+
+                        {/* ==========================================
+                            HEADER
+                        ========================================== */}
 
                         <div className="login-header">
 
                             <div className="avatar">
-                                <FaUserMd />
+
+                                {mode === "LOGIN" && (
+                                    <FaUserMd />
+                                )}
+
+                                {mode === "OTP" && (
+                                    <FaMobileAlt />
+                                )}
+
+                                {mode === "FORGOT" && (
+                                    <FaKey />
+                                )}
+
                             </div>
 
-                            <h2>Sign In</h2>
+
+                            <h2>
+
+                                {mode === "LOGIN" &&
+                                    "Sign In"
+                                }
+
+                                {mode === "OTP" &&
+                                    "OTP Login"
+                                }
+
+                                {mode === "FORGOT" &&
+                                    "Forgot Password"
+                                }
+
+                            </h2>
+
 
                             <p>
-                                Access your MediStock dashboard
+
+                                {mode === "LOGIN" &&
+                                    "Access your MediStock dashboard"
+                                }
+
+                                {mode === "OTP" &&
+                                    "Login securely using your mobile number"
+                                }
+
+                                {mode === "FORGOT" &&
+                                    "Recover your MediStock account"
+                                }
+
                             </p>
 
                         </div>
 
-                        {
 
-                            mode === "LOGIN"
+                        {/* ==================================================
+                            LOGIN MODE
+                        ================================================== */}
 
-                                ?
+                        {mode === "LOGIN" && (
 
-                                <form
-                                    className="login-form"
-                                    onSubmit={handleLogin}
-                                >
+                            <form
+                                className="login-form"
+                                onSubmit={handleLogin}
+                            >
 
-                                    <div className="section-title">
-                                        <span>
-                                            Choose Account Type
-                                        </span>
-                                    </div>
 
-                                    <div className="role-grid">
+                                <div className="section-title">
 
-                                        <button
-                                            type="button"
-                                            className={
-                                                data.role === "ADMIN"
-                                                    ? "role-card active"
-                                                    : "role-card"
-                                            }
-                                            onClick={() =>
-                                                setData({
-                                                    ...data,
-                                                    role: "ADMIN"
-                                                })
-                                            }
-                                        >
-                                            <FaUserShield className="role-icon" />
-                                            <h4>Admin</h4>
-                                            <small>Control Panel</small>
-                                        </button>
+                                    <span>
+                                        Choose Account Type
+                                    </span>
 
-                                        <button
-                                            type="button"
-                                            className={
-                                                data.role === "PHARMACIST"
-                                                    ? "role-card active"
-                                                    : "role-card"
-                                            }
-                                            onClick={() =>
-                                                setData({
-                                                    ...data,
-                                                    role: "PHARMACIST"
-                                                })
-                                            }
-                                        >
-                                            <FaUserNurse className="role-icon" />
-                                            <h4>Pharmacist</h4>
-                                            <small>Medicine Stock</small>
-                                        </button>
+                                </div>
 
-                                        <button
-                                            type="button"
-                                            className={
-                                                data.role === "STAFF"
-                                                    ? "role-card active"
-                                                    : "role-card"
-                                            }
-                                            onClick={() =>
-                                                setData({
-                                                    ...data,
-                                                    role: "STAFF"
-                                                })
-                                            }
-                                        >
-                                            <FaUserTie className="role-icon" />
-                                            <h4>Staff</h4>
-                                            <small>Operations</small>
-                                        </button>
 
-                                    </div>
+                                {/* ROLE GRID */}
 
-                                    {/* Secret Code */}
+                                <div className="role-grid">
 
-                                    <div className="input-box">
 
-                                        <label>
-
-                                            {
-                                                data.role === "ADMIN"
-
-                                                    ? "Admin Secret Code"
-
-                                                    : data.role === "PHARMACIST"
-
-                                                        ? "Pharmacist Secret Code"
-
-                                                        : "Staff Secret Code"
-                                            }
-
-                                        </label>
-
-                                        <div className="input-field">
-
-                                            <FaKey className="input-icon" />
-
-                                            <input
-                                                type="password"
-                                                placeholder="Enter secret code"
-                                                value={data.secretCode}
-                                                onChange={(e) =>
-                                                    setData({
-                                                        ...data,
-                                                        secretCode: e.target.value
-                                                    })
-                                                }
-                                            />
-
-                                        </div>
-
-                                    </div>
-
-                                    {/* Email */}
-
-                                    <div className="input-box">
-
-                                        <label>Email Address</label>
-
-                                        <div className="input-field">
-
-                                            <FaEnvelope className="input-icon" />
-
-                                            <input
-                                                type="email"
-                                                placeholder="Enter email"
-                                                value={data.email}
-                                                onChange={(e) =>
-                                                    setData({
-                                                        ...data,
-                                                        email: e.target.value
-                                                    })
-                                                }
-                                                required
-                                            />
-
-                                        </div>
-
-                                    </div>
-
-                                    {/* Password */}
-
-                                    <div className="input-box">
-
-                                        <label>Password</label>
-
-                                        <div className="input-field">
-
-                                            <FaLock className="input-icon" />
-
-                                            <input
-                                                type={
-                                                    showPassword
-                                                        ? "text"
-                                                        : "password"
-                                                }
-                                                placeholder="Enter password"
-                                                value={data.password}
-                                                onChange={(e) =>
-                                                    setData({
-                                                        ...data,
-                                                        password: e.target.value
-                                                    })
-                                                }
-                                            />
-
-                                            <button
-                                                type="button"
-                                                className="eye-btn"
-                                                onClick={() =>
-                                                    setShowPassword(
-                                                        !showPassword
-                                                    )
-                                                }
-                                            >
-                                                {
-                                                    showPassword
-                                                        ? <FaEyeSlash />
-                                                        : <FaEye />
-                                                }
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-                                                                        <div className="login-options">
-
-                                        <label className="remember">
-
-                                            <input type="checkbox" />
-
-                                            <span>Remember Me</span>
-
-                                        </label>
-
-                                        <button
-                                            type="button"
-                                            className="forgot-btn"
-                                        >
-                                            Forgot Password?
-                                        </button>
-
-                                    </div>
+                                    {/* ADMIN */}
 
                                     <button
-                                        className="login-btn"
-                                        disabled={loading}
+                                        type="button"
+                                        className={
+                                            data.role === "ADMIN"
+                                                ? "role-card active"
+                                                : "role-card"
+                                        }
+                                        onClick={() =>
+                                            setData({
+                                                ...data,
+                                                role: "ADMIN"
+                                            })
+                                        }
                                     >
 
-                                        {
-                                            loading
-                                                ?
-                                                <>
-                                                    <span className="loader"></span>
-                                                    Logging In...
-                                                </>
-                                                :
-                                                <>
-                                                    <FaSignInAlt />
-                                                    Login Securely
-                                                </>
-                                        }
+                                        <FaUserShield
+                                            className="role-icon"
+                                        />
+
+                                        <h4>
+                                            Admin
+                                        </h4>
+
+                                        <small>
+                                            Control Panel
+                                        </small>
 
                                     </button>
 
-                                    <div className="divider">
 
-                                        <span>OR</span>
+                                    {/* PHARMACIST */}
 
-                                    </div>
+                                    <button
+                                        type="button"
+                                        className={
+                                            data.role === "PHARMACIST"
+                                                ? "role-card active"
+                                                : "role-card"
+                                        }
+                                        onClick={() =>
+                                            setData({
+                                                ...data,
+                                                role: "PHARMACIST"
+                                            })
+                                        }
+                                    >
 
-                                    <div className="google-login-box">
+                                        <FaUserNurse
+                                            className="role-icon"
+                                        />
 
-                                        <GoogleLogin
-                                            onSuccess={handleGoogleLogin}
-                                            onError={() =>
-                                                alert("Google Login Failed")
+                                        <h4>
+                                            Pharmacist
+                                        </h4>
+
+                                        <small>
+                                            Medicine Stock
+                                        </small>
+
+                                    </button>
+
+
+                                    {/* STAFF */}
+
+                                    <button
+                                        type="button"
+                                        className={
+                                            data.role === "STAFF"
+                                                ? "role-card active"
+                                                : "role-card"
+                                        }
+                                        onClick={() =>
+                                            setData({
+                                                ...data,
+                                                role: "STAFF"
+                                            })
+                                        }
+                                    >
+
+                                        <FaUserTie
+                                            className="role-icon"
+                                        />
+
+                                        <h4>
+                                            Staff
+                                        </h4>
+
+                                        <small>
+                                            Operations
+                                        </small>
+
+                                    </button>
+
+
+                                </div>
+
+
+                                {/* SECRET CODE */}
+
+                                <div className="input-box">
+
+                                    <label>
+
+                                        {data.role === "ADMIN"
+                                            ? "Admin Secret Code"
+                                            : data.role === "PHARMACIST"
+                                                ? "Pharmacist Secret Code"
+                                                : "Staff Secret Code"
+                                        }
+
+                                    </label>
+
+
+                                    <div className="input-field">
+
+                                        <FaKey
+                                            className="input-icon"
+                                        />
+
+
+                                        <input
+                                            type="password"
+                                            placeholder="Enter secret code"
+                                            value={data.secretCode}
+                                            onChange={(e) =>
+                                                setData({
+                                                    ...data,
+                                                    secretCode:
+                                                        e.target.value
+                                                })
                                             }
                                         />
 
                                     </div>
 
+                                </div>
+
+
+                                {/* EMAIL */}
+
+                                <div className="input-box">
+
+                                    <label>
+                                        Email Address
+                                    </label>
+
+
+                                    <div className="input-field">
+
+                                        <FaEnvelope
+                                            className="input-icon"
+                                        />
+
+
+                                        <input
+                                            type="email"
+                                            placeholder="Enter email"
+                                            value={data.email}
+                                            onChange={(e) =>
+                                                setData({
+                                                    ...data,
+                                                    email:
+                                                        e.target.value
+                                                })
+                                            }
+                                            required
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* PASSWORD */}
+
+                                <div className="input-box">
+
+                                    <label>
+                                        Password
+                                    </label>
+
+
+                                    <div className="input-field">
+
+                                        <FaLock
+                                            className="input-icon"
+                                        />
+
+
+                                        <input
+                                            type={
+                                                showPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
+                                            placeholder="Enter password"
+                                            value={
+                                                data.password
+                                            }
+                                            onChange={(e) =>
+                                                setData({
+                                                    ...data,
+                                                    password:
+                                                        e.target.value
+                                                })
+                                            }
+                                            required
+                                        />
+
+
+                                        <button
+                                            type="button"
+                                            className="eye-btn"
+                                            onClick={() =>
+                                                setShowPassword(
+                                                    !showPassword
+                                                )
+                                            }
+                                        >
+
+                                            {showPassword
+                                                ? <FaEyeSlash />
+                                                : <FaEye />
+                                            }
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* LOGIN OPTIONS */}
+
+                                <div className="login-options">
+
+
+                                    <label className="remember">
+
+                                        <input
+                                            type="checkbox"
+                                        />
+
+                                        <span>
+                                            Remember Me
+                                        </span>
+
+                                    </label>
+
+
+                                    {/* FORGOT PASSWORD */}
+
                                     <button
                                         type="button"
-                                        className="otp-login-btn"
-                                        onClick={() =>
-                                            setMode("OTP")
+                                        className="forgot-btn"
+                                        onClick={
+                                            openForgotPassword
                                         }
                                     >
 
-                                        <FaMobileAlt />
+                                       
 
-                                        Login With OTP
-
-                                    </button>
-
-                                </form>
-
-                                :
-
-                                /* ==========================================
-                                        OTP LOGIN
-                                ========================================== */
-
-                                <div className="otp-container">
-
-                                    <div className="otp-header">
-
-                                        <div className="otp-icon">
-
-                                            <FaMobileAlt />
-
-                                        </div>
-
-                                        <h3>OTP Login</h3>
-
-                                        <p>
-
-                                            Verify your registered
-                                            mobile number
-
-                                        </p>
-
-                                    </div>
-
-                                    <div className="input-box">
-
-                                        <label>
-
-                                            Mobile Number
-
-                                        </label>
-
-                                        <div className="input-field">
-
-                                            <FaMobileAlt
-                                                className="input-icon"
-                                            />
-
-                                            <input
-                                                type="text"
-                                                placeholder="Enter mobile number"
-                                                value={phone}
-                                                onChange={(e) =>
-                                                    setPhone(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-
-                                        </div>
-
-                                    </div>
-
-                                    <button
-                                        className="login-btn"
-                                        onClick={sendOtp}
-                                    >
-
-                                        <FaMobileAlt />
-
-                                        Send OTP
-
-                                    </button>
-
-                                    <div className="input-box">
-
-                                        <label>
-
-                                            Verification OTP
-
-                                        </label>
-
-                                        <div className="input-field">
-
-                                            <FaKey
-                                                className="input-icon"
-                                            />
-
-                                            <input
-                                                type="text"
-                                                placeholder="Enter OTP"
-                                                value={otp}
-                                                onChange={(e) =>
-                                                    setOtp(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-
-                                        </div>
-
-                                    </div>
-
-                                    <button
-                                        className="login-btn"
-                                        onClick={verifyOtp}
-                                    >
-
-                                        <FaShieldAlt />
-
-                                        Verify OTP
-
-                                    </button>
-
-                                    <button
-                                        className="back-btn"
-                                        onClick={() =>
-                                            setMode("LOGIN")
-                                        }
-                                    >
-
-                                        <FaArrowLeft />
-
-                                        Back To Login
+                                        Forgot Password?
 
                                     </button>
 
                                 </div>
 
-                        }
+
+                                {/* LOGIN BUTTON */}
+
+                                <button
+                                    type="submit"
+                                    className="login-btn"
+                                    disabled={loading}
+                                >
+
+                                    {loading ? (
+
+                                        <>
+                                            <span className="loader"></span>
+
+                                            Logging In...
+                                        </>
+
+                                    ) : (
+
+                                        <>
+                                            <FaSignInAlt />
+
+                                            Login Securely
+                                        </>
+
+                                    )}
+
+                                </button>
+
+
+                                {/* DIVIDER */}
+
+                                <div className="divider">
+
+                                    <span>
+                                        OR
+                                    </span>
+
+                                </div>
+
+
+                                {/* GOOGLE LOGIN */}
+
+                                <div className="google-login-box">
+
+                                    <GoogleLogin
+                                        onSuccess={
+                                            handleGoogleLogin
+                                        }
+                                        onError={() =>
+                                            alert(
+                                                "Google Login Failed"
+                                            )
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* OTP LOGIN */}
+
+                                <button
+                                    type="button"
+                                    className="otp-login-btn"
+                                    onClick={() => {
+
+                                        setPhone("");
+
+                                        setOtp("");
+
+                                        setMode("OTP");
+
+                                    }}
+                                >
+
+                                    <FaMobileAlt />
+
+                                    Login With OTP
+
+                                </button>
+
+
+                            </form>
+
+                        )}
+
+
+                        {/* ==================================================
+                            OTP LOGIN MODE
+                        ================================================== */}
+
+                        {mode === "OTP" && (
+
+                            <div className="otp-container">
+
+
+                                <div className="otp-header">
+
+                                    <div className="otp-icon">
+
+                                        <FaMobileAlt />
+
+                                    </div>
+
+
+                                    <h3>
+                                        OTP Login
+                                    </h3>
+
+
+                                    <p>
+                                        Verify your registered
+                                        mobile number
+                                    </p>
+
+                                </div>
+
+
+                                {/* PHONE */}
+
+                                <div className="input-box">
+
+                                    <label>
+                                        Mobile Number
+                                    </label>
+
+
+                                    <div className="input-field">
+
+                                        <FaMobileAlt
+                                            className="input-icon"
+                                        />
+
+
+                                        <input
+                                            type="text"
+                                            placeholder="Enter mobile number"
+                                            value={phone}
+                                            onChange={(e) =>
+                                                setPhone(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* SEND OTP */}
+
+                                <button
+                                    type="button"
+                                    className="login-btn"
+                                    onClick={sendOtp}
+                                    disabled={loading}
+                                >
+
+                                    <FaMobileAlt />
+
+                                    {loading
+                                        ? "Sending OTP..."
+                                        : "Send OTP"
+                                    }
+
+                                </button>
+
+
+                                {/* OTP */}
+
+                                <div className="input-box">
+
+                                    <label>
+                                        Verification OTP
+                                    </label>
+
+
+                                    <div className="input-field">
+
+                                        <FaKey
+                                            className="input-icon"
+                                        />
+
+
+                                        <input
+                                            type="text"
+                                            placeholder="Enter OTP"
+                                            value={otp}
+                                            onChange={(e) =>
+                                                setOtp(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* VERIFY */}
+
+                                <button
+                                    type="button"
+                                    className="login-btn"
+                                    onClick={verifyOtp}
+                                    disabled={loading}
+                                >
+
+                                    <FaShieldAlt />
+
+                                    {loading
+                                        ? "Verifying..."
+                                        : "Verify OTP"
+                                    }
+
+                                </button>
+
+
+                                {/* BACK */}
+
+                                <button
+                                    type="button"
+                                    className="back-btn"
+                                    onClick={
+                                        backToLogin
+                                    }
+                                >
+
+                                    <FaArrowLeft />
+
+                                    Back To Login
+
+                                </button>
+
+                            </div>
+
+                        )}
+
+
+                        {/* ==================================================
+                            FORGOT PASSWORD MODE
+                        ================================================== */}
+
+                        {mode === "FORGOT" && (
+
+                            <div className="otp-container">
+
+
+                                <div className="otp-header">
+
+                                    <div className="otp-icon">
+
+                                        <FaKey />
+
+                                    </div>
+
+
+                                    <h3>
+                                        Reset Password
+                                    </h3>
+
+
+                                    <p>
+                                        Verify your registered
+                                        email to reset your password
+                                    </p>
+
+                                </div>
+
+
+                                {!resetOtpVerified ? (
+
+                                    <>
+
+
+                                        {/* EMAIL */}
+
+                                        <div className="input-box">
+
+                                            <label>
+                                                Registered Email
+                                            </label>
+
+
+                                            <div className="input-field">
+
+                                                <FaEnvelope
+                                                    className="input-icon"
+                                                />
+
+
+                                                <input
+                                                    type="email"
+                                                    placeholder="Enter registered email"
+                                                    value={
+                                                        resetEmail
+                                                    }
+                                                    onChange={(e) =>
+                                                        setResetEmail(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* SEND RESET OTP */}
+
+                                        <button
+                                            type="button"
+                                            className="login-btn"
+                                            onClick={
+                                                sendForgotPasswordOtp
+                                            }
+                                            disabled={
+                                                resetLoading
+                                            }
+                                        >
+
+                                            <FaEnvelope />
+
+                                            {resetLoading
+                                                ? "Sending OTP..."
+                                                : "Send Reset OTP"
+                                            }
+
+                                        </button>
+
+
+                                        {/* RESET OTP */}
+
+                                        <div className="input-box">
+
+                                            <label>
+                                                Verification OTP
+                                            </label>
+
+
+                                            <div className="input-field">
+
+                                                <FaKey
+                                                    className="input-icon"
+                                                />
+
+
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter OTP"
+                                                    value={
+                                                        resetOtp
+                                                    }
+                                                    onChange={(e) =>
+                                                        setResetOtp(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* VERIFY RESET OTP */}
+
+                                        <button
+                                            type="button"
+                                            className="login-btn"
+                                            onClick={
+                                                verifyForgotPasswordOtp
+                                            }
+                                            disabled={
+                                                resetLoading
+                                            }
+                                        >
+
+                                            <FaShieldAlt />
+
+                                            {resetLoading
+                                                ? "Verifying..."
+                                                : "Verify OTP"
+                                            }
+
+                                        </button>
+
+
+                                    </>
+
+                                ) : (
+
+                                    <>
+
+
+                                        {/* NEW PASSWORD */}
+
+                                        <div className="input-box">
+
+                                            <label>
+                                                New Password
+                                            </label>
+
+
+                                            <div className="input-field">
+
+                                                <FaLock
+                                                    className="input-icon"
+                                                />
+
+
+                                                <input
+                                                    type="password"
+                                                    placeholder="Enter new password"
+                                                    value={
+                                                        newPassword
+                                                    }
+                                                    onChange={(e) =>
+                                                        setNewPassword(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* CONFIRM PASSWORD */}
+
+                                        <div className="input-box">
+
+                                            <label>
+                                                Confirm New Password
+                                            </label>
+
+
+                                            <div className="input-field">
+
+                                                <FaLock
+                                                    className="input-icon"
+                                                />
+
+
+                                                <input
+                                                    type="password"
+                                                    placeholder="Confirm new password"
+                                                    value={
+                                                        confirmPassword
+                                                    }
+                                                    onChange={(e) =>
+                                                        setConfirmPassword(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* RESET PASSWORD */}
+
+                                        <button
+                                            type="button"
+                                            className="login-btn"
+                                            onClick={
+                                                resetPassword
+                                            }
+                                            disabled={
+                                                resetLoading
+                                            }
+                                        >
+
+                                            <FaShieldAlt />
+
+                                            {resetLoading
+                                                ? "Resetting Password..."
+                                                : "Reset Password"
+                                            }
+
+                                        </button>
+
+
+                                    </>
+
+                                )}
+
+
+                                {/* BACK TO LOGIN */}
+
+                                <button
+                                    type="button"
+                                    className="back-btn"
+                                    onClick={
+                                        backToLogin
+                                    }
+                                >
+
+                                    <FaArrowLeft />
+
+                                    Back To Login
+
+                                </button>
+
+
+                            </div>
+
+                        )}
+
+
+                        {/* ==================================================
+                            FOOTER
+                        ================================================== */}
 
                         <div className="login-footer">
 
@@ -706,6 +1694,7 @@ function Login() {
 
                         </div>
 
+
                     </div>
 
                 </div>
@@ -715,7 +1704,7 @@ function Login() {
         </div>
 
     );
-
 }
+
 
 export default Login;
