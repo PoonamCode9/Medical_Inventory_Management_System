@@ -11,11 +11,18 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.medicalinventory.backend.entity.ExpiryTracking;
+import com.medicalinventory.backend.entity.Inventory;
 import com.medicalinventory.backend.entity.Medicine;
 import com.medicalinventory.backend.entity.Supplier;
 import com.medicalinventory.backend.repository.ExpiryTrackingRepository;
+import com.medicalinventory.backend.repository.InventoryRepository;
 import com.medicalinventory.backend.repository.MedicineRepository;
+import com.medicalinventory.backend.repository.NotificationRepository;
+import com.medicalinventory.backend.repository.PurchaseOrderRepository;
+import com.medicalinventory.backend.repository.StockLogRepository;
 import com.medicalinventory.backend.repository.SupplierRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class MedicineService {
@@ -23,12 +30,20 @@ public class MedicineService {
     private final SupplierRepository supplierRepository;
     private final NotificationService notificationService;
     private final ExpiryTrackingRepository expiryTrackingRepository;
+    private final InventoryRepository inventoryRepository;
+    private final NotificationRepository notificationRepository;
+    private final StockLogRepository stockLogRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
 
-    public MedicineService(MedicineRepository medicineRepository, SupplierRepository supplierRepository, NotificationService notificationService, ExpiryTrackingRepository expiryTrackingRepository) {
+    public MedicineService(MedicineRepository medicineRepository, SupplierRepository supplierRepository, NotificationService notificationService, ExpiryTrackingRepository expiryTrackingRepository, InventoryRepository inventoryRepository, NotificationRepository notificationRepository, StockLogRepository stockLogRepository, PurchaseOrderRepository purchaseOrderRepository) {
         this.medicineRepository = medicineRepository;
         this.supplierRepository = supplierRepository;
         this.notificationService = notificationService;
         this.expiryTrackingRepository = expiryTrackingRepository;
+        this.inventoryRepository = inventoryRepository;
+        this.notificationRepository = notificationRepository;
+        this.stockLogRepository = stockLogRepository;
+        this.purchaseOrderRepository = purchaseOrderRepository;
     }
 
     // Get all medicines
@@ -42,6 +57,7 @@ public class MedicineService {
     }
 
     // Add medicine (save)
+    @Transactional
     public Medicine saveMedicine(Medicine medicine) {
         if(medicineRepository.findByBatchNo(medicine.getBatchNo()).isPresent()) {
             throw new RuntimeException("Batch number already exists");
@@ -59,6 +75,7 @@ public class MedicineService {
     }
 
     // Update medicine 
+    @Transactional
     public Medicine updateMedicine(Long id, Medicine medicine) {
         Medicine existingMedicine = medicineRepository.findById(id).orElseThrow(() -> new RuntimeException("Medicine not found"));
 
@@ -87,8 +104,35 @@ public class MedicineService {
     }
 
     // Delete medicine
+    @Transactional
     public void deleteMedicine(Long id) {
         Medicine medicine = medicineRepository.findById(id).orElseThrow(() -> new RuntimeException("Medicine not found"));
+
+
+        Optional<Inventory> inventoryOpt = inventoryRepository.findByMedicine(medicine);
+        if (inventoryOpt.isPresent()) {
+            Inventory inventory = inventoryOpt.get();
+            
+            if (inventory.getQuantity() > 0) {
+                throw new RuntimeException("Cannot delete medicine '" + medicine.getMedicineName() 
+                    + "' because it has " + inventory.getQuantity() 
+                    + " units in active inventory. Please clear stock first.");
+            }
+            
+            inventoryRepository.delete(inventory);
+        }
+
+        boolean hasPendingOrders = purchaseOrderRepository.existsByMedicineAndStatusIgnoreCase(medicine, "Pending");
+        if (hasPendingOrders) {
+            throw new RuntimeException("Cannot delete medicine '" + medicine.getMedicineName() 
+                + "' because it has an active Pending Purchase Order. Please process or cancel the order first.");
+        }
+
+        notificationRepository.unlinkMedicineFromNotifications(medicine);
+
+        stockLogRepository.unlinkMedicineFromStockLogs(medicine);
+
+        purchaseOrderRepository.unlinkMedicineFromPurchaseOrders(medicine);
 
         String medicineName = medicine.getMedicineName();
 

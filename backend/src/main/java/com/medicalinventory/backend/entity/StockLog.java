@@ -13,7 +13,7 @@ public class StockLog {
     private Long logId;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "medicine_id", nullable = false)
+    @JoinColumn(name = "medicine_id", nullable = true)
     private Medicine medicine;
 
     @Column(name = "quantity_changed", nullable = false)

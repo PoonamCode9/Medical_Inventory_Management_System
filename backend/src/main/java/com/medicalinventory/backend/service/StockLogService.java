@@ -37,11 +37,17 @@ public class StockLogService {
 
     public List<StockLogDTO> getAllLogs() {
         return stockLogRepository.findAllByOrderByLogDateDesc().stream().map(log -> {
+            Medicine med = log.getMedicine();
+            
+            Long medicineId = (med != null) ? med.getMedicineId() : null;
+            String medicineName = (med != null) ? med.getMedicineName() : "Deleted Medicine";
+            String batchNo = (med != null) ? med.getBatchNo() : "N/A";
+
             return new StockLogDTO(
                 log.getLogId(),
-                log.getMedicine().getMedicineId(),
-                log.getMedicine().getMedicineName(),
-                log.getMedicine().getBatchNo(),
+                medicineId,
+                medicineName,
+                batchNo,
                 log.getQuantityChanged(),
                 log.getAction(),
                 log.getLogDate(),
