@@ -11,6 +11,8 @@ import Notifications from "./pages/Notifications";
 import Reports from "./pages/Reports";
 import StockLogs from "./pages/StockLogs";
 import Register from "./pages/Register";
+import Analytics from "./pages/Analytics";
+import OAuthSuccess from "./pages/OAuthSuccess";
 function App() {
   return (
     <BrowserRouter>
@@ -26,6 +28,11 @@ function App() {
         <Route path="/reports" element={<Reports />} />
         <Route path="/stocklogs" element={<StockLogs />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route
+    path="/oauth-success"
+    element={<OAuthSuccess />}
+/>
       </Routes>
     </BrowserRouter>
   );

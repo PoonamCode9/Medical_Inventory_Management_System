@@ -1,5 +1,5 @@
 package com.medistock.service.impl;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import com.medistock.dto.AnalyticsResponse;
@@ -12,48 +12,43 @@ import com.medistock.service.AnalyticsService;
 @Service
 public class AnalyticsServiceImpl implements AnalyticsService {
 
-    @Autowired
-    private MedicineRepository medicineRepository;
+    private final MedicineRepository medicineRepository;
+    private final SupplierRepository supplierRepository;
+    private final InventoryRepository inventoryRepository;
+    private final ExpiryTrackingRepository expiryTrackingRepository;
 
-    @Autowired
-    private SupplierRepository supplierRepository;
+    public AnalyticsServiceImpl(
+            MedicineRepository medicineRepository,
+            SupplierRepository supplierRepository,
+            InventoryRepository inventoryRepository,
+            ExpiryTrackingRepository expiryTrackingRepository) {
 
-    @Autowired
-    private InventoryRepository inventoryRepository;
-
-    @Autowired
-    private ExpiryTrackingRepository expiryTrackingRepository;
+        this.medicineRepository = medicineRepository;
+        this.supplierRepository = supplierRepository;
+        this.inventoryRepository = inventoryRepository;
+        this.expiryTrackingRepository = expiryTrackingRepository;
+    }
 
     @Override
-    public AnalyticsResponse getAnalytics() {
+public AnalyticsResponse getDashboardAnalytics() {
 
-        long totalMedicines = medicineRepository.count();
+    AnalyticsResponse response = new AnalyticsResponse();
 
-        long totalSuppliers = supplierRepository.count();
+    response.setTotalMedicines(medicineRepository.count());
 
-        long totalInventory = inventoryRepository.count();
+    response.setTotalSuppliers(supplierRepository.count());
 
-        long lowStock = inventoryRepository.findAll()
-        .stream()
-        .filter(i -> i.getAvailableStock() <= i.getMinimumStock())
-        .count();
+    response.setTotalInventory(inventoryRepository.count());
 
-        long expiringSoon = expiryTrackingRepository.findAll()
-                .stream()
-                .filter(e -> "Expiring Soon".equals(e.getStatus()))
-                .count();
+    response.setExpiredMedicines(
+            expiryTrackingRepository.countByStatus("Expired"));
 
-        long expired = expiryTrackingRepository.findAll()
-                .stream()
-                .filter(e -> "Expired".equals(e.getStatus()))
-                .count();
+    response.setExpiringSoonMedicines(
+            expiryTrackingRepository.countByStatus("Expiring Soon"));
 
-        return new AnalyticsResponse(
-                totalMedicines,
-                totalSuppliers,
-                totalInventory,
-                lowStock,
-                expiringSoon,
-                expired);
-    }
+    response.setLowStockMedicines(
+            inventoryRepository.countByAvailableStockLessThan(10));
+
+    return response;
+}
 }

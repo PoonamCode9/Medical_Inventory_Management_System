@@ -16,6 +16,9 @@ public class Notification {
 
     private String date;
 
+    // Email address to receive this notification
+    private String recipientEmail;
+
     public Notification() {
     }
 
@@ -45,5 +48,13 @@ public class Notification {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getRecipientEmail() {
+        return recipientEmail;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
     }
 }

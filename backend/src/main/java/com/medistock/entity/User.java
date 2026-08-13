@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Date;
 
 
 @Entity
@@ -22,6 +23,9 @@ public class User {
     private Long id;
 
     private String name;
+    private String resetToken;
+
+private Date resetTokenExpiry;
 
     @Column(unique = true)
     private String email;
@@ -75,4 +79,19 @@ private Role role;
     public void setRole(Role role) {
         this.role = role;
     }
+    public String getResetToken() {
+    return resetToken;
+}
+
+public void setResetToken(String resetToken) {
+    this.resetToken = resetToken;
+}
+
+public Date getResetTokenExpiry() {
+    return resetTokenExpiry;
+}
+
+public void setResetTokenExpiry(Date resetTokenExpiry) {
+    this.resetTokenExpiry = resetTokenExpiry;
+}
 }

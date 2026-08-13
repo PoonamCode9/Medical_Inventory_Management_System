@@ -5,14 +5,13 @@ import "../css/Analytics.css";
 function Analytics() {
 
     const [analytics, setAnalytics] = useState({
-        totalMedicines: 0,
-        totalSuppliers: 0,
-        totalInventory: 0,
-        lowStock: 0,
-        expiringSoon: 0,
-        expired: 0
-    });
-
+    totalMedicines: 0,
+    totalSuppliers: 0,
+    totalInventory: 0,
+    lowStockMedicines: 0,
+    expiringSoonMedicines: 0,
+    expiredMedicines: 0
+});
     useEffect(() => {
         loadAnalytics();
     }, []);
@@ -62,21 +61,21 @@ function Analytics() {
                     <div className="col-md-4 mb-4">
                         <div className="analytics-card bg-warning">
                             <h5>Low Stock</h5>
-                            <h2>{analytics.lowStock}</h2>
+                            <h2>{analytics.lowStockMedicines}</h2>
                         </div>
                     </div>
 
                     <div className="col-md-4 mb-4">
                         <div className="analytics-card bg-secondary">
                             <h5>Expiring Soon</h5>
-                            <h2>{analytics.expiringSoon}</h2>
+                            <h2>{analytics.expiringSoonMedicines}</h2>
                         </div>
                     </div>
 
                     <div className="col-md-4 mb-4">
                         <div className="analytics-card bg-danger">
                             <h5>Expired</h5>
-                            <h2>{analytics.expired}</h2>
+                            <h2>{analytics.expiredMedicines}</h2>
                         </div>
                     </div>
 

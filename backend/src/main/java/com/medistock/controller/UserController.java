@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.medistock.dto.RegisterRequest;
 import com.medistock.entity.User;
 import com.medistock.service.UserService;
+import com.medistock.dto.ForgotPasswordRequest;
 import com.medistock.dto.LoginRequest;
 import com.medistock.dto.LoginResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.http.ResponseEntity;
 import com.medistock.dto.UpdateProfileRequest;
 import com.medistock.dto.ResetPasswordRequest;
+import com.medistock.dto.ResetPasswordTokenRequest;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -54,5 +57,21 @@ public ResponseEntity<String> resetPassword(
         @RequestBody ResetPasswordRequest request) {
     userService.resetPassword(principal.getName(), request);
     return ResponseEntity.ok("Password Updated Successfully");
+}
+@PostMapping("/forgot-password")
+public ResponseEntity<String> forgotPassword(
+        @RequestBody ForgotPasswordRequest request) {
+
+    userService.forgotPassword(request);
+
+    return ResponseEntity.ok("Reset token generated successfully");
+}
+@PostMapping("/reset-password-token")
+public ResponseEntity<String> resetPasswordWithToken(
+        @RequestBody ResetPasswordTokenRequest request) {
+
+    userService.resetPasswordWithToken(request);
+
+    return ResponseEntity.ok("Password reset successfully");
 }
 }

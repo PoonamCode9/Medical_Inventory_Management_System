@@ -5,26 +5,9 @@ public class AnalyticsResponse {
     private long totalMedicines;
     private long totalSuppliers;
     private long totalInventory;
-    private long lowStock;
-    private long expiringSoon;
-    private long expired;
-
-    public AnalyticsResponse() {
-    }
-
-    public AnalyticsResponse(long totalMedicines,
-                             long totalSuppliers,
-                             long totalInventory,
-                             long lowStock,
-                             long expiringSoon,
-                             long expired) {
-        this.totalMedicines = totalMedicines;
-        this.totalSuppliers = totalSuppliers;
-        this.totalInventory = totalInventory;
-        this.lowStock = lowStock;
-        this.expiringSoon = expiringSoon;
-        this.expired = expired;
-    }
+    private long lowStockMedicines;
+    private long expiredMedicines;
+    private long expiringSoonMedicines;
 
     public long getTotalMedicines() {
         return totalMedicines;
@@ -50,27 +33,27 @@ public class AnalyticsResponse {
         this.totalInventory = totalInventory;
     }
 
-    public long getLowStock() {
-        return lowStock;
+    public long getLowStockMedicines() {
+        return lowStockMedicines;
     }
 
-    public void setLowStock(long lowStock) {
-        this.lowStock = lowStock;
+    public void setLowStockMedicines(long lowStockMedicines) {
+        this.lowStockMedicines = lowStockMedicines;
     }
 
-    public long getExpiringSoon() {
-        return expiringSoon;
+    public long getExpiredMedicines() {
+        return expiredMedicines;
     }
 
-    public void setExpiringSoon(long expiringSoon) {
-        this.expiringSoon = expiringSoon;
+    public void setExpiredMedicines(long expiredMedicines) {
+        this.expiredMedicines = expiredMedicines;
     }
 
-    public long getExpired() {
-        return expired;
+    public long getExpiringSoonMedicines() {
+        return expiringSoonMedicines;
     }
 
-    public void setExpired(long expired) {
-        this.expired = expired;
+    public void setExpiringSoonMedicines(long expiringSoonMedicines) {
+        this.expiringSoonMedicines = expiringSoonMedicines;
     }
 }

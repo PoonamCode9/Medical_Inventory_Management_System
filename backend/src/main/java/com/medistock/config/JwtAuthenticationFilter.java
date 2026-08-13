@@ -54,10 +54,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtService.validateToken(token)) {
-            System.out.println("Token is INVALID");
-            filterChain.doFilter(request, response);
-            return;
-        }
+
+    System.out.println("Token is INVALID");
+    System.out.println("Received Token: " + token);
+
+    filterChain.doFilter(request, response);
+    return;
+}
 
         System.out.println("Token is VALID");
         String email = jwtService.extractEmail(token);

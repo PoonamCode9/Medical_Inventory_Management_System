@@ -10,14 +10,13 @@ import com.medistock.service.AnalyticsService;
 @RestController
 @RequestMapping("/api/reports")
 public class AnalyticsController {
-
     @Autowired
-    private AnalyticsService analyticsService;
+private AnalyticsService analyticsService;
 
     @GetMapping("/analytics")
     public AnalyticsResponse getAnalytics() {
 
-        return analyticsService.getAnalytics();
+        return analyticsService.getDashboardAnalytics();
 
     }
 

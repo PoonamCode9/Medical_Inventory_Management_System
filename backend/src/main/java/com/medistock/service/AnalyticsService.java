@@ -4,6 +4,6 @@ import com.medistock.dto.AnalyticsResponse;
 
 public interface AnalyticsService {
 
-    AnalyticsResponse getAnalytics();
+    AnalyticsResponse getDashboardAnalytics();
 
 }

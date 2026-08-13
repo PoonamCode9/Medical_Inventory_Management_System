@@ -43,4 +43,11 @@ public class NotificationController {
         notificationService.deleteNotification(id);
         return "Notification deleted successfully";
     }
+    @GetMapping("/check-low-stock")
+public String checkLowStock() {
+
+    notificationService.checkLowStock();
+
+    return "Low stock check completed";
+}
 }
