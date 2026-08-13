@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +39,7 @@ const menuItems = role === "ADMIN" ? [
   const fetchLogs = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/stock-logs"
+        `${API_URL}/api/stock-logs`
       );
       setLogs(response.data);
     } catch (error) {

@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ function UserManagement() {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/users"
+        `${API_URL}/api/users`
       );
       setUsers(response.data);
     } catch (error) {
@@ -36,7 +37,7 @@ function UserManagement() {
     }
     try {
       await axios.post(
-        "http://localhost:8080/api/users",
+        `${API_URL}/api/users`,
         form
       );
       setMessage("User added successfully!");
@@ -57,7 +58,7 @@ function UserManagement() {
     )) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/users/${id}`
+          `${API_URL}/api/users/${id}`
         );
         setMessage("User deleted successfully!");
         fetchUsers();
@@ -70,7 +71,7 @@ function UserManagement() {
   const handleRoleChange = async (id, newRole) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/users/${id}/role?role=${newRole}`
+        `${API_URL}/api/users/${id}/role?role=${newRole}`
       );
       setMessage("Role updated successfully!");
       fetchUsers();

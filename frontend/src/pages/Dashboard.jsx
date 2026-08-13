@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationBell from '../components/NotificationBell';
@@ -21,16 +22,16 @@ function Dashboard() {
   const fetchStats = async () => {
     try {
       const medicines = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       const suppliers = await axios.get(
-        "http://localhost:8080/api/suppliers"
+        `${API_URL}/api/suppliers`
       );
       const lowStock = await axios.get(
-        "http://localhost:8080/api/medicines/low-stock"
+        `${API_URL}/api/medicines/low-stock`
       );
       const expiring = await axios.get(
-        "http://localhost:8080/api/medicines/expiring"
+        `${API_URL}/api/medicines/expiring`
       );
       setStats({
         totalMedicines: medicines.data.length,
@@ -358,7 +359,7 @@ function Dashboard() {
                 ✅ Backend Status
               </p>
               <p style={{ color: "#48bb78", margin: 0, fontSize: "13px" }}>
-                Running on localhost:8080
+                Backend Connected
               </p>
             </div>
             <div style={{

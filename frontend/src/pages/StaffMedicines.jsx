@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ function StaffMedicines() {
   const fetchMedicines = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       setMedicines(response.data);
     } catch (error) {
@@ -29,7 +30,7 @@ function StaffMedicines() {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/categories"
+        `${API_URL}/api/categories`
       );
       setCategories(response.data);
     } catch (error) {

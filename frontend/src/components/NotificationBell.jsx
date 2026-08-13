@@ -20,7 +20,7 @@ function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/notifications"
+        `${API_URL}/api/notifications`
       );
       setNotifications(response.data.slice(0, 10));
     } catch (error) {
@@ -31,7 +31,7 @@ function NotificationBell() {
   const fetchUnreadCount = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/notifications/unread-count"
+        `${API_URL}/api/notifications/unread-count`
       );
       setUnreadCount(response.data.count);
     } catch (error) {
@@ -42,7 +42,7 @@ function NotificationBell() {
   const handleMarkAllRead = async () => {
     try {
       await axios.put(
-        "http://localhost:8080/api/notifications/mark-all-read"
+        `${API_URL}/api/notifications/mark-all-read`
       );
       fetchNotifications();
       fetchUnreadCount();
@@ -54,7 +54,7 @@ function NotificationBell() {
   const handleMarkRead = async (id) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/notifications/${id}/read`
+        `${API_URL}/api/notifications/${id}/read`
       );
       fetchNotifications();
       fetchUnreadCount();
@@ -66,7 +66,7 @@ function NotificationBell() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/notifications/${id}`
+        `${API_URL}/api/notifications/${id}`
       );
       fetchNotifications();
       fetchUnreadCount();
@@ -78,7 +78,7 @@ function NotificationBell() {
   const handleGenerateAlerts = async () => {
     try {
       await axios.post(
-        "http://localhost:8080/api/notifications/generate-alerts"
+        `${API_URL}/api/notifications/generate-alerts`
       );
       fetchNotifications();
       fetchUnreadCount();

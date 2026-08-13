@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +20,7 @@ function Notifications() {
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/notifications"
+        `${API_URL}/api/notifications`
       );
       setNotifications(response.data);
       setLoading(false);
@@ -32,7 +33,7 @@ function Notifications() {
   const handleMarkAllRead = async () => {
     try {
       await axios.put(
-        "http://localhost:8080/api/notifications/mark-all-read"
+        `${API_URL}/api/notifications/mark-all-read`
       );
       setMessage("All notifications marked as read!");
       fetchNotifications();
@@ -44,7 +45,7 @@ function Notifications() {
   const handleMarkRead = async (id) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/notifications/${id}/read`
+        `${API_URL}/api/notifications/${id}/read`
       );
       fetchNotifications();
     } catch (error) {
@@ -55,7 +56,7 @@ function Notifications() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/notifications/${id}`
+        `${API_URL}/api/notifications/${id}`
       );
       setMessage("Notification deleted!");
       fetchNotifications();
@@ -67,7 +68,7 @@ function Notifications() {
   const handleGenerateAlerts = async () => {
     try {
       await axios.post(
-        "http://localhost:8080/api/notifications/generate-alerts"
+        `${API_URL}/api/notifications/generate-alerts`
       );
       setMessage("Alerts generated successfully!");
       fetchNotifications();
@@ -84,7 +85,7 @@ function Notifications() {
         await Promise.all(
           notifications.map(n =>
             axios.delete(
-              `http://localhost:8080/api/notifications/${n.id}`
+              `${API_URL}/api/notifications/${n.id}`
             )
           )
         );

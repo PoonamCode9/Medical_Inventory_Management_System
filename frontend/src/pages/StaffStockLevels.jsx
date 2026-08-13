@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ function StaffStockLevels() {
   const fetchMedicines = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       setMedicines(response.data);
     } catch (error) {

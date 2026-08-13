@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -23,10 +24,10 @@ function Reports() {
   const fetchAllData = async () => {
     try {
       const [med, sup, logs, orders] = await Promise.all([
-        axios.get("http://localhost:8080/api/medicines"),
-        axios.get("http://localhost:8080/api/suppliers"),
-        axios.get("http://localhost:8080/api/stock-logs"),
-        axios.get("http://localhost:8080/api/purchase-orders"),
+        axios.get(`${API_URL}/api/medicines`),
+        axios.get(`${API_URL}/api/suppliers`),
+        axios.get(`${API_URL}/api/stock-logs`),
+        axios.get(`${API_URL}/api/purchase-orders`),
       ]);
       setMedicines(med.data);
       setSuppliers(sup.data);

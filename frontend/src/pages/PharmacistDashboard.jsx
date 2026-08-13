@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -22,16 +23,16 @@ function PharmacistDashboard() {
   const fetchStats = async () => {
     try {
       const medicines = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       const suppliers = await axios.get(
-        "http://localhost:8080/api/suppliers"
+        `${API_URL}/api/suppliers`
       );
       const lowStock = await axios.get(
-        "http://localhost:8080/api/medicines/low-stock"
+        `${API_URL}/api/medicines/low-stock`
       );
       const expiring = await axios.get(
-        "http://localhost:8080/api/medicines/expiring"
+        `${API_URL}/api/medicines/expiring`
       );
       setStats({
         totalMedicines: medicines.data.length,

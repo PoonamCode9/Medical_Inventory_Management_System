@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +42,7 @@ function Inventory() {
   const fetchMedicines = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       setMedicines(response.data);
     } catch (error) {
@@ -52,7 +53,7 @@ function Inventory() {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/categories"
+        `${API_URL}/api/categories`
       );
       setCategories(response.data);
     } catch (error) {
@@ -63,7 +64,7 @@ function Inventory() {
   const fetchSuppliers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/suppliers"
+         `${API_URL}/api/suppliers`
       );
       setSuppliers(response.data);
     } catch (error) {
@@ -73,7 +74,7 @@ function Inventory() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:8080/api/medicines", {
+      await axios.post(`${API_URL}/api/medicines`, {
         ...form,
         quantity: parseInt(form.quantity),
         price: parseFloat(form.price)
@@ -95,7 +96,7 @@ function Inventory() {
     if (window.confirm("Are you sure you want to delete?")) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/medicines/${id}`
+           `${API_URL}/api/medicines/${id}`
         );
         setMessage("Medicine deleted successfully!");
         fetchMedicines();
@@ -108,7 +109,7 @@ function Inventory() {
   const handleUpdateStock = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/api/medicines/${selectedMedicine.id}/stock?quantity=${newQuantity}`
+        `${API_URL}/api/medicines/${selectedMedicine.id}/stock?quantity=${newQuantity}`
       );
       setMessage("Stock updated successfully!");
       setShowUpdateStock(false);
@@ -138,7 +139,7 @@ function Inventory() {
   const handleEditSubmit = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/api/medicines/${editForm.id}`,
+        `${API_URL}/api/medicines/${editForm.id}`,
         {
           ...editForm,
           quantity: parseInt(editForm.quantity),
@@ -156,7 +157,7 @@ function Inventory() {
   const handleAddCategory = async () => {
     try {
       await axios.post(
-        "http://localhost:8080/api/categories",
+        `${API_URL}/api/categories`,
         newCategory
       );
       setMessage("Category added successfully!");

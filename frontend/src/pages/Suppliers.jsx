@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +25,7 @@ function Suppliers() {
   const fetchSuppliers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/suppliers"
+        `${API_URL}/api/suppliers`
       );
       setSuppliers(response.data);
     } catch (error) {
@@ -39,7 +40,7 @@ function Suppliers() {
     }
     try {
       await axios.post(
-        "http://localhost:8080/api/suppliers", form
+        `${API_URL}/api/suppliers`, form
       );
       setMessage("Supplier added successfully!");
       setShowForm(false);
@@ -59,7 +60,7 @@ function Suppliers() {
     )) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/suppliers/${id}`
+          `${API_URL}/api/suppliers/${id}`
         );
         setMessage("Supplier deleted successfully!");
         fetchSuppliers();

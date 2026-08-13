@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +29,7 @@ function PurchaseOrders() {
   const fetchOrders = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/purchase-orders"
+        `${API_URL}/api/purchase-orders`
       );
       setOrders(response.data);
     } catch (error) {
@@ -39,7 +40,7 @@ function PurchaseOrders() {
   const fetchSuppliers = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/suppliers"
+        `${API_URL}/api/suppliers`
       );
       setSuppliers(response.data);
     } catch (error) {
@@ -50,7 +51,7 @@ function PurchaseOrders() {
   const fetchMedicines = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/medicines"
+        `${API_URL}/api/medicines`
       );
       setMedicines(response.data);
     } catch (error) {
@@ -65,7 +66,7 @@ function PurchaseOrders() {
     }
     try {
       await axios.post(
-        "http://localhost:8080/api/purchase-orders",
+        `${API_URL}/api/purchase-orders`,
         {
           ...form,
           quantity: parseInt(form.quantity),
@@ -88,7 +89,7 @@ function PurchaseOrders() {
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/purchase-orders/${id}/status?status=${newStatus}`
+        `${API_URL}/api/purchase-orders/${id}/status?status=${newStatus}`
       );
       if (newStatus === "DELIVERED") {
         setMessage(
@@ -108,7 +109,7 @@ function PurchaseOrders() {
     if (window.confirm("Delete this order?")) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/purchase-orders/${id}`
+          `${API_URL}/api/purchase-orders/${id}`
         );
         setMessage("Order deleted!");
         fetchOrders();

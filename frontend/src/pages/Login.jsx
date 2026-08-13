@@ -1,3 +1,4 @@
+import API_URL from '../config';
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +14,7 @@ function Login() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        `${API_URL}/api/auth/login`,
         { email, password }
       );
       localStorage.setItem("token", response.data.token);
