@@ -74,7 +74,12 @@ public class ExpiryAlertsService {
             dto.setRemarks(expiry.getRemarks());
             dto.setDaysLeft(ChronoUnit.DAYS.between(today, expiry.getMedicine().getExpiryDate()));
             Optional<Inventory> inventory = inventoryRepository.findByMedicine(expiry.getMedicine());
-            inventory.ifPresent(inv -> dto.setInventoryId(inv.getInventoryId()));
+            if (inventory.isPresent()) {
+                dto.setInventoryId(inventory.get().getInventoryId());
+                dto.setQuantity(inventory.get().getQuantity());
+            } else {
+                dto.setQuantity(0);
+            }
             return dto;
         }).toList();
     }

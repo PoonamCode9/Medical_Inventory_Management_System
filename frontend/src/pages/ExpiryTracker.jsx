@@ -33,9 +33,9 @@ function ExpiryTracker() {
         API.get("/expiry-alerts"),
         API.get("/settings"),
       ]);
-      
+
       setData(expiryRes.data || []);
-      
+
       if (settingsRes.data) {
         setSettings({
           urgentExpiryDays: settingsRes.data.urgentExpiryDays || 7,
@@ -51,7 +51,7 @@ function ExpiryTracker() {
 
   const removeExpiredStock = async (inventoryId, medicineName) => {
     const confirmRemove = window.confirm(
-      `Are you sure you want to remove expired stock for ${medicineName}?`
+      `Are you sure you want to remove expired stock for ${medicineName}?`,
     );
     if (!confirmRemove) return;
 
@@ -90,7 +90,7 @@ function ExpiryTracker() {
       result = result.filter(
         (item) =>
           item.medicineName?.toLowerCase().includes(query) ||
-          item.batchNo?.toLowerCase().includes(query)
+          item.batchNo?.toLowerCase().includes(query),
       );
     }
 
@@ -102,7 +102,7 @@ function ExpiryTracker() {
       result.sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0));
     } else if (sortBy === "name") {
       result.sort((a, b) =>
-        (a.medicineName || "").localeCompare(b.medicineName || "")
+        (a.medicineName || "").localeCompare(b.medicineName || ""),
       );
     }
 
@@ -293,23 +293,23 @@ function ExpiryTracker() {
                             item.daysLeft < 0
                               ? "text-rose-600 font-bold"
                               : item.daysLeft <= settings.urgentExpiryDays
-                              ? "text-orange-600 font-bold"
-                              : item.daysLeft <= settings.expiryAlertDays
-                              ? "text-amber-600 font-semibold"
-                              : "text-emerald-600"
+                                ? "text-orange-600 font-bold"
+                                : item.daysLeft <= settings.expiryAlertDays
+                                  ? "text-amber-600 font-semibold"
+                                  : "text-emerald-600"
                           }
                         >
                           {item.daysLeft < 0
                             ? "Expired"
                             : item.daysLeft === 0
-                            ? "Expires Today"
-                            : `${item.daysLeft} Days`}
+                              ? "Expires Today"
+                              : `${item.daysLeft} Days`}
                         </span>
                       </td>
                       <td className="p-4">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
-                            item.status
+                            item.status,
                           )}`}
                         >
                           {item.status ? item.status.replace("_", " ") : "N/A"}
@@ -319,17 +319,34 @@ function ExpiryTracker() {
                         {item.remarks || "—"}
                       </td>
                       <td className="p-4 text-center">
-                        {item.status === "Expired" && (role === "Admin" || role === "Pharmacist") ? (
-                          <button
-                            onClick={() =>
-                              removeExpiredStock(invId, item.medicineName)
-                            }
-                            disabled={removingId === invId}
-                            className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                          >
-                            <Trash2 size={13} />
-                            {removingId === invId ? "Removing..." : "Remove Stock"}
-                          </button>
+                        {item.status === "Expired" &&
+                        (role === "Admin" || role === "Pharmacist") ? (
+                          !item.inventoryId ? (
+                            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                              No Stock
+                            </span>
+                          ) : item.quantity === 0 ? (
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                              <CheckCircle
+                                size={13}
+                                className="text-emerald-600"
+                              />
+                              Stock Removed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                removeExpiredStock(invId, item.medicineName)
+                              }
+                              disabled={removingId === invId}
+                              className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                              <Trash2 size={13} />
+                              {removingId === invId
+                                ? "Removing..."
+                                : "Remove Stock"}
+                            </button>
+                          )
                         ) : (
                           <span className="text-slate-500">—</span>
                         )}

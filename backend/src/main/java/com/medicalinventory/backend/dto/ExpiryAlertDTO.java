@@ -11,11 +11,12 @@ public class ExpiryAlertDTO {
     private String remarks;
     private Long daysLeft;
     private Long inventoryId;
+    private Integer quantity;
 
     public ExpiryAlertDTO() {
     }
     
-    public ExpiryAlertDTO(Long medicineId, String medicineName, String batchNo, LocalDate expiryDate, String status, String remarks, Long daysLeft, Long inventoryId) {
+    public ExpiryAlertDTO(Long medicineId, String medicineName, String batchNo, LocalDate expiryDate, String status, String remarks, Long daysLeft, Long inventoryId, Integer quantity) {
         this.medicineId = medicineId;
         this.medicineName = medicineName;
         this.batchNo = batchNo;
@@ -24,6 +25,7 @@ public class ExpiryAlertDTO {
         this.remarks = remarks;
         this.daysLeft = daysLeft;
         this.inventoryId = inventoryId;
+        this.quantity = quantity;
     }
 
     public Long getMedicineId() {
@@ -90,5 +92,12 @@ public class ExpiryAlertDTO {
         this.inventoryId = inventoryId;
     }
 
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
     
 }
