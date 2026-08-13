@@ -2,6 +2,8 @@ package com.medicalinventory.backend.service;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,31 +44,59 @@ public class UserService {
     }
 
     public User updateUser(Long id, User user) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser != null) {
-            existingUser.setFullName(user.getFullName());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setPhone(user.getPhone());
-            existingUser.setRole(user.getRole());
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
-                boolean isAlreadyEncoded = user.getPassword().startsWith("$2a$") ||
-                        user.getPassword().startsWith("$2b$") ||
-                        user.getPassword().startsWith("$2y$");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth != null ? auth.getName() : null;
 
-                if (!isAlreadyEncoded) {
-                    existingUser.setPassword(passwordEncoder.encode(user.getPassword().trim()));
-                }
+        if (currentEmail != null && currentEmail.equalsIgnoreCase(existingUser.getEmail())) {
+            if (user.getRole() != null && existingUser.getRole() != null &&
+                !existingUser.getRole().getRoleId().equals(user.getRole().getRoleId())) {
+                throw new RuntimeException("Action Denied: You cannot change your own role!");
             }
-            return userRepository.save(existingUser);
         }
-        return null;
+
+        existingUser.setFullName(user.getFullName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPhone(user.getPhone());
+        existingUser.setRole(user.getRole());
+
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            boolean isAlreadyEncoded = user.getPassword().startsWith("$2a$") ||
+                    user.getPassword().startsWith("$2b$") ||
+                    user.getPassword().startsWith("$2y$");
+
+            if (!isAlreadyEncoded) {
+                existingUser.setPassword(passwordEncoder.encode(user.getPassword().trim()));
+            }
+        }
+        return userRepository.save(existingUser);
     }
 
+    @Transactional
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        User userToDelete = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth != null ? auth.getName() : null;
+
+        if (currentEmail != null && currentEmail.equalsIgnoreCase(userToDelete.getEmail())) {
+            throw new RuntimeException("Action Denied: You cannot delete your own logged-in account!");
+        }
+
+        String userEmail = userToDelete.getEmail();
+        userRepository.delete(userToDelete);
+
+        notificationService.createNotification(
+                null,
+                "USER_DELETED",
+                "User account deleted for: " + userEmail,
+                "Push");
     }
 
+    
     @Transactional(readOnly = true)
     public UserProfileDTO getUserProfile(String email) {
         User user = userRepository.findByEmail(email)

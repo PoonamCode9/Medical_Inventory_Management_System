@@ -38,6 +38,31 @@ const Users = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const getEmailFromToken = () => {
+    try {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+        if (!token) return null;
+
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(""),
+      );
+
+      const parsed = JSON.parse(jsonPayload);
+      return parsed.sub || parsed.email || parsed.username || null;
+    } catch (e) {
+      console.error("Error decoding token", e);
+      return null;
+    }
+  };
+
+  const currentUserEmail = getEmailFromToken();
+
   const [newUser, setNewUser] = useState({
     fullName: "",
     email: "",
@@ -168,7 +193,7 @@ const Users = () => {
         fullName: selectedUser.fullName,
         email: selectedUser.email,
         phone: selectedUser.phone,
-        password: "", 
+        password: "",
         role: {
           roleId: Number(updatedRoleId),
         },
@@ -426,24 +451,30 @@ const Users = () => {
                       </td>
 
                       <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleOpenEditModal(user)}
-                            className="p-2 text-slate-500 hover:text-blue-600 border border-slate-200 rounded-xl hover:border-blue-200 hover:bg-blue-50/80 transition-all cursor-pointer shadow-2xs active:scale-95"
-                            title="Edit User Role"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteUser(userId, user.fullName)
-                            }
-                            className="p-2 text-slate-500 hover:text-rose-600 border border-slate-200 rounded-xl hover:border-rose-200 hover:bg-rose-50/80 transition-all cursor-pointer shadow-2xs active:scale-95"
-                            title="Delete User"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {user.email === currentUserEmail ? (
+                          <span className="text-xs text-slate-400 italic font-medium px-2 py-1 bg-slate-100 rounded-lg">
+                            Logged-in (You)
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleOpenEditModal(user)}
+                              className="p-2 text-slate-500 hover:text-blue-600 border border-slate-200 rounded-xl hover:border-blue-200 hover:bg-blue-50/80 transition-all cursor-pointer shadow-2xs active:scale-95"
+                              title="Edit User Role"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteUser(userId, user.fullName)
+                              }
+                              className="p-2 text-slate-500 hover:text-rose-600 border border-slate-200 rounded-xl hover:border-rose-200 hover:bg-rose-50/80 transition-all cursor-pointer shadow-2xs active:scale-95"
+                              title="Delete User"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
