@@ -627,12 +627,6 @@ icon={<FaCalendarTimes/>}
 
 
 
-
-
-
-
-
-
 <div className="
 bg-white
 rounded-3xl

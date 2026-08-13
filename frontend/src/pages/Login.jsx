@@ -4,6 +4,8 @@ import axios from "axios";
 
 import { GoogleLogin } from "@react-oauth/google";
 
+import toast from "react-hot-toast";
+
 import {
     FaEye,
     FaEyeSlash,
@@ -33,16 +35,16 @@ function Login() {
     const navigate = useNavigate();
 
 
-    // ==========================================
+    // =====================================================
     // MODE
-    // ==========================================
+    // =====================================================
 
     const [mode, setMode] = useState("LOGIN");
 
 
-    // ==========================================
+    // =====================================================
     // LOGIN STATES
-    // ==========================================
+    // =====================================================
 
     const [showPassword, setShowPassword] = useState(false);
 
@@ -57,18 +59,18 @@ function Login() {
     });
 
 
-    // ==========================================
+    // =====================================================
     // OTP LOGIN STATES
-    // ==========================================
+    // =====================================================
 
     const [phone, setPhone] = useState("");
 
     const [otp, setOtp] = useState("");
 
 
-    // ==========================================
+    // =====================================================
     // FORGOT PASSWORD STATES
-    // ==========================================
+    // =====================================================
 
     const [resetEmail, setResetEmail] = useState("");
 
@@ -83,9 +85,43 @@ function Login() {
     const [resetOtpVerified, setResetOtpVerified] = useState(false);
 
 
-    // ==========================================
+    // =====================================================
+    // TOAST HELPERS
+    // =====================================================
+
+    const showSuccess = (message) => {
+
+        toast.success(message, {
+            duration: 3500,
+            icon: "✓"
+        });
+
+    };
+
+
+    const showError = (message) => {
+
+        toast.error(message, {
+            duration: 4000,
+            icon: "!"
+        });
+
+    };
+
+
+    const showInfo = (message) => {
+
+        toast(message, {
+            duration: 3000,
+            icon: "ⓘ"
+        });
+
+    };
+
+
+    // =====================================================
     // SAVE LOGIN DATA
-    // ==========================================
+    // =====================================================
 
     const saveLoginData = (response) => {
 
@@ -104,15 +140,17 @@ function Login() {
             response.data.userId
         );
 
+
         redirectUser(
             response.data.role
         );
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // GOOGLE LOGIN
-    // ==========================================
+    // =====================================================
 
     const handleGoogleLogin = async (
         credentialResponse
@@ -121,6 +159,7 @@ function Login() {
         try {
 
             setLoading(true);
+
 
             const response = await axios.post(
                 "http://localhost:8080/api/auth/google",
@@ -131,8 +170,8 @@ function Login() {
             );
 
 
-            alert(
-                "Google Login Successful"
+            showSuccess(
+                "Google login successful"
             );
 
 
@@ -141,28 +180,69 @@ function Login() {
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Google Authentication Failed"
+            console.error(
+                "Google Login Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Google authentication failed";
+
+
+            showError(message);
+
 
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // NORMAL LOGIN
-    // ==========================================
+    // =====================================================
 
     const handleLogin = async (e) => {
 
         e.preventDefault();
+
+
+        if (!data.email.trim()) {
+
+            showError(
+                "Please enter your email address."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.password.trim()) {
+
+            showError(
+                "Please enter your password."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.secretCode.trim()) {
+
+            showError(
+                `Please enter your ${data.role.toLowerCase()} secret code.`
+            );
+
+            return;
+
+        }
 
 
         try {
@@ -181,8 +261,8 @@ function Login() {
             );
 
 
-            alert(
-                "Login Successful"
+            showSuccess(
+                "Login successful. Welcome to MediStock!"
             );
 
 
@@ -191,34 +271,43 @@ function Login() {
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Login Failed"
+            console.error(
+                "Login Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Login failed. Please check your credentials.";
+
+
+            showError(message);
+
 
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // SEND OTP - NORMAL OTP LOGIN
-    // ==========================================
+    // =====================================================
 
     const sendOtp = async () => {
 
         if (!phone.trim()) {
 
-            alert(
+            showError(
                 "Please enter your mobile number."
             );
 
             return;
+
         }
 
 
@@ -235,51 +324,61 @@ function Login() {
             );
 
 
-            alert(
-                "OTP Sent Successfully"
+            showSuccess(
+                "OTP sent successfully."
             );
 
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "OTP Failed"
+            console.error(
+                "Send OTP Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Unable to send OTP.";
+
+
+            showError(message);
+
 
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // VERIFY OTP - NORMAL OTP LOGIN
-    // ==========================================
+    // =====================================================
 
     const verifyOtp = async () => {
 
         if (!phone.trim()) {
 
-            alert(
+            showError(
                 "Please enter your mobile number."
             );
 
             return;
+
         }
 
 
         if (!otp.trim()) {
 
-            alert(
+            showError(
                 "Please enter the OTP."
             );
 
             return;
+
         }
 
 
@@ -297,8 +396,8 @@ function Login() {
             );
 
 
-            alert(
-                "OTP Login Successful"
+            showSuccess(
+                "OTP verified. Login successful!"
             );
 
 
@@ -307,35 +406,44 @@ function Login() {
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Invalid OTP"
+            console.error(
+                "OTP Verification Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Invalid or expired OTP.";
+
+
+            showError(message);
+
 
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // FORGOT PASSWORD
     // SEND RESET OTP
-    // ==========================================
+    // =====================================================
 
     const sendForgotPasswordOtp = async () => {
 
         if (!resetEmail.trim()) {
 
-            alert(
+            showError(
                 "Please enter your registered email address."
             );
 
             return;
+
         }
 
 
@@ -352,52 +460,61 @@ function Login() {
             );
 
 
-            alert(
+            showSuccess(
                 "Password reset OTP sent successfully."
             );
 
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Unable to send password reset OTP."
+            console.error(
+                "Forgot Password OTP Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Unable to send password reset OTP.";
+
+
+            showError(message);
+
 
         } finally {
 
             setResetLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
-    // FORGOT PASSWORD
+    // =====================================================
     // VERIFY RESET OTP
-    // ==========================================
+    // =====================================================
 
     const verifyForgotPasswordOtp = async () => {
 
         if (!resetEmail.trim()) {
 
-            alert(
+            showError(
                 "Please enter your registered email."
             );
 
             return;
+
         }
 
 
         if (!resetOtp.trim()) {
 
-            alert(
+            showError(
                 "Please enter the OTP."
             );
 
             return;
+
         }
 
 
@@ -418,64 +535,74 @@ function Login() {
             setResetOtpVerified(true);
 
 
-            alert(
+            showSuccess(
                 "OTP verified successfully."
             );
 
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Invalid or expired OTP."
+            console.error(
+                "Reset OTP Verification Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Invalid or expired OTP.";
+
+
+            showError(message);
+
 
         } finally {
 
             setResetLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // RESET PASSWORD
-    // ==========================================
+    // =====================================================
 
     const resetPassword = async () => {
 
         if (!newPassword) {
 
-            alert(
+            showError(
                 "Please enter the new password."
             );
 
             return;
+
         }
 
 
         if (!confirmPassword) {
 
-            alert(
+            showError(
                 "Please confirm the new password."
             );
 
             return;
+
         }
 
 
         if (
-            newPassword !==
-            confirmPassword
+            newPassword !== confirmPassword
         ) {
 
-            alert(
+            showError(
                 "Passwords do not match."
             );
 
             return;
+
         }
 
 
@@ -483,11 +610,12 @@ function Login() {
             newPassword.length < 6
         ) {
 
-            alert(
+            showError(
                 "Password must contain at least 6 characters."
             );
 
             return;
+
         }
 
 
@@ -506,7 +634,7 @@ function Login() {
             );
 
 
-            alert(
+            showSuccess(
                 "Password reset successful. Please login with your new password."
             );
 
@@ -531,24 +659,32 @@ function Login() {
 
         } catch (error) {
 
-            console.log(error);
-
-            alert(
-                error.response?.data ||
-                "Password reset failed."
+            console.error(
+                "Password Reset Error:",
+                error
             );
+
+
+            const message =
+                error.response?.data ||
+                "Password reset failed.";
+
+
+            showError(message);
+
 
         } finally {
 
             setResetLoading(false);
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // OPEN FORGOT PASSWORD
-    // ==========================================
+    // =====================================================
 
     const openForgotPassword = () => {
 
@@ -565,12 +701,13 @@ function Login() {
         setResetOtpVerified(false);
 
         setMode("FORGOT");
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // BACK TO LOGIN
-    // ==========================================
+    // =====================================================
 
     const backToLogin = () => {
 
@@ -585,12 +722,13 @@ function Login() {
         setResetOtpVerified(false);
 
         setMode("LOGIN");
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // REDIRECT USER
-    // ==========================================
+    // =====================================================
 
     const redirectUser = (role) => {
 
@@ -628,12 +766,13 @@ function Login() {
                 navigate("/");
 
         }
+
     };
 
 
-    // ==========================================
+    // =====================================================
     // PAGE
-    // ==========================================
+    // =====================================================
 
     return (
 
@@ -663,12 +802,11 @@ function Login() {
             <div className="login-wrapper">
 
 
-                {/* ==========================================
+                {/* =====================================================
                     LEFT PANEL
-                ========================================== */}
+                ===================================================== */}
 
                 <div className="login-left">
-
 
                     <div className="brand-section">
 
@@ -793,19 +931,18 @@ function Login() {
                 </div>
 
 
-                {/* ==========================================
+                {/* =====================================================
                     RIGHT PANEL
-                ========================================== */}
+                ===================================================== */}
 
                 <div className="login-right">
-
 
                     <div className="login-card">
 
 
-                        {/* ==========================================
+                        {/* =================================================
                             HEADER
-                        ========================================== */}
+                        ================================================= */}
 
                         <div className="login-header">
 
@@ -862,9 +999,9 @@ function Login() {
                         </div>
 
 
-                        {/* ==================================================
+                        {/* =================================================
                             LOGIN MODE
-                        ================================================== */}
+                        ================================================= */}
 
                         {mode === "LOGIN" && (
 
@@ -1126,7 +1263,6 @@ function Login() {
 
                                 <div className="login-options">
 
-
                                     <label className="remember">
 
                                         <input
@@ -1140,8 +1276,6 @@ function Login() {
                                     </label>
 
 
-                                    {/* FORGOT PASSWORD */}
-
                                     <button
                                         type="button"
                                         className="forgot-btn"
@@ -1149,8 +1283,6 @@ function Login() {
                                             openForgotPassword
                                         }
                                     >
-
-                                       
 
                                         Forgot Password?
 
@@ -1170,17 +1302,21 @@ function Login() {
                                     {loading ? (
 
                                         <>
+
                                             <span className="loader"></span>
 
                                             Logging In...
+
                                         </>
 
                                     ) : (
 
                                         <>
+
                                             <FaSignInAlt />
 
                                             Login Securely
+
                                         </>
 
                                     )}
@@ -1208,8 +1344,8 @@ function Login() {
                                             handleGoogleLogin
                                         }
                                         onError={() =>
-                                            alert(
-                                                "Google Login Failed"
+                                            showError(
+                                                "Google login failed. Please try again."
                                             )
                                         }
                                     />
@@ -1245,9 +1381,9 @@ function Login() {
                         )}
 
 
-                        {/* ==================================================
+                        {/* =================================================
                             OTP LOGIN MODE
-                        ================================================== */}
+                        ================================================= */}
 
                         {mode === "OTP" && (
 
@@ -1399,9 +1535,9 @@ function Login() {
                         )}
 
 
-                        {/* ==================================================
+                        {/* =================================================
                             FORGOT PASSWORD MODE
-                        ================================================== */}
+                        ================================================= */}
 
                         {mode === "FORGOT" && (
 
@@ -1674,9 +1810,9 @@ function Login() {
                         )}
 
 
-                        {/* ==================================================
+                        {/* =================================================
                             FOOTER
-                        ================================================== */}
+                        ================================================= */}
 
                         <div className="login-footer">
 
@@ -1704,6 +1840,7 @@ function Login() {
         </div>
 
     );
+
 }
 
 

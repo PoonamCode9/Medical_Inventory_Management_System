@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+
 import {
     FaEye,
     FaEyeSlash,
@@ -9,65 +10,72 @@ import {
     FaUserTie,
     FaUserCircle,
     FaEnvelope,
-    FaPhone,
-    FaLock,
     FaHeartbeat,
     FaHospital,
     FaBoxes,
     FaChartLine,
-    FaIdBadge,
     FaUserPlus,
     FaKey,
     FaMobileAlt
 } from "react-icons/fa";
+
 import registerBg from "../assets/register-bg.jpg";
+
+import {
+    showSuccess,
+    showError,
+    showWarning
+} from "../components/Toast";
 
 import "./Register.css";
 
 
-function Register(){
+function Register() {
 
 
-    const [showPassword,setShowPassword]=useState(false);
+    // ==========================================
+    // STATES
+    // ==========================================
 
-    const [loading,setLoading]=useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const [loading, setLoading] = useState(false);
 
 
+    const [data, setData] = useState({
 
-    const [data,setData]=useState({
-
-        fullName:"",
-        username:"",
-        email:"",
-        phone:"",
-        password:"",
-        role:"STAFF"
+        fullName: "",
+        username: "",
+        email: "",
+        phone: "",
+        password: "",
+        role: "STAFF"
 
     });
 
 
+    // ==========================================
+    // HANDLE INPUT CHANGE
+    // ==========================================
 
-
-
-    const handleChange=(e)=>{
+    const handleChange = (e) => {
 
         setData({
 
             ...data,
 
-            [e.target.name]:e.target.value
+            [e.target.name]: e.target.value
 
         });
 
     };
 
 
+    // ==========================================
+    // HANDLE ROLE CHANGE
+    // ==========================================
 
-
-
-
-
-    const handleRoleChange=(role)=>{
+    const handleRoleChange = (role) => {
 
         setData({
 
@@ -80,25 +88,106 @@ function Register(){
     };
 
 
+    // ==========================================
+    // HANDLE REGISTER
+    // ==========================================
 
-
-
-
-
-    const handleSubmit=async(e)=>{
-
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
 
-        try{
+        // ======================================
+        // BASIC VALIDATION
+        // ======================================
 
+        if (!data.fullName.trim()) {
+
+            showWarning(
+                "Please enter your full name."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.username.trim()) {
+
+            showWarning(
+                "Please enter a username."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.email.trim()) {
+
+            showWarning(
+                "Please enter your email address."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.phone.trim()) {
+
+            showWarning(
+                "Please enter your mobile number."
+            );
+
+            return;
+
+        }
+
+
+        if (!/^\d{10}$/.test(data.phone)) {
+
+            showWarning(
+                "Please enter a valid 10-digit mobile number."
+            );
+
+            return;
+
+        }
+
+
+        if (!data.password) {
+
+            showWarning(
+                "Please enter a password."
+            );
+
+            return;
+
+        }
+
+
+        if (data.password.length < 6) {
+
+            showWarning(
+                "Password must contain at least 6 characters."
+            );
+
+            return;
+
+        }
+
+
+        // ======================================
+        // API REQUEST
+        // ======================================
+
+        try {
 
             setLoading(true);
 
 
-
-            const response = await axios.post(
+            await axios.post(
 
                 "http://localhost:8080/api/auth/register",
 
@@ -107,860 +196,687 @@ function Register(){
             );
 
 
+            // ==================================
+            // SUCCESS TOAST
+            // ==================================
 
-            console.log(response.data);
-
-
-
-            alert(
-                "Registration Successful!"
+            showSuccess(
+                "Account created successfully. You can now login."
             );
 
 
+            // ==================================
+            // CLEAR FORM
+            // ==================================
 
             setData({
 
-                fullName:"",
-                username:"",
-                email:"",
-                phone:"",
-                password:"",
-                role:"STAFF"
+                fullName: "",
+                username: "",
+                email: "",
+                phone: "",
+                password: "",
+                role: "STAFF"
 
             });
 
 
+            setShowPassword(false);
+
 
         }
 
+        catch (error) {
 
-        catch(error){
-
-
-            console.log(error);
-
-
-
-            alert(
-
-                error.response?.data ||
-
-                "Registration Failed"
-
+            console.error(
+                "Registration error:",
+                error
             );
 
 
+            // ==================================
+            // GET BACKEND MESSAGE
+            // ==================================
+
+            let message =
+                "Registration failed. Please try again.";
+
+
+            if (
+                typeof error.response?.data ===
+                "string"
+            ) {
+
+                message =
+                    error.response.data;
+
+            }
+
+            else if (
+                error.response?.data?.message
+            ) {
+
+                message =
+                    error.response.data.message;
+
+            }
+
+            else if (
+                error.response?.data?.error
+            ) {
+
+                message =
+                    error.response.data.error;
+
+            }
+
+
+            // ==================================
+            // HIDE TECHNICAL ERRORS
+            // ==================================
+
+            const technicalErrors = [
+
+                "localhost",
+                "Exception",
+                "org.springframework",
+                "Whitelabel",
+                "StackTrace",
+                "ServletException",
+                "java.",
+                "SQL",
+                "Hibernate"
+
+            ];
+
+
+            const containsTechnicalError =
+                technicalErrors.some(
+                    (text) =>
+                        message
+                            .toString()
+                            .includes(text)
+                );
+
+
+            if (containsTechnicalError) {
+
+                message =
+                    "Registration failed. Please check your details and try again.";
+
+            }
+
+
+            // ==================================
+            // ERROR TOAST
+            // ==================================
+
+            showError(message);
+
         }
 
-
-        finally{
-
+        finally {
 
             setLoading(false);
 
-
         }
-
 
     };
 
 
+    // ==========================================
+    // PAGE
+    // ==========================================
 
+    return (
 
+        <div className="register-page">
 
 
+            <div
 
-return(
+                className="register-background"
 
+                style={{
 
+                    backgroundImage:
 
-<div className="register-page">
+                        `
+                        linear-gradient(
+                            135deg,
+                            rgba(0,65,120,.90),
+                            rgba(0,190,220,.70)
+                        ),
+                        url(${registerBg})
+                        `
 
+                }}
 
+            >
 
-<div
 
+                <div className="register-wrapper">
 
-className="register-background"
 
+                    {/* ==========================================
+                        LEFT SECTION
+                    ========================================== */}
 
-style={{
+                    <div className="register-info">
 
 
-backgroundImage:
+                        <div className="brand-logo">
 
-`
 
-linear-gradient(
+                            <div className="logo-circle">
 
-135deg,
+                                <FaHeartbeat />
 
-rgba(0,65,120,.90),
+                            </div>
 
-rgba(0,190,220,.70)
 
-),
+                            <h1>
 
-url(${registerBg})
+                                MediStock
 
-`
+                            </h1>
 
-}}
 
+                        </div>
 
 
->
+                        <h2>
 
+                            Create Your Medical Account
 
+                        </h2>
 
 
+                        <p>
 
+                            Manage medicines, suppliers and inventory
+                            with a secure healthcare platform.
 
-<div className="register-wrapper">
+                        </p>
 
 
+                        {/* ==========================================
+                            FEATURES
+                        ========================================== */}
 
+                        <div className="features">
 
 
+                            <div className="feature-item">
 
+                                <FaHospital />
 
-{/* ================= LEFT SECTION ================= */}
+                                <span>
 
+                                    Hospital Inventory Management
 
+                                </span>
 
+                            </div>
 
-<div className="register-info">
 
+                            <div className="feature-item">
 
+                                <FaBoxes />
 
+                                <span>
 
+                                    Medicine Stock Tracking
 
-<div className="brand-logo">
+                                </span>
 
+                            </div>
 
-<div className="logo-circle">
 
-<FaHeartbeat/>
+                            <div className="feature-item">
 
-</div>
+                                <FaChartLine />
 
+                                <span>
 
+                                    Smart Analytics Dashboard
 
-<h1>
+                                </span>
 
-MediStock
+                            </div>
 
-</h1>
 
+                        </div>
 
 
-</div>
+                    </div>
 
 
+                    {/* ==========================================
+                        REGISTER CARD
+                    ========================================== */}
 
+                    <div className="register-card">
 
 
+                        {/* ==========================================
+                            CARD HEADER
+                        ========================================== */}
 
+                        <div className="card-header">
 
-<h2>
 
-Create Your Medical Account
+                            <div className="medical-symbol">
 
-</h2>
+                                <FaUserPlus />
 
+                            </div>
 
 
+                            <h1>
 
+                                Create Account
 
-<p>
+                            </h1>
 
-Manage medicines, suppliers and inventory
 
-with a secure healthcare platform.
+                            <p>
 
-</p>
+                                Join MediStock Healthcare System
 
+                            </p>
 
 
+                        </div>
 
 
+                        {/* ==========================================
+                            FORM
+                        ========================================== */}
 
+                        <form onSubmit={handleSubmit}>
 
 
-<div className="features">
+                            {/* FULL NAME */}
 
+                            <div className="input-box">
 
+                                <FaUserCircle />
 
+                                <input
 
+                                    type="text"
 
+                                    name="fullName"
 
-<div className="feature-item">
+                                    placeholder="Full Name"
 
+                                    value={data.fullName}
 
-<FaHospital/>
+                                    onChange={handleChange}
 
+                                    autoComplete="name"
 
-<span>
+                                    required
 
-Hospital Inventory Management
+                                />
 
-</span>
+                            </div>
 
 
-</div>
+                            {/* USERNAME */}
 
+                            <div className="input-box">
 
+                                <FaUserCircle />
 
+                                <input
 
+                                    type="text"
 
+                                    name="username"
 
-<div className="feature-item">
+                                    placeholder="Username"
 
+                                    value={data.username}
 
-<FaBoxes/>
+                                    onChange={handleChange}
 
+                                    autoComplete="username"
 
-<span>
+                                    required
 
-Medicine Stock Tracking
+                                />
 
-</span>
+                            </div>
 
 
-</div>
+                            {/* EMAIL */}
 
+                            <div className="input-box">
 
+                                <FaEnvelope />
 
+                                <input
 
+                                    type="email"
 
+                                    name="email"
 
+                                    placeholder="Email Address"
 
-<div className="feature-item">
+                                    value={data.email}
 
+                                    onChange={handleChange}
 
-<FaChartLine/>
+                                    autoComplete="email"
 
+                                    required
 
-<span>
+                                />
 
-Smart Analytics Dashboard
+                            </div>
 
-</span>
 
+                            {/* PHONE */}
 
-</div>
+                            <div className="input-box">
 
+                                <FaMobileAlt />
 
+                                <input
 
+                                    type="tel"
 
+                                    name="phone"
 
-</div>
+                                    placeholder="Mobile Number"
 
+                                    maxLength="10"
 
+                                    value={data.phone}
 
+                                    onChange={(e) => {
 
+                                        const value =
+                                            e.target.value.replace(
+                                                /\D/g,
+                                                ""
+                                            );
 
-</div>
+                                        setData({
 
+                                            ...data,
 
+                                            phone: value
 
+                                        });
 
+                                    }}
 
+                                    autoComplete="tel"
 
+                                    required
 
+                                />
 
+                            </div>
 
-{/* ================= REGISTER CARD ================= */}
 
+                            {/* PASSWORD */}
 
+                            <div className="input-box password-box">
 
+                                <FaKey />
 
-<div className="register-card">
 
+                                <input
 
+                                    type={
+                                        showPassword
+                                            ? "text"
+                                            : "password"
+                                    }
 
+                                    name="password"
 
+                                    placeholder="Password"
 
+                                    value={data.password}
 
-<div className="card-header">
+                                    onChange={handleChange}
 
+                                    autoComplete="new-password"
 
+                                    required
 
-<div className="medical-symbol">
+                                />
 
-<FaUserPlus/>
 
-</div>
+                                <button
 
+                                    type="button"
 
+                                    className="password-toggle"
 
+                                    onClick={() =>
+                                        setShowPassword(
+                                            !showPassword
+                                        )
+                                    }
 
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
 
-<h1>
+                                >
 
-Create Account
+                                    {
 
-</h1>
+                                        showPassword
 
+                                            ? <FaEyeSlash />
 
+                                            : <FaEye />
 
+                                    }
 
-<p>
+                                </button>
 
-Join MediStock Healthcare System
 
-</p>
+                            </div>
 
 
+                            {/* ==========================================
+                                ROLE TITLE
+                            ========================================== */}
 
-</div>
+                            <h3 className="choose-title">
 
+                                Select Account Type
 
+                            </h3>
 
 
+                            {/* ==========================================
+                                ROLE CARDS
+                            ========================================== */}
 
+                            <div className="role-container">
 
 
+                                {/* ADMIN */}
 
+                                <button
 
-<form onSubmit={handleSubmit}>
+                                    type="button"
 
+                                    className={
 
+                                        data.role === "ADMIN"
 
+                                            ? "role-card selected"
 
+                                            : "role-card"
 
+                                    }
 
+                                    onClick={() =>
+                                        handleRoleChange(
+                                            "ADMIN"
+                                        )
+                                    }
 
+                                >
 
+                                    <FaUserShield />
 
-<div className="input-box">
+                                    <span>
 
-<FaUserCircle/>
+                                        Admin
 
+                                    </span>
 
-<input
+                                </button>
 
 
-type="text"
+                                {/* PHARMACIST */}
 
+                                <button
 
-name="fullName"
+                                    type="button"
 
+                                    className={
 
-placeholder="Full Name"
+                                        data.role === "PHARMACIST"
 
+                                            ? "role-card selected"
 
-value={data.fullName}
+                                            : "role-card"
 
+                                    }
 
-onChange={handleChange}
+                                    onClick={() =>
+                                        handleRoleChange(
+                                            "PHARMACIST"
+                                        )
+                                    }
 
+                                >
 
-required
+                                    <FaUserNurse />
 
+                                    <span>
 
-/>
+                                        Pharmacist
 
+                                    </span>
 
+                                </button>
 
-</div>
 
+                                {/* STAFF */}
 
+                                <button
 
+                                    type="button"
 
+                                    className={
 
+                                        data.role === "STAFF"
 
+                                            ? "role-card selected"
 
+                                            : "role-card"
 
+                                    }
 
-<div className="input-box">
+                                    onClick={() =>
+                                        handleRoleChange(
+                                            "STAFF"
+                                        )
+                                    }
 
+                                >
 
-<FaUserCircle/>
+                                    <FaUserTie />
 
+                                    <span>
 
-<input
+                                        Staff
 
+                                    </span>
 
-type="text"
+                                </button>
 
 
-name="username"
+                            </div>
 
 
-placeholder="Username"
+                            {/* ==========================================
+                                REGISTER BUTTON
+                            ========================================== */}
 
+                            <button
 
-value={data.username}
+                                className="register-btn"
 
+                                type="submit"
 
-onChange={handleChange}
+                                disabled={loading}
 
+                            >
 
-required
+                                {
 
+                                    loading
 
-/>
+                                        ? "Creating Account..."
 
+                                        : "Create Account"
 
+                                }
 
-</div>
+                            </button>
 
 
+                        </form>
 
 
+                        {/* ==========================================
+                            LOGIN LINK
+                        ========================================== */}
 
+                        <div className="login-link">
 
+                            Already have an account?
 
 
+                            <Link to="/login">
 
+                                Login
 
-<div className="input-box">
+                            </Link>
 
+                        </div>
 
-<FaEnvelope/>
 
+                    </div>
 
-<input
 
+                </div>
 
-type="email"
 
+            </div>
 
-name="email"
 
+        </div>
 
-placeholder="Email Address"
-
-
-value={data.email}
-
-
-onChange={handleChange}
-
-
-required
-
-
-/>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="input-box">
-
-
-<FaMobileAlt/>
-
-
-<input
-
-
-type="text"
-
-
-name="phone"
-
-
-placeholder="Mobile Number"
-
-
-maxLength="10"
-
-
-value={data.phone}
-
-
-onChange={handleChange}
-
-
-required
-
-
-/>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div className="input-box password-box">
-
-
-<FaKey/>
-
-
-
-
-<input
-
-
-type={showPassword ? "text":"password"}
-
-
-name="password"
-
-
-placeholder="Password"
-
-
-value={data.password}
-
-
-onChange={handleChange}
-
-
-required
-
-
-/>
-
-
-
-
-
-<button
-
-
-type="button"
-
-
-className="password-toggle"
-
-
-onClick={()=>setShowPassword(!showPassword)}
-
-
->
-
-
-
-{
-
-showPassword
-
-?
-
-<FaEyeSlash/>
-
-:
-
-<FaEye/>
+    );
 
 }
-
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<h3 className="choose-title">
-
-Select Account Type
-
-</h3>
-
-
-
-
-
-
-
-
-<div className="role-container">
-
-
-
-
-
-
-<button
-
-
-type="button"
-
-
-className={
-
-data.role==="ADMIN"
-
-?
-
-"role-card selected"
-
-:
-
-"role-card"
-
-}
-
-
-
-onClick={()=>handleRoleChange("ADMIN")}
-
-
-
->
-
-
-<FaUserShield/>
-
-
-<span>
-
-Admin
-
-</span>
-
-
-</button>
-
-
-
-
-
-
-
-
-
-<button
-
-
-type="button"
-
-
-className={
-
-data.role==="PHARMACIST"
-
-?
-
-"role-card selected"
-
-:
-
-"role-card"
-
-}
-
-
-
-onClick={()=>handleRoleChange("PHARMACIST")}
-
-
-
->
-
-
-<FaUserNurse/>
-
-
-<span>
-
-Pharmacist
-
-</span>
-
-
-</button>
-
-
-
-
-
-
-
-
-
-<button
-
-
-type="button"
-
-
-className={
-
-data.role==="STAFF"
-
-?
-
-"role-card selected"
-
-:
-
-"role-card"
-
-}
-
-
-
-onClick={()=>handleRoleChange("STAFF")}
-
-
-
->
-
-
-<FaUserTie/>
-
-
-<span>
-
-Staff
-
-</span>
-
-
-</button>
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-
-className="register-btn"
-
-
-type="submit"
-
-
-disabled={loading}
-
-
-
->
-
-
-
-{
-
-loading
-
-?
-
-"Creating Account..."
-
-:
-
-"Create Account"
-
-}
-
-
-</button>
-
-
-
-
-
-
-
-</form>
-
-
-
-
-
-
-
-
-
-<div className="login-link">
-
-
-Already have an account?
-
-
-<Link to="/">
-
-Login
-
-</Link>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-);
-
-}
-
 
 
 export default Register;

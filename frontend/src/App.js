@@ -7,8 +7,16 @@ import {
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import { Toaster } from "react-hot-toast";
+
 import "./App.css";
 
+
+/* =========================================================
+   HOME
+========================================================= */
+
+import Home from "./pages/Home";
 
 
 /* =========================================================
@@ -19,7 +27,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 import GoogleCallback from "./pages/GoogleCallback";
-
 
 
 /* =========================================================
@@ -47,7 +54,6 @@ import Settings from "./pages/admin/Settings";
 import NotificationPage from "./pages/admin/NotificationPage";
 
 
-
 /* =========================================================
    STAFF
 ========================================================= */
@@ -59,700 +65,642 @@ import StaffDashboard from "./pages/StaffDashboard";
 import ViewStock from "./pages/pharmacist/ViewStock";
 
 
-
 /* =========================================================
    PHARMACIST
 ========================================================= */
 
-
 import PharmacistLayout from "./layouts/PharmacistLayout";
 
-import PharmacistDashboard 
-from "./pages/PharmacistDashboard";
+import PharmacistDashboard from "./pages/PharmacistDashboard";
 
+import SellMedicine from "./pages/pharmacist/SellMedicine";
 
-import SellMedicine 
-from "./pages/pharmacist/SellMedicine";
+import ExpiryCheck from "./pages/pharmacist/ExpiryCheck";
 
-
-import ExpiryCheck 
-from "./pages/pharmacist/ExpiryCheck";
-
-
-import SalesHistory 
-from "./pages/pharmacist/SalesHistory";
-
-
-
+import SalesHistory from "./pages/pharmacist/SalesHistory";
 
 
 /* =========================================================
    PROTECTED ROUTE
 ========================================================= */
 
-
 function ProtectedRoute({
-
     children,
-
     allowedRoles
-
 }) {
-
 
     const token =
         localStorage.getItem("token");
-
 
     const role =
         localStorage.getItem("role");
 
 
+    /* -----------------------------------------
+       NOT LOGGED IN
+    ----------------------------------------- */
 
-    if(!token){
+    if (!token) {
 
         return (
-
             <Navigate
-                to="/"
+                to="/login"
                 replace
             />
-
         );
 
     }
 
 
+    /* -----------------------------------------
+       WRONG ROLE
+    ----------------------------------------- */
 
-    if(!allowedRoles.includes(role)){
-
+    if (!allowedRoles.includes(role)) {
 
         return (
-
             <Navigate
                 to="/unauthorized"
                 replace
             />
-
         );
-
 
     }
 
 
-
     return children;
-
-
 }
-
-
-
-
 
 
 /* =========================================================
-   UNAUTHORIZED
+   UNAUTHORIZED PAGE
 ========================================================= */
 
+function Unauthorized() {
 
-function Unauthorized(){
+    return (
 
+        <div
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#fef2f2",
+                padding: "30px"
+            }}
+        >
 
-return(
+            <div
+                style={{
+                    background: "#ffffff",
+                    padding: "50px",
+                    borderRadius: "25px",
+                    boxShadow:
+                        "0 20px 50px rgba(0,0,0,0.12)",
+                    textAlign: "center",
+                    maxWidth: "500px",
+                    width: "100%"
+                }}
+            >
 
-
-<div className="
-min-h-screen
-flex
-items-center
-justify-center
-bg-red-50
-">
-
-
-<div className="
-bg-white
-p-10
-rounded-3xl
-shadow-xl
-text-center
-">
-
-
-<h1 className="
-text-4xl
-font-bold
-text-red-600
-">
-
-Access Denied
-
-</h1>
-
-
-
-<p className="
-mt-3
-text-gray-600
-">
-
-You don't have permission.
-
-</p>
+                <div
+                    style={{
+                        fontSize: "70px",
+                        marginBottom: "10px"
+                    }}
+                >
+                    🔒
+                </div>
 
 
-
-<button
-
-className="
-mt-6
-px-6
-py-3
-bg-blue-600
-text-white
-rounded-xl
-"
-
-onClick={()=>window.history.back()}
-
->
-
-Go Back
-
-</button>
+                <h1
+                    style={{
+                        fontSize: "38px",
+                        fontWeight: "800",
+                        color: "#dc2626",
+                        marginBottom: "15px"
+                    }}
+                >
+                    Access Denied
+                </h1>
 
 
-</div>
+                <p
+                    style={{
+                        color: "#64748b",
+                        fontSize: "16px",
+                        lineHeight: "1.6",
+                        marginBottom: "30px"
+                    }}
+                >
+                    You don't have permission to access
+                    this page.
+                </p>
 
 
-</div>
+                <button
+                    onClick={() =>
+                        window.history.back()
+                    }
+                    style={{
+                        border: "none",
+                        padding: "13px 28px",
+                        borderRadius: "12px",
+                        background: "#2563eb",
+                        color: "#ffffff",
+                        fontSize: "15px",
+                        fontWeight: "600",
+                        cursor: "pointer"
+                    }}
+                >
+                    Go Back
+                </button>
 
+            </div>
 
-);
+        </div>
 
-
+    );
 }
-
-
-
-
-
 
 
 /* =========================================================
-   404
+   404 PAGE
 ========================================================= */
 
+function NotFound() {
 
-function NotFound(){
+    return (
 
+        <div
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "#f8fafc"
+            }}
+        >
 
-return(
-
-
-<div className="
-min-h-screen
-flex
-items-center
-justify-center
-">
-
-
-<h1 className="
-text-7xl
-font-bold
-text-blue-600
-">
-
-404
-
-</h1>
-
-
-</div>
+            <h1
+                style={{
+                    fontSize: "110px",
+                    fontWeight: "900",
+                    color: "#2563eb",
+                    margin: 0
+                }}
+            >
+                404
+            </h1>
 
 
-);
+            <h2
+                style={{
+                    color: "#1e293b",
+                    marginTop: "10px"
+                }}
+            >
+                Page Not Found
+            </h2>
 
 
+            <p
+                style={{
+                    color: "#64748b"
+                }}
+            >
+                The page you are looking for does not exist.
+            </p>
+
+
+            <button
+                onClick={() =>
+                    window.location.href = "/"
+                }
+                style={{
+                    marginTop: "20px",
+                    border: "none",
+                    padding: "13px 28px",
+                    borderRadius: "12px",
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                }}
+            >
+                Go To Home
+            </button>
+
+        </div>
+
+    );
 }
-
-
-
-
-
 
 
 /* =========================================================
    APP
 ========================================================= */
 
+function App() {
 
-function App(){
+    return (
 
+        <GoogleOAuthProvider
+            clientId="478953468894-13dgsudp8csff06megqc50cs1sbcr6q4.apps.googleusercontent.com"
+        >
 
+            <BrowserRouter>
 
-return(
 
+                {/* =================================================
+                   GLOBAL TOAST SYSTEM
+                ================================================= */}
 
-<GoogleOAuthProvider
+                <Toaster
+                    position="top-right"
+                    reverseOrder={false}
 
-clientId="478953468894-13dgsudp8csff06megqc50cs1sbcr6q4.apps.googleusercontent.com"
+                    toastOptions={{
 
->
+                        duration: 3000,
 
+                        style: {
+                            borderRadius: "14px",
+                            background: "#ffffff",
+                            color: "#1e293b",
+                            padding: "14px 18px",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            boxShadow:
+                                "0 10px 35px rgba(0,0,0,0.15)"
+                        },
 
-<BrowserRouter>
+                        success: {
 
+                            duration: 3000,
 
-<Routes>
+                            style: {
+                                border:
+                                    "1px solid #bbf7d0"
+                            }
 
+                        },
 
+                        error: {
 
-{/* ================= AUTH ================= */}
+                            duration: 4000,
 
+                            style: {
+                                border:
+                                    "1px solid #fecaca"
+                            }
 
+                        }
 
-<Route
+                    }}
+                />
 
-path="/"
 
-element={<Login/>}
+                {/* =================================================
+                   ROUTES
+                ================================================= */}
 
-/>
+                <Routes>
 
 
+                    {/* =================================================
+                       HOME
+                    ================================================= */}
 
-<Route
+                    <Route
+                        path="/"
+                        element={<Home />}
+                    />
 
-path="/register"
 
-element={<Register/>}
+                    {/* =================================================
+                       LOGIN
+                    ================================================= */}
 
-/>
+                    <Route
+                        path="/login"
+                        element={<Login />}
+                    />
 
 
+                    {/* =================================================
+                       REGISTER
+                    ================================================= */}
 
-{/* Google callback */}
+                    <Route
+                        path="/register"
+                        element={<Register />}
+                    />
 
-<Route
 
-path="/google/callback"
+                    {/* =================================================
+                       GOOGLE CALLBACK
+                    ================================================= */}
 
-element={<GoogleCallback/>}
+                    <Route
+                        path="/google/callback"
+                        element={<GoogleCallback />}
+                    />
+
+
+                    {/* =================================================
+                       ADMIN
+                    ================================================= */}
+
+                    <Route
+                        path="/admin"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "ADMIN"
+                                ]}
+                            >
+                                <AdminLayout />
+                            </ProtectedRoute>
+                        }
+                    >
+
+                        <Route
+                            path="dashboard"
+                            element={
+                                <AdminDashboard />
+                            }
+                        />
+
+
+                        <Route
+                            path="add-medicine"
+                            element={
+                                <AddMedicine />
+                            }
+                        />
+
+
+                        <Route
+                            path="view-medicines"
+                            element={
+                                <ViewMedicines />
+                            }
+                        />
+
+
+                        <Route
+                            path="edit-medicine/:id"
+                            element={
+                                <EditMedicine />
+                            }
+                        />
+
+
+                        <Route
+                            path="update-stock"
+                            element={
+                                <UpdateStock />
+                            }
+                        />
+
+
+                        <Route
+                            path="add-supplier"
+                            element={
+                                <AddSupplier />
+                            }
+                        />
+
+
+                        <Route
+                            path="view-suppliers"
+                            element={
+                                <ViewSuppliers />
+                            }
+                        />
+
+
+                        <Route
+                            path="users"
+                            element={
+                                <ManageUsers />
+                            }
+                        />
+
+
+                        <Route
+                            path="reports"
+                            element={
+                                <Reports />
+                            }
+                        />
+
 
-/>
+                        <Route
+                            path="settings"
+                            element={
+                                <Settings />
+                            }
+                        />
+
+
+                        <Route
+                            path="notifications"
+                            element={
+                                <NotificationPage />
+                            }
+                        />
+
+                    </Route>
+
+
+                    {/* =================================================
+                       STAFF
+                    ================================================= */}
+
+                    <Route
+                        path="/staff"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "STAFF"
+                                ]}
+                            >
+                                <StaffLayout />
+                            </ProtectedRoute>
+                        }
+                    >
+
+                        <Route
+                            path="dashboard"
+                            element={
+                                <StaffDashboard />
+                            }
+                        />
+
+
+                        {/* VIEW MEDICINES */}
+
+                        <Route
+                            path="medicines"
+                            element={
+                                <ViewMedicines />
+                            }
+                        />
+
 
+                        {/* VIEW SUPPLIERS */}
+
+                        <Route
+                            path="suppliers"
+                            element={
+                                <ViewSuppliers />
+                            }
+                        />
+
 
+                        {/* VIEW REPORTS */}
 
+                        <Route
+                            path="reports"
+                            element={
+                                <Reports />
+                            }
+                        />
 
 
+                        {/* VIEW STOCK */}
 
-{/* ================= ADMIN ================= */}
+                        <Route
+                            path="stock"
+                            element={
+                                <ViewStock />
+                            }
+                        />
+
+
+                        {/* NOTIFICATIONS */}
 
+                        <Route
+                            path="notifications"
+                            element={
+                                <NotificationPage />
+                            }
+                        />
 
+                    </Route>
+
+
+                    {/* =================================================
+                       PHARMACIST
+                    ================================================= */}
 
-<Route
+                    <Route
+                        path="/pharmacist"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "PHARMACIST"
+                                ]}
+                            >
+                                <PharmacistLayout />
+                            </ProtectedRoute>
+                        }
+                    >
 
+                        <Route
+                            path="dashboard"
+                            element={
+                                <PharmacistDashboard />
+                            }
+                        />
 
-path="/admin"
 
+                        {/* SELL MEDICINE */}
 
-element={
+                        <Route
+                            path="sell"
+                            element={
+                                <SellMedicine />
+                            }
+                        />
 
 
-<ProtectedRoute
+                        {/* VIEW STOCK */}
 
-allowedRoles={[
-"ADMIN"
-]}
+                        <Route
+                            path="stock"
+                            element={
+                                <ViewStock />
+                            }
+                        />
 
->
 
+                        {/* EXPIRY CHECK */}
 
-<AdminLayout/>
+                        <Route
+                            path="expiry"
+                            element={
+                                <ExpiryCheck />
+                            }
+                        />
 
 
-</ProtectedRoute>
+                        {/* SALES HISTORY */}
 
+                        <Route
+                            path="sales"
+                            element={
+                                <SalesHistory />
+                            }
+                        />
 
-}
 
+                        {/* NOTIFICATIONS */}
 
+                        <Route
+                            path="notifications"
+                            element={
+                                <NotificationPage />
+                            }
+                        />
 
->
+                    </Route>
 
 
-<Route
+                    {/* =================================================
+                       UNAUTHORIZED
+                    ================================================= */}
 
-path="dashboard"
+                    <Route
+                        path="/unauthorized"
+                        element={
+                            <Unauthorized />
+                        }
+                    />
 
-element={<AdminDashboard/>}
 
-/>
+                    {/* =================================================
+                       404
+                    ================================================= */}
 
+                    <Route
+                        path="*"
+                        element={
+                            <NotFound />
+                        }
+                    />
 
+                </Routes>
 
-<Route
+            </BrowserRouter>
 
-path="add-medicine"
+        </GoogleOAuthProvider>
 
-element={<AddMedicine/>}
-
-/>
-
-
-
-<Route
-
-path="view-medicines"
-
-element={<ViewMedicines/>}
-
-/>
-
-
-
-<Route
-
-path="edit-medicine/:id"
-
-element={<EditMedicine/>}
-
-/>
-
-
-
-<Route
-
-path="update-stock"
-
-element={<UpdateStock/>}
-
-/>
-
-
-
-<Route
-
-path="add-supplier"
-
-element={<AddSupplier/>}
-
-/>
-
-
-
-<Route
-
-path="view-suppliers"
-
-element={<ViewSuppliers/>}
-
-/>
-
-
-
-<Route
-
-path="users"
-
-element={<ManageUsers/>}
-
-/>
-
-
-
-<Route
-
-path="reports"
-
-element={<Reports/>}
-
-/>
-
-
-
-<Route
-
-path="settings"
-
-element={<Settings/>}
-
-/>
-
-
-
-<Route
-
-path="notifications"
-
-element={<NotificationPage/>}
-
-/>
-
-
-
-</Route>
-
-
-
-
-
-
-/* ================= STAFF ================= */
-
-
-
-<Route
-
-
-path="/staff"
-
-
-element={
-
-
-<ProtectedRoute
-
-allowedRoles={[
-    "STAFF"
-]}
-
->
-
-
-<StaffLayout/>
-
-
-</ProtectedRoute>
-
-
-}
-
-
->
-
-
-<Route
-
-path="dashboard"
-
-element={<StaffDashboard/>}
-
-/>
-
-
-
-{/* VIEW ONLY MEDICINES */}
-
-<Route
-
-path="medicines"
-
-element={<ViewMedicines/>}
-
-/>
-
-
-
-
-
-{/* VIEW ONLY SUPPLIERS */}
-
-<Route
-
-path="suppliers"
-
-element={<ViewSuppliers/>}
-
-/>
-
-
-
-
-
-{/* VIEW ONLY REPORTS */}
-
-<Route
-
-path="reports"
-
-element={<Reports/>}
-
-/>
-
-
-
-
-
-{/* STOCK VIEW ONLY */}
-
-<Route
-
-path="stock"
-
-element={<ViewStock/>}
-
-/>
-
-
-
-
-
-{/* NOTIFICATIONS */}
-
-<Route
-
-path="notifications"
-
-element={<NotificationPage/>}
-
-/>
-
-
-</Route>
-
-{/* ================= PHARMACIST ================= */}
-
-
-
-
-<Route
-
-
-path="/pharmacist"
-
-
-element={
-
-
-<ProtectedRoute
-
-allowedRoles={[
-"PHARMACIST"
-]}
-
->
-
-
-<PharmacistLayout/>
-
-
-</ProtectedRoute>
-
-
-}
-
-
-
->
-
-
-
-<Route
-
-path="dashboard"
-
-element={<PharmacistDashboard/>}
-
-/>
-
-
-
-<Route
-
-path="sell"
-
-element={<SellMedicine/>}
-
-/>
-
-
-
-<Route
-
-path="stock"
-
-element={<ViewStock/>}
-
-/>
-
-
-
-<Route
-
-path="expiry"
-
-element={<ExpiryCheck/>}
-
-/>
-
-
-
-<Route
-
-path="sales"
-
-element={<SalesHistory/>}
-
-/>
-
-
-
-<Route
-
-path="notifications"
-
-element={<NotificationPage/>}
-
-/>
-
-
-
-</Route>
-
-
-
-
-
-
-
-<Route
-
-path="/unauthorized"
-
-element={<Unauthorized/>}
-
-/>
-
-
-
-
-<Route
-
-path="*"
-
-element={<NotFound/>}
-
-/>
-
-
-
-</Routes>
-
-
-</BrowserRouter>
-
-
-</GoogleOAuthProvider>
-
-
-);
-
-
-
+    );
 }
 
 

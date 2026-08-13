@@ -12,8 +12,22 @@ import {
     FaShieldAlt
 } from "react-icons/fa";
 
+import {
+    showSuccess,
+    showError,
+    showWarning
+} from "../../components/Toast";
+
+
+// =========================================================
+// ADD SUPPLIER
+// =========================================================
 
 function AddSupplier() {
+
+    // =====================================================
+    // INITIAL STATE
+    // =====================================================
 
     const initialState = {
         name: "",
@@ -22,135 +36,355 @@ function AddSupplier() {
         address: ""
     };
 
+
+    // =====================================================
+    // STATES
+    // =====================================================
+
     const [supplier, setSupplier] = useState(initialState);
+
     const [loading, setLoading] = useState(false);
 
 
-    // =========================================================
+    // =====================================================
     // HANDLE INPUT CHANGE
-    // =========================================================
+    // =====================================================
 
     const handleChange = (e) => {
 
+        const {
+            name,
+            value
+        } = e.target;
+
+
+        // -------------------------------------------------
+        // CONTACT NUMBER
+        // Allow only numbers
+        // -------------------------------------------------
+
+        if (name === "contact") {
+
+            const onlyNumbers =
+                value.replace(/\D/g, "");
+
+
+            setSupplier({
+
+                ...supplier,
+
+                contact: onlyNumbers
+
+            });
+
+            return;
+
+        }
+
+
+        // -------------------------------------------------
+        // NORMAL INPUT
+        // -------------------------------------------------
+
         setSupplier({
+
             ...supplier,
-            [e.target.name]: e.target.value
+
+            [name]: value
+
         });
 
     };
 
 
-    // =========================================================
+    // =====================================================
     // SUBMIT FORM
-    // =========================================================
+    // =====================================================
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
 
 
-        // Supplier name validation
+        // =================================================
+        // VALIDATION
+        // =================================================
+
+        // Supplier name
         if (!supplier.name.trim()) {
 
-            alert("Supplier name is required");
+            showWarning(
+                "Supplier name is required."
+            );
+
             return;
 
         }
 
 
-        // Contact validation
+        // Supplier name minimum length
+        if (supplier.name.trim().length < 2) {
+
+            showWarning(
+                "Supplier name must contain at least 2 characters."
+            );
+
+            return;
+
+        }
+
+
+        // Contact
         if (
             supplier.contact &&
-            !/^[0-9]{10}$/.test(supplier.contact)
+            !/^[0-9]{10}$/.test(
+                supplier.contact
+            )
         ) {
 
-            alert("Enter valid 10 digit contact number");
+            showWarning(
+                "Please enter a valid 10-digit contact number."
+            );
+
             return;
 
         }
 
 
-        // Email validation
+        // Email
         if (
             supplier.email &&
-            !/\S+@\S+\.\S+/.test(supplier.email)
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                supplier.email
+            )
         ) {
 
-            alert("Enter valid email address");
+            showWarning(
+                "Please enter a valid email address."
+            );
+
             return;
 
         }
 
+
+        // =================================================
+        // GET TOKEN
+        // =================================================
+
+        const token =
+            localStorage.getItem("token");
+
+
+        if (!token) {
+
+            showError(
+                "Your session has expired. Please login again."
+            );
+
+            return;
+
+        }
+
+
+        // =================================================
+        // API REQUEST
+        // =================================================
 
         try {
 
             setLoading(true);
 
 
-            const token = localStorage.getItem("token");
+            const response = await axios.post(
+
+                "http://localhost:8080/api/suppliers",
+
+                {
+                    name: supplier.name.trim(),
+                    contact: supplier.contact.trim(),
+                    email: supplier.email.trim(),
+                    address: supplier.address.trim()
+                },
+
+                {
+                    headers: {
+
+                        Authorization:
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+
+                    }
+
+                }
+
+            );
 
 
-            if (!token) {
+            console.log(
+                "Supplier response:",
+                response.data
+            );
 
-                alert("Session expired. Please login again");
+
+            // =================================================
+            // SUCCESS
+            // =================================================
+
+            showSuccess(
+                "Supplier added successfully."
+            );
+
+
+            // Clear form
+            setSupplier(initialState);
+
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Supplier Error:",
+                error
+            );
+
+
+            // =================================================
+            // 401
+            // =================================================
+
+            if (
+                error.response?.status === 401
+            ) {
+
+                showError(
+                    "Your session is invalid or expired. Please login again."
+                );
+
                 return;
 
             }
 
 
-            await axios.post(
-                "http://localhost:8080/api/suppliers",
-                supplier,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
+            // =================================================
+            // 403
+            // =================================================
+
+            if (
+                error.response?.status === 403
+            ) {
+
+                showError(
+                    "Access denied. Only administrators can add suppliers."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // 400
+            // =================================================
+
+            if (
+                error.response?.status === 400
+            ) {
+
+                let message =
+                    "Invalid supplier information.";
+
+
+                if (
+                    typeof error.response.data ===
+                    "string"
+                ) {
+
+                    message =
+                        error.response.data;
+
                 }
+
+                else if (
+                    error.response.data?.message
+                ) {
+
+                    message =
+                        error.response.data.message;
+
+                }
+
+
+                showWarning(message);
+
+                return;
+
+            }
+
+
+            // =================================================
+            // 409
+            // =================================================
+
+            if (
+                error.response?.status === 409
+            ) {
+
+                showWarning(
+                    error.response.data?.message ||
+                    "A supplier with these details already exists."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // 500
+            // =================================================
+
+            if (
+                error.response?.status >= 500
+            ) {
+
+                showError(
+                    "Server error. Please try again later."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // SERVER NOT AVAILABLE
+            // =================================================
+
+            if (
+                !error.response
+            ) {
+
+                showError(
+                    "Unable to connect to the server. Please make sure the backend is running."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // GENERAL ERROR
+            // =================================================
+
+            showError(
+                error.response?.data?.message ||
+                "Unable to add supplier. Please try again."
             );
-
-
-            alert("Supplier Added Successfully");
-
-
-            setSupplier(initialState);
-
-
-        } catch (error) {
-
-            console.error("Supplier Error:", error);
-
-
-            if (error.response) {
-
-                if (error.response.status === 403) {
-
-                    alert("Access Denied. Login as ADMIN.");
-
-                }
-
-                else if (error.response.status === 401) {
-
-                    alert("Unauthorized. Please login again.");
-
-                }
-
-                else {
-
-                    alert(
-                        error.response.data?.message ||
-                        "Unable to add supplier"
-                    );
-
-                }
-
-            }
-
-            else {
-
-                alert("Server is not reachable");
-
-            }
 
         }
 
@@ -162,6 +396,10 @@ function AddSupplier() {
 
     };
 
+
+    // =====================================================
+    // RENDER
+    // =====================================================
 
     return (
 
@@ -1156,7 +1394,11 @@ function InputBox({
 
 
                 <input
-                    type={name === "email" ? "email" : "text"}
+                    type={
+                        name === "email"
+                            ? "email"
+                            : "text"
+                    }
                     name={name}
                     value={value}
                     onChange={change}
