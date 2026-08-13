@@ -5,16 +5,24 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.medicalinventory.backend.entity.Supplier;
+import com.medicalinventory.backend.repository.MedicineRepository;
+import com.medicalinventory.backend.repository.PurchaseOrderRepository;
 import com.medicalinventory.backend.repository.SupplierRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class SupplierService {
     private final SupplierRepository supplierRepository;
     public final NotificationService notificationService;
+    private final MedicineRepository medicineRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
 
-    public SupplierService(SupplierRepository supplierRepository, NotificationService notificationService) {
+    public SupplierService(SupplierRepository supplierRepository, NotificationService notificationService, MedicineRepository medicineRepository, PurchaseOrderRepository purchaseOrderRepository) {
         this.supplierRepository = supplierRepository;
         this.notificationService = notificationService;
+        this.medicineRepository = medicineRepository;
+        this.purchaseOrderRepository = purchaseOrderRepository;
     }
 
     // Get all suppliers
@@ -28,6 +36,7 @@ public class SupplierService {
     }
 
     // Add supplier (save)
+    @Transactional
     public Supplier saveSupplier(Supplier supplier) {
         if(supplierRepository.existsByEmail(supplier.getEmail())) {
             throw new RuntimeException("Supplier email already exists");
@@ -40,6 +49,7 @@ public class SupplierService {
     }
 
     // Update supplier 
+    @Transactional
     public Supplier updateSupplier(Long id, Supplier supplier) {
         Supplier existingSupplier = supplierRepository.findById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
 
@@ -61,15 +71,30 @@ public class SupplierService {
         return updatedSupplier;
     }
 
-    // Delete supplier
+    // Delete supplier (With Proper Constraints)
+    @Transactional
     public void deleteSupplier(Long id) {
         Supplier supplier = supplierRepository.findById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
+
+        boolean hasMedicines = medicineRepository.existsBySupplier(supplier);
+        if (hasMedicines) {
+            throw new RuntimeException("Cannot delete supplier '" + supplier.getSupplierName() 
+                + "' because active medicines are linked to it. Please reassign or delete the medicines first.");
+        }
+
+        boolean hasPendingOrders = purchaseOrderRepository.existsBySupplierAndStatusIgnoreCase(supplier, "Pending");
+        if (hasPendingOrders) {
+            throw new RuntimeException("Cannot delete supplier '" + supplier.getSupplierName() 
+                + "' because it has active Pending Purchase Orders. Please process or cancel the orders first.");
+        }
+
+        purchaseOrderRepository.unlinkSupplierFromPurchaseOrders(supplier);
 
         String supplierName = supplier.getSupplierName();
 
         supplierRepository.delete(supplier);
 
-        notificationService.createNotification(null, "SUPPLIER_DELETED",  supplierName + " supplier deleted successfully.", "Push");
+        notificationService.createNotification(null, "SUPPLIER_DELETED", supplierName + " supplier deleted successfully.", "Push");
     }
     
 }

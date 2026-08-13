@@ -13,7 +13,7 @@ public class PurchaseOrder {
     private Long orderId;
 
     @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
+    @JoinColumn(name = "supplier_id", nullable = true)
     private Supplier supplier;
 
     @ManyToOne
