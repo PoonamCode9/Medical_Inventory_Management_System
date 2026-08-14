@@ -62,9 +62,50 @@ function AddMedicine() {
         };
 
         try {
-            await API.post("/medicines", requestBody);
-            toast.success("Medicine added successfully");
-            navigate("/dashboard/medicines");
+            const response = await API.post("/medicines", requestBody);
+            navigate("/dashboard/medicines")
+            toast(
+                (t) => (
+                <div className="space-y-3">
+                    <div>
+                    <p className="font-bold text-slate-800 text-sm">
+                        Medicine Added Successfully!
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Would you like to add initial stock for this medicine now?
+                    </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                    <button
+                        onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate("/dashboard/inventory/add", {
+                            state: {
+                            autoSelectMedicineId:
+                                response.data?.medicineId || response.data?.id,
+                            },
+                        });
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition cursor-pointer"
+                    >
+                        Go to Add Stock ➔
+                    </button>
+
+                    <button
+                        onClick={() => {
+                        toast.dismiss(t.id);
+                        navigate("/dashboard/medicines");
+                        }}
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer"
+                    >
+                        Skip for Now
+                    </button>
+                    </div>
+                </div>
+                ),
+                { duration: 6000, position: "top-center" }
+            );   
         }
         catch(error) {
             console.log(error);

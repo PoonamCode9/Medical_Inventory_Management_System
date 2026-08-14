@@ -1,21 +1,30 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../api/Api";
 import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
 function AddInventory() {
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [medicines, setMedicines] = useState([]);
     const [inventory, setInventory] = useState({
         medicineId: "", 
         quantity: ""
     });
 
-    const fetchMedicines =  async () => {
+    const fetchMedicines = async () => {
         try {
             const response = await API.get("/inventory/available-medicines");
             setMedicines(response.data);
+            
+            if (location.state?.autoSelectMedicineId) {
+                setInventory((prev) => ({
+                    ...prev,
+                    medicineId: String(location.state.autoSelectMedicineId),
+                }));
+            }
         } 
         catch(error) {
             console.log(error);
@@ -83,24 +92,48 @@ function AddInventory() {
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="medicine" className="block w-max mb-2 font-medium">Medicine</label>
-                            <select id="medicine" className="w-full border rounded-lg p-3" name="medicineId" value={inventory.medicineId} onChange={handleValueChange}>
+                            <select 
+                                id="medicine" 
+                                className="w-full border rounded-lg p-3 bg-white" 
+                                name="medicineId" 
+                                value={inventory.medicineId} 
+                                onChange={handleValueChange}
+                            >
                                 <option value="" disabled>Select Medicine</option>
                                 {
                                     medicines.map((medicine) => (
-                                        <option key={medicine.medicineId} value={medicine.medicineId}>{medicine.medicineName}</option>
+                                        <option key={medicine.medicineId} value={medicine.medicineId}>
+                                            {medicine.medicineName} {medicine.batchNo ? `(${medicine.batchNo})` : ""}
+                                        </option>
                                     ))
                                 }
                             </select>
                             {medicines.length === 0 && (
-                                <p className="text-red-500 mt-2">No medicines available to add inventory</p>
+                                <p className="text-red-500 text-xs mt-2">No medicines available to add inventory</p>
                             )}
                         </div>
                         <div>
                             <label htmlFor="quantity" className="block w-max mb-2 font-medium">Quantity</label>
-                            <input type="number" placeholder="Enter quantity" id="quantity" className="w-full border rounded-lg p-3" name="quantity" value={inventory.quantity} onChange={handleValueChange}/>
+                            <input 
+                                type="number" 
+                                placeholder="Enter quantity" 
+                                id="quantity" 
+                                className="w-full border rounded-lg p-3" 
+                                name="quantity" 
+                                value={inventory.quantity} 
+                                onChange={handleValueChange}
+                            />
                         </div>
                         <div className="flex justify-end pt-2">
-                            <button type="submit" className={`px-6 py-3 rounded-lg text-white font-medium transition ${medicines.length === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-70 cursor-pointer"}`} disabled={medicines.length === 0}>
+                            <button 
+                                type="submit" 
+                                className={`px-6 py-3 rounded-lg text-white font-medium transition ${
+                                    medicines.length === 0 
+                                    ? "bg-gray-400 cursor-not-allowed" 
+                                    : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                                }`} 
+                                disabled={medicines.length === 0}
+                            >
                                 Save Inventory
                             </button>
                         </div>
@@ -108,7 +141,7 @@ function AddInventory() {
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
 export default AddInventory;
