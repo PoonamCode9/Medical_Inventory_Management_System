@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../api/Api";
+import toast from "react-hot-toast";
 import {
   ShoppingCart,
   Plus,
@@ -61,6 +62,7 @@ function PurchaseOrders() {
       setInputValues(initialInputs);
     } catch (error) {
       console.error("Error fetching purchase orders:", error);
+      toast.error("Failed to load purchase orders.");
     } finally {
       setLoading(false);
     }
@@ -97,12 +99,12 @@ function PurchaseOrders() {
     const damQty = parseInt(orderData.damagedQuantity ?? 0);
 
     if (recQty < 0 || damQty < 0) {
-      alert("Quantity cannot be negative!");
+      toast.error("Quantity cannot be negative!");
       return;
     }
 
     if (recQty > order.quantity) {
-      alert(`Received Quantity (${recQty}) cannot exceed Ordered Quantity (${order.quantity})!`);
+      toast.error(`Received Quantity (${recQty}) cannot exceed Ordered Quantity (${order.quantity})!`);
       return;
     }
 
@@ -113,25 +115,53 @@ function PurchaseOrders() {
         remarks: orderData.remarks || "",
       });
 
-      alert("Stock received successfully & inventory updated!");
+      toast.success("Stock received successfully & inventory updated!");
       fetchOrdersAndDropdowns();
     } catch (error) {
       console.error("Error receiving order:", error);
-      alert(error.response?.data || "Failed to process order!");
+      toast.error(error.response?.data || "Failed to process order!");
     }
   };
 
   // Cancel Order
-  const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this purchase order?")) return;
+  const handleCancelOrder = (orderId) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium text-slate-800">
+            Are you sure you want to cancel purchase order <span className="font-bold">#{orderId}</span>?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-2.5 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Keep Order
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                confirmCancelOrder(orderId);
+              }}
+              className="px-2.5 py-1 text-xs bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition cursor-pointer"
+            >
+              Cancel Order
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
+    );
+  };
 
+  const confirmCancelOrder = async (orderId) => {
     try {
       await API.put(`/purchase-orders/${orderId}/cancel`, {});
-      alert("Purchase Order Cancelled!");
+      toast.success("Purchase Order Cancelled!");
       fetchOrdersAndDropdowns();
     } catch (error) {
       console.error("Error cancelling order:", error);
-      alert(error.response?.data || "Failed to cancel order!");
+      toast.error(error.response?.data || "Failed to cancel order!");
     }
   };
 
@@ -148,13 +178,13 @@ function PurchaseOrders() {
 
       await API.post("/purchase-orders", payload);
 
-      alert("New Purchase Order created successfully!");
+      toast.success("New Purchase Order created successfully!");
       setShowModal(false);
       setNewOrder({ medicineId: "", supplierId: "", quantity: 1, expectedDelivery: "" });
       fetchOrdersAndDropdowns();
     } catch (error) {
       console.error("Error creating order:", error);
-      alert(error.response?.data || "Failed to create purchase order!");
+      toast.error(error.response?.data || "Failed to create purchase order!");
     }
   };
 

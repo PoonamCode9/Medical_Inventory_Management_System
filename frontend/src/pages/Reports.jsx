@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { downloadReport } from "../services/reportService";
+import toast from "react-hot-toast"; 
 import {
   FileText,
   Table,
@@ -8,7 +9,6 @@ import {
   Clock,
   AlertTriangle,
   ShoppingCart,
-  BarChart3,
   CheckCircle2,
   Sparkles,
   FileSpreadsheet,
@@ -24,9 +24,10 @@ function Reports() {
     setLoading(true);
     try {
       await downloadReport(reportType, format);
+      toast.success("Report downloaded successfully!");
     } catch (error) {
       console.error("Error downloading report:", error);
-      alert("Failed to download report. Please try again.");
+      toast.error("Failed to download report. Please try again.", { id: toastId });
     } finally {
       setLoading(false);
     }

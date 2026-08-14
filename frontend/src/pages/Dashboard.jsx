@@ -23,6 +23,7 @@ import SuppliersCard from "../components/dashboard/SuppliersCard";
 import API from "../api/Api";
 import { useNavigate } from "react-router-dom";
 import { downloadReport } from "../services/reportService";
+import toast from "react-hot-toast";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ function Dashboard() {
       setStats(res.data);
     } catch (error) {
       console.error("Error loading dashboard stats:", error);
+      toast.error("Failed to load dashboard statistics.");
     } finally {
       setLoading(false);
     }
@@ -67,12 +69,12 @@ function Dashboard() {
     try {
       await downloadReport(reportType, reportFormat);
       setShowExportModal(false);
+      toast.success("Report downloaded successfully!");
     } catch (error) {
       console.error("Error downloading report:", error);
-      alert("Failed to download report. Please try again.");
-    } finally {
+      toast.error("Failed to download report. Please try again.");
+    } font-medium;
       setIsExporting(false);
-    }
   };
 
   return (

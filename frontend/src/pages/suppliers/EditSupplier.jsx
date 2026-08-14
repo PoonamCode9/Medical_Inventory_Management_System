@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../api/Api";
+import toast from "react-hot-toast";
 
 function EditSupplier() {
     const navigate = useNavigate();
@@ -38,22 +39,22 @@ function EditSupplier() {
         e.preventDefault();
 
         if(!supplier.supplierName.trim() || !supplier.contactPerson.trim() || !supplier.phone.trim() || !supplier.email || !supplier.address.trim()) {
-            alert("Please enter all field");
+            toast.error("Please fill in all fields");
             return;
         }
 
         try {
             await API.put(`/suppliers/${id}`, supplier);
-            alert("Supplier updated Successfully");
+            toast.success("Supplier updated successfully");
             navigate("/dashboard/suppliers");
         }
         catch(error) {
             console.log(error);
             if(error.response) {
-                alert(error.response.data);
+                toast.error(error.response.data);
             }
             else {
-                alert("Something went wrong");
+                toast.error("Something went wrong");
             }
         }
     };

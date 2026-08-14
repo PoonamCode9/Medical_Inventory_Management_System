@@ -26,55 +26,66 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import OAuth2RedirectHandler from "./pages/OAuth2RedirectHandler";
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <>
+      <Toaster 
+        position="top-center" 
+        reverseOrder={false} 
+        toastOptions={{
+          duration: 4000,
+        }}
+      />
 
-        <Route path="/" element={<Login/>}></Route>
-        <Route path="/register" element={<Register />}></Route>
-        <Route path="/unauthorized" element={<Unauthorized />}></Route>
+      <BrowserRouter>
+        <Routes>
 
-        {/* New Password Reset Routes */}
-        <Route path="/forgot-password" element={<ForgotPassword />} ></Route>
-        <Route path="/reset-password" element={<ResetPassword />} ></Route>
+          <Route path="/" element={<Login/>}></Route>
+          <Route path="/register" element={<Register />}></Route>
+          <Route path="/unauthorized" element={<Unauthorized />}></Route>
 
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          {/* New Password Reset Routes */}
+          <Route path="/forgot-password" element={<ForgotPassword />} ></Route>
+          <Route path="/reset-password" element={<ResetPassword />} ></Route>
 
-        <Route 
-        path="/dashboard" 
-        element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DashboardLayout /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
-          <Route path="users" element={<ProtectedRoute allowedRoles={["Admin"]}><Users /></ProtectedRoute>} />
-          <Route path="profile" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Profile /></ProtectedRoute>} />
-          <Route path="medicines" >
-            <Route index  element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Medicines />
-            </ProtectedRoute>}></Route>
-            <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddMedicine /></ProtectedRoute>}></Route>
-            <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditMedicine /></ProtectedRoute>}></Route>
+          <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+
+          <Route 
+          path="/dashboard" 
+          element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DashboardLayout /></ProtectedRoute>}>
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<ProtectedRoute allowedRoles={["Admin"]}><Users /></ProtectedRoute>} />
+            <Route path="profile" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Profile /></ProtectedRoute>} />
+            <Route path="medicines" >
+              <Route index  element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Medicines />
+              </ProtectedRoute>}></Route>
+              <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddMedicine /></ProtectedRoute>}></Route>
+              <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditMedicine /></ProtectedRoute>}></Route>
+            </Route>
+            <Route path="suppliers" >
+              <Route index element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Suppliers /></ProtectedRoute>} ></Route>
+              <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddSupplier /></ProtectedRoute>}></Route>
+              <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditSupplier /></ProtectedRoute>}></Route>
+            </Route>
+            <Route path="inventory" >
+                <Route index element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Inventory /></ProtectedRoute>}></Route>
+                <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddInventory /></ProtectedRoute>}></Route>
+                <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditInventory /></ProtectedRoute>}></Route>
+            </Route>
+            <Route path="reports" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><Reports /></ProtectedRoute>} />
+            <Route path="notifications" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Notifications /></ProtectedRoute>} />
+            <Route path="settings" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Settings /></ProtectedRoute>} />
+            <Route path="expiry-tracker" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><ExpiryTracker /></ProtectedRoute>} />
+            <Route path="stock-logs" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><StockLogs /></ProtectedRoute>} />
+            <Route path="sales" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DispenseSale /></ProtectedRoute>} />
+            <Route path="purchase-orders" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><PurchaseOrders /></ProtectedRoute>} />
           </Route>
-          <Route path="suppliers" >
-            <Route index element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Suppliers /></ProtectedRoute>} ></Route>
-            <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddSupplier /></ProtectedRoute>}></Route>
-            <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditSupplier /></ProtectedRoute>}></Route>
-          </Route>
-          <Route path="inventory" >
-              <Route index element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Inventory /></ProtectedRoute>}></Route>
-              <Route path="add" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><AddInventory /></ProtectedRoute>}></Route>
-              <Route path="edit/:id" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><EditInventory /></ProtectedRoute>}></Route>
-          </Route>
-          <Route path="reports" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><Reports /></ProtectedRoute>} />
-          <Route path="notifications" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Notifications /></ProtectedRoute>} />
-          <Route path="settings" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><Settings /></ProtectedRoute>} />
-          <Route path="expiry-tracker" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><ExpiryTracker /></ProtectedRoute>} />
-          <Route path="stock-logs" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><StockLogs /></ProtectedRoute>} />
-          <Route path="sales" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist", "Staff"]}><DispenseSale /></ProtectedRoute>} />
-          <Route path="purchase-orders" element={<ProtectedRoute allowedRoles={["Admin", "Pharmacist"]}><PurchaseOrders /></ProtectedRoute>} />
-        </Route>
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </>
   )
 }
 

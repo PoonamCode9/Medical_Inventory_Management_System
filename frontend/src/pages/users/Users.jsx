@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import API from "../../api/Api";
+import toast from "react-hot-toast"; 
 import {
   Users as UsersIcon,
   UserPlus,
@@ -9,9 +10,7 @@ import {
   Edit2,
   Mail,
   Phone,
-  CheckCircle2,
   X,
-  AlertTriangle,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -33,16 +32,13 @@ const Users = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const [msg, setMsg] = useState("");
-  const [error, setError] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
 
   const getEmailFromToken = () => {
     try {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
-        if (!token) return null;
+      if (!token) return null;
 
       const base64Url = token.split(".")[1];
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -50,7 +46,7 @@ const Users = () => {
         atob(base64)
           .split("")
           .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join(""),
+          .join("")
       );
 
       const parsed = JSON.parse(jsonPayload);
@@ -85,7 +81,7 @@ const Users = () => {
       setUsers(response.data || []);
     } catch (err) {
       console.error("Error fetching users:", err);
-      setError("Failed to load users list.");
+      toast.error("Failed to load users list.");
     } finally {
       setLoading(false);
     }
@@ -95,6 +91,7 @@ const Users = () => {
     if (user.role && typeof user.role === "object") {
       return user.role.roleId;
     }
+    return user.roleId || user.role;
   };
 
   const getUserRoleName = (user) => {
@@ -148,10 +145,6 @@ const Users = () => {
 
   const handleAddUser = async (e) => {
     e.preventDefault();
-    setError("");
-    setMsg("");
-
-    const selectedRoleObj = ROLES.find((r) => r.id === Number(newUser.roleId));
 
     try {
       const payload = {
@@ -165,16 +158,15 @@ const Users = () => {
       };
 
       await API.post("/users", payload);
-      setMsg("New user created successfully!");
+      toast.success("New user created successfully!");
       handleCloseAddModal();
       fetchUsers();
-      setTimeout(() => setMsg(""), 4000);
     } catch (err) {
       console.error("Add user error:", err);
-      setError(
+      toast.error(
         err.response?.data?.message ||
           (typeof err.response?.data === "string" ? err.response?.data : "") ||
-          "Failed to create user.",
+          "Failed to create user."
       );
     }
   };
@@ -182,8 +174,6 @@ const Users = () => {
   const handleUpdateRole = async (e) => {
     e.preventDefault();
     if (!selectedUser) return;
-    setError("");
-    setMsg("");
 
     try {
       const userId = selectedUser.userId || selectedUser.id;
@@ -200,37 +190,63 @@ const Users = () => {
       };
 
       await API.put(`/users/${userId}`, payload);
-      setMsg(`Role updated to ${selectedRoleObj?.name} successfully!`);
+      toast.success(`Role updated to ${selectedRoleObj?.name} successfully!`);
       handleCloseEditModal();
       fetchUsers();
-      setTimeout(() => setMsg(""), 4000);
     } catch (err) {
       console.error("Update role error:", err);
-      setError(
+      toast.error(
         err.response?.data?.message ||
           (typeof err.response?.data === "string" ? err.response?.data : "") ||
-          "Failed to update role.",
+          "Failed to update role."
       );
     }
   };
 
-  const handleDeleteUser = async (userId, name) => {
-    if (window.confirm(`Are you sure you want to delete user "${name}"?`)) {
-      try {
-        await API.delete(`/users/${userId}`);
-        setMsg("User deleted successfully!");
-        fetchUsers();
-        setTimeout(() => setMsg(""), 4000);
-      } catch (err) {
-        console.error("Delete user error:", err);
-        setError(
-          err.response?.data?.message ||
-            (typeof err.response?.data === "string"
-              ? err.response?.data
-              : "") ||
-            "Failed to delete user.",
-        );
-      }
+  const handleDeleteUser = (userId, name) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-800">
+            Are you sure you want to delete user "{name}"?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmDeleteUser(userId);
+              }}
+              className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition cursor-pointer"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
+    );
+  };
+
+  const confirmDeleteUser = async (userId) => {
+    try {
+      await API.delete(`/users/${userId}`);
+      toast.success("User deleted successfully!");
+      fetchUsers();
+    } catch (err) {
+      console.error("Delete user error:", err);
+      toast.error(
+        err.response?.data?.message ||
+          (typeof err.response?.data === "string"
+            ? err.response?.data
+            : "") ||
+          "Failed to delete user."
+      );
     }
   };
 
@@ -278,19 +294,6 @@ const Users = () => {
           <UserPlus className="w-4 h-4" /> Add New User
         </button>
       </div>
-
-      {msg && (
-        <div className="p-4 text-xs font-semibold text-emerald-800 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-center gap-2.5 shadow-2xs animate-in fade-in duration-200">
-          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-          <span>{msg}</span>
-        </div>
-      )}
-      {error && (
-        <div className="p-4 text-xs font-semibold text-rose-800 bg-rose-50/90 border border-rose-200/90 rounded-xl flex items-center gap-2.5 shadow-2xs animate-in fade-in duration-200">
-          <AlertTriangle size={16} className="text-rose-600 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
         <div className="relative flex-1 max-w-md">

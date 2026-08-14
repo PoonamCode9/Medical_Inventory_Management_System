@@ -1,31 +1,45 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/Api";
+import toast from "react-hot-toast";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
+
+    if (!email.trim()) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await API.post("/auth/forgot-password", {
-        email: email,
+        email: email.trim(),
       });
-      setMessage(response.data);
+
+      toast.success(
+        typeof response.data === "string"
+          ? response.data
+          : "OTP sent successfully to your email!"
+      );
 
       setTimeout(() => {
         navigate("/reset-password");
-      }, 3000);
+      }, 2000);
     } catch (err) {
-      setError(err.response?.data || "Failed to send OTP. Please try again.");
+      console.error("Forgot password error:", err);
+      const errorMsg =
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response?.data : "") ||
+        "Failed to send OTP. Please try again.";
+
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -40,17 +54,6 @@ const ForgotPassword = () => {
         <p className="text-sm text-center text-gray-600">
           Enter your registered email address to receive a 6-digit OTP.
         </p>
-
-        {message && (
-          <div className="p-3 text-sm text-green-700 bg-green-100 rounded">
-            {message}
-          </div>
-        )}
-        {error && (
-          <div className="p-3 text-sm text-red-700 bg-red-100 rounded">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -70,7 +73,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none disabled:bg-gray-400 cursor-pointer"
+            className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none disabled:bg-gray-400 cursor-pointer transition-colors"
           >
             {loading ? "Sending OTP..." : "Send OTP"}
           </button>

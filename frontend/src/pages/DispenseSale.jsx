@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/Api';
-import { ShoppingCart, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const DispenseSale = () => {
   const [medicines, setMedicines] = useState([]);
   const [selectedMedicineId, setSelectedMedicineId] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,26 +19,28 @@ const DispenseSale = () => {
       setMedicines(res.data);
     } catch (err) {
       console.error('Failed to load medicines:', err);
+      toast.error('Failed to load medicines list.');
     }
   };
 
   const handleSale = async (e) => {
     e.preventDefault();
+
     if (!selectedMedicineId || !quantity || quantity <= 0) {
-      setMessage({ type: 'error', text: 'Please select a valid medicine and quantity.' });
+      toast.error('Please select a valid medicine and quantity.');
       return;
     }
 
     setLoading(true);
-    setMessage({ type: '', text: '' });
 
     try {
       await API.post(`/sales?medicineId=${selectedMedicineId}&quantity=${quantity}`);
-      setMessage({ type: 'success', text: 'Sale processed successfully! Stock updated & Log created.' });
+      toast.success('Sale processed successfully! Stock updated.');
       setQuantity('');
       setSelectedMedicineId('');
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data || 'Failed to process sale. Check stock.' });
+      const errorMsg = err.response?.data || 'Failed to process sale. Check stock.';
+      toast.error(typeof errorMsg === 'string' ? errorMsg : 'Failed to process sale.');
     } finally {
       setLoading(false);
     }
@@ -53,21 +55,6 @@ const DispenseSale = () => {
           </h2>
           <p className="text-gray-500 text-sm mt-1">Record medicine sales and update stock instantly.</p>
         </div>
-
-        {message.text && (
-          <div className={`p-3 rounded-md mb-5 text-sm flex items-start gap-2 border ${
-            message.type === 'success' 
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
-              : 'bg-rose-50 text-rose-800 border-rose-200'
-          }`}>
-            {message.type === 'success' ? (
-              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            )}
-            <span>{message.text}</span>
-          </div>
-        )}
 
         <form onSubmit={handleSale} className="space-y-5">
           <div>

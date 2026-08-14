@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/Api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Search,
   Plus,
@@ -14,7 +15,6 @@ import {
   Truck,
 } from "lucide-react";
 
-// Unique supplier avatar/badge color generator based on supplier name
 const getSupplierBadgeStyle = (name = "") => {
   const charCode = name.charCodeAt(0) || 0;
   const styles = [
@@ -50,19 +50,44 @@ function Suppliers() {
     fetchSuppliers();
   }, []);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this supplier?"
+  const handleDelete = (id) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-800">
+            Are you sure you want to delete this supplier?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmDelete(id);
+              }}
+              className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition cursor-pointer"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
     );
-    if (!confirmDelete) return;
+  };
 
+  const confirmDelete = async (id) => {
     try {
       await API.delete(`/suppliers/${id}`);
-      alert("Supplier deleted successfully!");
+      toast.success("Supplier deleted successfully");
       fetchSuppliers();
     } catch (err) {
       console.error("Delete error:", err);
-      alert(err.response?.data || "Failed to delete supplier");
+      toast.error(err.response?.data || "Failed to delete supplier");
     }
   };
 

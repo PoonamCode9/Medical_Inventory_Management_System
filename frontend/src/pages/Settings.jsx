@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/Api";
+import toast from "react-hot-toast";
 import {
   Building2,
   BellRing,
   Save,
-  CheckCircle2,
-  AlertTriangle,
   FileText,
   Boxes,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 
 const Settings = () => {
@@ -17,9 +17,6 @@ const Settings = () => {
 
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savingAlerts, setSavingAlerts] = useState(false);
-
-  const [msg, setMsg] = useState("");
-  const [error, setError] = useState("");
 
   const [settings, setSettings] = useState({
     pharmacyName: "",
@@ -36,7 +33,7 @@ const Settings = () => {
 
   const userRole =
     localStorage.getItem("role") || sessionStorage.getItem("role");
-    const isAdmin = userRole.toUpperCase() === "ADMIN";
+  const isAdmin = userRole?.toUpperCase() === "ADMIN";
 
   useEffect(() => {
     fetchSettings();
@@ -62,7 +59,7 @@ const Settings = () => {
       }
     } catch (err) {
       console.error("Fetch settings error:", err);
-      setError("Failed to load system settings.");
+      toast.error("Failed to load system settings.");
     } finally {
       setLoading(false);
     }
@@ -71,8 +68,6 @@ const Settings = () => {
   // Tab 1 Specific Save Handler
   const handleSaveGeneral = async (e) => {
     e.preventDefault();
-    setMsg("");
-    setError("");
     setSavingGeneral(true);
 
     const generalPayload = {
@@ -93,15 +88,14 @@ const Settings = () => {
       setSettings(updatedData);
       setOriginalSettings(updatedData);
 
-      setMsg("Pharmacy profile updated successfully!");
-      setTimeout(() => setMsg(""), 4000);
+      toast.success("Pharmacy profile updated successfully!");
     } catch (err) {
       console.error("Save general settings error:", err);
-      setError(
+      const errorMsg =
         err.response?.data?.message ||
-          (typeof err.response?.data === "string" ? err.response?.data : "") ||
-          "Failed to update pharmacy profile.",
-      );
+        (typeof err.response?.data === "string" ? err.response?.data : "") ||
+        "Failed to update pharmacy profile.";
+      toast.error(errorMsg);
     } finally {
       setSavingGeneral(false);
     }
@@ -110,27 +104,25 @@ const Settings = () => {
   // Tab 2 Specific Save Handler
   const handleSaveAlerts = async (e) => {
     e.preventDefault();
-    setMsg("");
-    setError("");
 
     const urgent = Number(settings.urgentExpiryDays);
     const expiringSoon = Number(settings.expiryAlertDays);
     const lowStock = Number(settings.lowStockThreshold);
 
     if (!urgent || !expiringSoon || !lowStock) {
-      setError("Please fill in all threshold values.");
+      toast.error("Please fill in all threshold values.");
       return;
     }
 
     if (urgent >= expiringSoon) {
-      setError(
-        `Urgent Expiry Window (${urgent} days) must be LESS than Expiring Soon Window (${expiringSoon} days).`,
+      toast.error(
+        `Urgent Expiry Window (${urgent} days) must be LESS than Expiring Soon Window (${expiringSoon} days).`
       );
       return;
     }
 
     if (urgent <= 0 || expiringSoon <= 0 || lowStock <= 0) {
-      setError("Threshold values must be positive numbers greater than 0.");
+      toast.error("Threshold values must be positive numbers greater than 0.");
       return;
     }
 
@@ -154,15 +146,14 @@ const Settings = () => {
       setSettings(updatedData);
       setOriginalSettings(updatedData);
 
-      setMsg("Inventory thresholds & rules updated successfully!");
-      setTimeout(() => setMsg(""), 4000);
+      toast.success("Inventory thresholds & rules updated successfully!");
     } catch (err) {
       console.error("Save alert settings error:", err);
-      setError(
+      const errorMsg =
         err.response?.data?.message ||
-          (typeof err.response?.data === "string" ? err.response?.data : "") ||
-          "Failed to update threshold rules.",
-      );
+        (typeof err.response?.data === "string" ? err.response?.data : "") ||
+        "Failed to update threshold rules.";
+      toast.error(errorMsg);
     } finally {
       setSavingAlerts(false);
     }
@@ -191,28 +182,11 @@ const Settings = () => {
         </div>
       </div>
 
-      {msg && (
-        <div className="p-4 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 shadow-2xs">
-          <CheckCircle2 size={16} className="text-emerald-600" />
-          <span>{msg}</span>
-        </div>
-      )}
-      {error && (
-        <div className="p-4 text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 shadow-2xs">
-          <AlertTriangle size={16} className="text-rose-600" />
-          <span>{error}</span>
-        </div>
-      )}
-
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-6 text-sm font-semibold">
         <button
           type="button"
-          onClick={() => {
-            setActiveTab("general");
-            setMsg("");
-            setError("");
-          }}
+          onClick={() => setActiveTab("general")}
           className={`pb-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
             activeTab === "general"
               ? "border-blue-600 text-blue-600"
@@ -223,11 +197,7 @@ const Settings = () => {
         </button>
         <button
           type="button"
-          onClick={() => {
-            setActiveTab("alerts");
-            setMsg("");
-            setError("");
-          }}
+          onClick={() => setActiveTab("alerts")}
           className={`pb-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
             activeTab === "alerts"
               ? "border-blue-600 text-blue-600"
@@ -401,7 +371,7 @@ const Settings = () => {
                     setSettings({
                       ...settings,
                       urgentExpiryDays:
-                        e.target.value === "" ? "" : e.target.value, 
+                        e.target.value === "" ? "" : e.target.value,
                     })
                   }
                   className="w-full border border-orange-300 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 disabled:bg-slate-100 font-semibold mt-2"

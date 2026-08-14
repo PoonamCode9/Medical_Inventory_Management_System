@@ -11,6 +11,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import API from "../api/Api";
+import toast from "react-hot-toast"; 
 
 function ExpiryTracker() {
   const role = localStorage.getItem("role") || sessionStorage.getItem("role");
@@ -44,24 +45,55 @@ function ExpiryTracker() {
       }
     } catch (error) {
       console.error("Error fetching expiry alerts or settings:", error);
+      toast.error("Failed to fetch expiry tracker data.");
     } finally {
       setLoading(false);
     }
   };
 
-  const removeExpiredStock = async (inventoryId, medicineName) => {
-    const confirmRemove = window.confirm(
-      `Are you sure you want to remove expired stock for ${medicineName}?`,
+  const removeExpiredStock = (inventoryId, medicineName) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-800">
+            Are you sure you want to remove expired stock for{" "}
+            <span className="font-semibold text-rose-600">{medicineName}</span>?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmRemoveExpiredStock(inventoryId);
+              }}
+              className="px-3 py-1 text-xs bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition cursor-pointer"
+            >
+              Remove Stock
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
     );
-    if (!confirmRemove) return;
+  };
 
+  const confirmRemoveExpiredStock = async (inventoryId) => {
     try {
       setRemovingId(inventoryId);
       await API.post(`/inventory/${inventoryId}/remove-expired`);
-      alert("Expired stock removed successfully.");
+      toast.success("Expired stock removed successfully!");
       fetchExpiryData();
     } catch (error) {
-      alert(error.response?.data || "Failed to remove expired stock.");
+      toast.error(
+        typeof error.response?.data === "string"
+          ? error.response.data
+          : "Failed to remove expired stock."
+      );
     } finally {
       setRemovingId(null);
     }
@@ -90,7 +122,7 @@ function ExpiryTracker() {
       result = result.filter(
         (item) =>
           item.medicineName?.toLowerCase().includes(query) ||
-          item.batchNo?.toLowerCase().includes(query),
+          item.batchNo?.toLowerCase().includes(query)
       );
     }
 
@@ -102,7 +134,7 @@ function ExpiryTracker() {
       result.sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0));
     } else if (sortBy === "name") {
       result.sort((a, b) =>
-        (a.medicineName || "").localeCompare(b.medicineName || ""),
+        (a.medicineName || "").localeCompare(b.medicineName || "")
       );
     }
 
@@ -309,7 +341,7 @@ function ExpiryTracker() {
                       <td className="p-4">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
-                            item.status,
+                            item.status
                           )}`}
                         >
                           {item.status ? item.status.replace("_", " ") : "N/A"}

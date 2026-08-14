@@ -14,12 +14,13 @@ import {
   Sparkles,
 } from "lucide-react";
 import API from "../api/Api";
+import toast from "react-hot-toast"; 
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("all"); // "all", "unread", "read
+  const [activeTab, setActiveTab] = useState("all"); 
 
   // Load notifications and unread count
   const fetchNotifications = async () => {
@@ -33,6 +34,7 @@ export default function Notifications() {
       setUnreadCount(countRes.data || 0);
     } catch (err) {
       console.error("Error fetching notifications:", err);
+      toast.error("Failed to load notifications.");
     } finally {
       setLoading(false);
     }
@@ -47,14 +49,16 @@ export default function Notifications() {
     try {
       setNotifications((prev) =>
         prev.map((n) =>
-          n.notificationId === id || n.id === id ? { ...n, isRead: true } : n,
-        ),
+          n.notificationId === id || n.id === id ? { ...n, isRead: true } : n
+        )
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
 
       await API.put(`/notifications/${id}/read`);
+      toast.success("Notification marked as read.");
     } catch (err) {
       console.error("Failed to mark notification as read:", err);
+      toast.error("Failed to mark notification as read.");
       fetchNotifications();
     }
   };
@@ -63,10 +67,10 @@ export default function Notifications() {
   const handleDeleteSingle = async (id) => {
     try {
       const targetNotif = notifications.find(
-        (n) => (n.notificationId || n.id) === id,
+        (n) => (n.notificationId || n.id) === id
       );
       setNotifications((prev) =>
-        prev.filter((n) => (n.notificationId || n.id) !== id),
+        prev.filter((n) => (n.notificationId || n.id) !== id)
       );
 
       if (targetNotif && !targetNotif.isRead) {
@@ -74,8 +78,10 @@ export default function Notifications() {
       }
 
       await API.delete(`/notifications/${id}`);
+      toast.success("Notification removed.");
     } catch (err) {
       console.error("Failed to delete notification:", err);
+      toast.error("Failed to delete notification.");
       fetchNotifications();
     }
   };
@@ -86,19 +92,56 @@ export default function Notifications() {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
       await API.put("/notifications/read-all");
+      toast.success("All notifications marked as read.");
     } catch (err) {
       console.error("Failed to mark all as read:", err);
+      toast.error("Failed to mark all as read.");
       fetchNotifications();
     }
   };
 
   // Clear all read notifications
-  const handleDeleteRead = async () => {
+  const handleDeleteRead = () => {
+    const readCountToClear = notifications.filter((n) => n.isRead).length;
+    if (readCountToClear === 0) return;
+
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium text-slate-800">
+            Clear all <span className="font-bold">{readCountToClear}</span> read notifications?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-2.5 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmDeleteRead();
+              }}
+              className="px-2.5 py-1 text-xs bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 4000, position: "top-center" }
+    );
+  };
+
+  const confirmDeleteRead = async () => {
     try {
       setNotifications((prev) => prev.filter((n) => !n.isRead));
       await API.delete("/notifications/read");
+      toast.success("Read notifications cleared.");
     } catch (err) {
       console.error("Failed to clear read notifications:", err);
+      toast.error("Failed to clear read notifications.");
       fetchNotifications();
     }
   };

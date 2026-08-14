@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../api/Api";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   Search,
   Plus,
@@ -12,7 +13,6 @@ import {
   Tag,
 } from "lucide-react";
 
-// Category ke basis par rich soft-colored badges define karne wala helper function
 const getCategoryBadgeStyle = (categoryName = "") => {
   const cat = categoryName.toLowerCase().trim();
 
@@ -35,7 +35,6 @@ const getCategoryBadgeStyle = (categoryName = "") => {
     return "bg-teal-50 text-teal-700 border-teal-200/80";
   }
 
-  // Fallback dynamic color assignment based on category name character hash
   const colorList = [
     "bg-indigo-50 text-indigo-700 border-indigo-200/80",
     "bg-cyan-50 text-cyan-700 border-cyan-200/80",
@@ -92,22 +91,47 @@ function Medicines() {
     }
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this medicine?"
+  const handleDelete = (id) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-800">
+            Are you sure you want to delete this medicine?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmDelete(id);
+              }}
+              className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition cursor-pointer"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
     );
-    if (!confirmDelete) return;
+  };
 
+  const confirmDelete = async (id) => {
     try {
       await API.delete(`/medicines/${id}`);
-      alert("Medicine Deleted Successfully");
+      toast.success("Medicine deleted successfully");
       fetchMedicines();
     } catch (error) {
       console.error("Delete error:", error);
       if (error.response?.data) {
-        alert(error.response.data);
+        toast.error(error.response.data);
       } else {
-        alert("Something went wrong while deleting");
+        toast.error("Something went wrong while deleting");
       }
     }
   };

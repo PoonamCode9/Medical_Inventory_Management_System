@@ -1,6 +1,8 @@
 import { useState } from "react";
 import API from "../api/Api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 function Register() {
   const [fullname, setFullname] = useState("");
@@ -10,6 +12,7 @@ function Register() {
   const [confirmPass, setConfirmPass] = useState("");
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -22,36 +25,41 @@ function Register() {
       !confirmPass ||
       !phone.trim()
     ) {
-      alert("Please enter all fields");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
-    if (password != confirmPass) {
-      alert("Passwords do not match");
+    if (password !== confirmPass) {
+      toast.error("Passwords do not match.");
       return;
     }
 
     const userData = {
-      fullName: fullname,
-      email: email,
+      fullName: fullname.trim(),
+      email: email.trim(),
       password: password,
-      phone: phone,
+      phone: phone.trim(),
     };
-    console.log(userData);
+
+    setLoading(true);
 
     try {
       const response = await API.post("/auth/register", userData);
-      console.log(response.data);
-      alert("Register Successfully");
+      toast.success("Account created successfully! Please login.");
       navigate("/");
     } catch (error) {
-      console.log(error);
-
-      if (error.response) {
-        alert(error.response.data);
+      console.error(error);
+      if (error.response?.data) {
+        toast.error(
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "Registration failed."
+        );
       } else {
-        alert("Something went wrong");
+        toast.error("Something went wrong. Please try again.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,7 +70,7 @@ function Register() {
   return (
     <div className="flex items-center justify-center h-screen overflow-hidden">
       {/* Left side */}
-      <div className="w-1/2 relative">
+      <div className="w-1/2 relative hidden md:block">
         <img
           src="/medicine.jpg"
           alt="medicineImg"
@@ -87,56 +95,59 @@ function Register() {
       </div>
 
       {/* Right side */}
-      <div className="flex w-1/2 flex-col justify-center bg-white px-15 py-4 text-center">
+      <div className="flex w-full md:w-1/2 flex-col justify-center bg-white px-8 sm:px-16 py-4 text-center h-screen overflow-y-auto">
         <h1 className="text-4xl font-extrabold text-blue-700">MediStock</h1>
-        <p className="text-gray-500 mt-2">
+        <p className="text-gray-500 mt-1 text-sm">
           Medical Inventory Management Platform
         </p>
-        <h2 className="text-2xl font-semibold mt-3">Create Account</h2>
-        <p className="text-gray-500 mt-2">Register to get started</p>
-        <form className="mt-5 space-y-2" onSubmit={handleRegister}>
+        <h2 className="text-2xl font-semibold mt-3 text-slate-800">Create Account</h2>
+        <p className="text-gray-500 text-xs mt-1">Register to get started</p>
+
+        <form className="mt-4 space-y-3" onSubmit={handleRegister}>
           <div>
             <label
-              className="block w-max mb-1 font-bold text-start text-sm"
+              className="block w-max mb-1 font-bold text-start text-xs text-slate-700"
               htmlFor="fullname"
             >
               Full Name
             </label>
             <input
-              className="w-full border rounded-lg px-4 py-2 focus:ring-blue-500 shadow-sm"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-2xs"
               id="fullname"
               type="text"
               placeholder="Enter your full name"
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
-            ></input>
+            />
           </div>
+
           <div>
             <label
-              className="block w-max mb-1 font-bold text-start text-sm"
+              className="block w-max mb-1 font-bold text-start text-xs text-slate-700"
               htmlFor="email"
             >
               Email Address
             </label>
             <input
-              className="w-full border rounded-lg px-4 py-2 focus:ring-blue-500 shadow-sm"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-2xs"
               id="email"
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            ></input>
+            />
           </div>
+
           <div>
             <label
-              className="block w-max mb-1 font-bold text-start text-sm"
+              className="block w-max mb-1 font-bold text-start text-xs text-slate-700"
               htmlFor="password"
             >
               Password
             </label>
             <div className="relative">
               <input
-                className="w-full border rounded-lg pl-4 pr-12 py-2 focus:ring-blue-500 shadow-sm"
+                className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-2xs"
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
@@ -146,19 +157,16 @@ function Register() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
-                {showPassword ? (
-                  <i className="fa-solid fa-eye-slash text-lg"></i>
-                ) : (
-                  <i className="fa-solid fa-eye text-lg"></i>
-                )}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
+
           <div>
             <label
-              className="block w-max mb-1 font-bold text-start text-sm"
+              className="block w-max mb-1 font-bold text-start text-xs text-slate-700"
               htmlFor="confirm_pass"
             >
               Confirm Password
@@ -167,7 +175,7 @@ function Register() {
               <input
                 type={showConfirmPass ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="w-full border rounded-lg pl-4 pr-12 py-2 focus:ring-blue-500 shadow-sm"
+                className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-2xs"
                 id="confirm_pass"
                 value={confirmPass}
                 onChange={(e) => setConfirmPass(e.target.value)}
@@ -175,52 +183,56 @@ function Register() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPass(!showConfirmPass)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
-                {showConfirmPass ? (
-                  <i className="fa-solid fa-eye-slash text-lg"></i>
-                ) : (
-                  <i className="fa-solid fa-eye text-lg"></i>
-                )}
+                {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
+
           <div>
             <label
-              className="block w-max mb-1 font-bold text-start text-sm"
+              className="block w-max mb-1 font-bold text-start text-xs text-slate-700"
               htmlFor="phone"
             >
               Phone Number
             </label>
             <input
-              className="w-full border rounded-lg px-4 py-2 focus:ring-blue-500 shadow-sm"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-2xs"
               id="phone"
               type="text"
               placeholder="Enter your phone number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-            ></input>
+            />
           </div>
-          <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg cursor-pointer">
-            Register
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 active:bg-blue-800 disabled:bg-slate-300 transition-colors shadow-sm cursor-pointer text-sm mt-2"
+          >
+            {loading ? "Creating Account..." : "Register"}
           </button>
         </form>
-        <div className="mt-2">
-          <p className="mb-2">or</p>
+
+        <div className="mt-3">
+          <p className="mb-2 text-xs text-slate-400">or</p>
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full border py-2 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition duration-300 cursor-pointer flex justify-center items-center gap-3"
+            className="w-full border border-slate-200 py-2 rounded-lg font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer flex justify-center items-center gap-2 text-sm shadow-2xs"
           >
-            <img src="/google-logo.png" alt="googleLogo" className="w-5" />
+            <img src="/google-logo.png" alt="googleLogo" className="w-4 h-4" />
             Signup with Google
           </button>
         </div>
-        <div className="flex justify-between mt-2">
-          <p>Already have an account?</p>
-          <a href="/" className="text-blue-600 hover:underline font-medium">
+
+        <div className="flex justify-between items-center mt-4 text-xs">
+          <p className="text-slate-500">Already have an account?</p>
+          <Link to="/" className="text-blue-600 hover:underline font-semibold">
             Login
-          </a>
+          </Link>
         </div>
       </div>
     </div>

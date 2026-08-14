@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../api/Api";
+import toast from "react-hot-toast";
 
 function EditInventory() {
     const navigate = useNavigate();
@@ -29,22 +30,22 @@ function EditInventory() {
         e.preventDefault();
         
         if(!inventory.quantity || Number(inventory.quantity) < 0) {
-            alert("Please enter valid quantity");
+            toast.error("Please enter valid quantity");
             return;
         }
 
         try {
             await API.put(`/inventory/${id}`, { quantity: Number(inventory.quantity) });
-            alert("Inventory updated Successfully");
+            toast.success("Inventory updated successfully");
             navigate("/dashboard/inventory");
         }
         catch(error) {
             console.log(error);
             if(error.response) {
-                alert(error.response.data);
+                toast.error(error.response.data);
             }
             else {
-                alert("Something went wrong");
+                toast.error("Something went wrong");
             }
         }
     }

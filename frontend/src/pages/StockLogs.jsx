@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/Api';
+import toast from 'react-hot-toast';
 import { Search, Filter, History } from 'lucide-react';
 
 const StockLogs = () => {
@@ -19,6 +20,11 @@ const StockLogs = () => {
       setLogs(res.data);
     } catch (err) {
       console.error('Failed to fetch stock logs:', err);
+      toast.error(
+        err.response?.data?.message ||
+          (typeof err.response?.data === 'string' ? err.response?.data : '') ||
+          'Failed to fetch stock logs.'
+      );
     } finally {
       setLoading(false);
     }
@@ -80,7 +86,7 @@ const StockLogs = () => {
   const filteredLogs = logs.filter((log) => {
     const matchesSearch =
       log.medicineName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.batchNo?.toLowerCase().includes(searchTerm.toLowerCase()) 
+      log.batchNo?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAction = selectedAction === 'ALL' || log.action === selectedAction;
 
     return matchesSearch && matchesAction;

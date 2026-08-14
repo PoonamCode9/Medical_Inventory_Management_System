@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../api/Api";
+import toast from "react-hot-toast";
 import {
   AlertTriangle,
   Plus,
@@ -70,19 +71,44 @@ const Inventory = () => {
     }
   }, [location.state, inventoryList]);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this inventory item?",
+  const handleDelete = (id) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-800">
+            Are you sure you want to delete this inventory item?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 font-medium transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                confirmDelete(id);
+              }}
+              className="px-3 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition cursor-pointer"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-center" }
     );
-    if (!confirmDelete) return;
+  };
 
+  const confirmDelete = async (id) => {
     try {
       await API.delete(`/inventory/${id}`);
-      alert("Inventory deleted successfully");
+      toast.success("Inventory deleted successfully");
       fetchInventoryAndSettings();
     } catch (error) {
       console.error("Delete error:", error);
-      alert(error.response?.data || "Something went wrong while deleting");
+      toast.error(error.response?.data || "Something went wrong while deleting");
     }
   };
 
@@ -97,12 +123,12 @@ const Inventory = () => {
     e.preventDefault();
 
     if (!damagedQty || Number(damagedQty) <= 0) {
-      alert("Please enter a valid quantity.");
+      toast.error("Please enter a valid quantity.");
       return;
     }
 
     if (Number(damagedQty) > selectedInventory?.quantity) {
-      alert("Damaged quantity cannot exceed available stock.");
+      toast.error("Damaged quantity cannot exceed available stock.");
       return;
     }
 
@@ -114,9 +140,9 @@ const Inventory = () => {
       );
       setShowDamagedModal(false);
       fetchInventoryAndSettings();
-      alert("Damaged stock reported & log updated successfully!");
+      toast.success("Damaged stock reported & log updated successfully!");
     } catch (err) {
-      alert(err.response?.data || "Failed to report damaged stock");
+      toast.error(err.response?.data || "Failed to report damaged stock");
     }
   };
 

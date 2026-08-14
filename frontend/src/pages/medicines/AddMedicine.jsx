@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/Api";
+import toast from "react-hot-toast";
 
 function AddMedicine() {
     const navigate = useNavigate();
@@ -39,12 +40,12 @@ function AddMedicine() {
         e.preventDefault();
 
         if(!medicine.medicineName.trim() || !medicine.category || !medicine.batchNo.trim() || !medicine.manufactureDate || !medicine.expiryDate || !medicine.price || !medicine.supplierId) {
-            alert("Please enter all field");
+            toast.error("Please fill in all fields");
             return;
         }
 
         if(Number(medicine.price) <= 0) {
-            alert("Please enter valid price");
+            toast.error("Please enter a valid price");
             return;
         }
  
@@ -62,16 +63,16 @@ function AddMedicine() {
 
         try {
             await API.post("/medicines", requestBody);
-            alert("Medicine Added Successfully");
+            toast.success("Medicine added successfully");
             navigate("/dashboard/medicines");
         }
         catch(error) {
             console.log(error);
             if(error.response) {
-                alert(error.response.data);
+                toast.error(error.response.data);
             }
             else {
-                alert("Something went wrong");
+                toast.error("Something went wrong");
             }
         }
     };

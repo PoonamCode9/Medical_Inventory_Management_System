@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../api/Api";
+import toast from "react-hot-toast";
 
 function EditMedicine() {
     const navigate = useNavigate();
@@ -33,16 +34,21 @@ function EditMedicine() {
     };
 
     const fetchMedicines = async () => {
-        const res = await API.get(`/medicines/${id}`);
-        setMedicine({
-            medicineName : res.data.medicineName,
-            category: res.data.category,
-            batchNo: res.data.batchNo,
-            manufactureDate : res.data.manufactureDate,
-            expiryDate : res.data.expiryDate,
-            price : Number(res.data.price),
-            supplierId : res.data.supplier ? Number(res.data.supplier.supplierId) : ""
-        });
+        try {
+            const res = await API.get(`/medicines/${id}`);
+            setMedicine({
+                medicineName : res.data.medicineName || "",
+                category: res.data.category || "",
+                batchNo: res.data.batchNo || "",
+                manufactureDate : res.data.manufactureDate || "",
+                expiryDate : res.data.expiryDate || "",
+                price : res.data.price ? Number(res.data.price) : "",
+                supplierId : res.data.supplier ? Number(res.data.supplier.supplierId) : ""
+            });
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to fetch medicine details");
+        }
     };
 
     useEffect(() => {
@@ -54,12 +60,12 @@ function EditMedicine() {
         e.preventDefault();
 
         if(!medicine.medicineName.trim() || !medicine.category || !medicine.batchNo.trim() || !medicine.manufactureDate || !medicine.expiryDate || !medicine.price || !medicine.supplierId) {
-            alert("Please enter all fields");
+            toast.error("Please fill in all fields");
             return;
         }
 
         if(Number(medicine.price) <= 0) {
-            alert("Please enter valid price");
+            toast.error("Please enter a valid price");
             return;
         }
 
@@ -77,16 +83,16 @@ function EditMedicine() {
 
         try {
             await API.put(`/medicines/${id}`, requestBody);
-            alert("Medicine updated Successfully");
+            toast.success("Medicine updated successfully");
             navigate("/dashboard/medicines");
         }
         catch(error) {
             console.log(error);
             if(error.response) {
-                alert(error.response.data);
+                toast.error(error.response.data);
             }
             else {
-                alert("Something went wrong");
+                toast.error("Something went wrong");
             }
         }
     };

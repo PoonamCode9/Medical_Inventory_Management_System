@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/Api";
+import toast from "react-hot-toast";
 import {
   User,
   ShieldCheck,
@@ -31,11 +32,6 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [profileMsg, setProfileMsg] = useState("");
-  const [profileError, setProfileError] = useState("");
-  const [passMsg, setPassMsg] = useState("");
-  const [passError, setPassError] = useState("");
-
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPass, setLoadingPass] = useState(false);
 
@@ -50,7 +46,7 @@ const Profile = () => {
       setFullName(response.data.fullName || "");
       setPhone(response.data.phone || "");
     } catch (err) {
-      setProfileError("Failed to load profile details.");
+      toast.error("Failed to load profile details.");
     }
   };
 
@@ -67,8 +63,6 @@ const Profile = () => {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
-    setProfileMsg("");
-    setProfileError("");
     setLoadingProfile(true);
 
     try {
@@ -79,10 +73,9 @@ const Profile = () => {
       setProfile(response.data);
       setFullName(response.data.fullName || "");
       setPhone(response.data.phone || "");
-      setProfileMsg("Profile updated successfully!");
-      setTimeout(() => setProfileMsg(""), 4000);
+      toast.success("Profile updated successfully!");
     } catch (err) {
-      setProfileError(getErrorMessage(err, "Failed to update profile."));
+      toast.error(getErrorMessage(err, "Failed to update profile."));
     } finally {
       setLoadingProfile(false);
     }
@@ -90,11 +83,9 @@ const Profile = () => {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setPassMsg("");
-    setPassError("");
 
     if (newPassword !== confirmPassword) {
-      setPassError("New password and Confirm password do not match.");
+      toast.error("New password and Confirm password do not match.");
       return;
     }
 
@@ -105,13 +96,12 @@ const Profile = () => {
         currentPassword,
         newPassword,
       });
-      setPassMsg(response.data || "Password updated successfully!");
+      toast.success(response.data || "Password updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setTimeout(() => setPassMsg(""), 4000);
     } catch (err) {
-      setPassError(getErrorMessage(err, "Failed to change password."));
+      toast.error(getErrorMessage(err, "Failed to change password."));
     } finally {
       setLoadingPass(false);
     }
@@ -157,17 +147,6 @@ const Profile = () => {
               Personal Information
             </h2>
           </div>
-
-          {profileMsg && (
-            <div className="p-3 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg">
-              {profileMsg}
-            </div>
-          )}
-          {profileError && (
-            <div className="p-3 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg">
-              {profileError}
-            </div>
-          )}
 
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div>
@@ -240,17 +219,6 @@ const Profile = () => {
                 Security & Password
               </h2>
             </div>
-
-            {passMsg && (
-              <div className="p-3 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg">
-                {passMsg}
-              </div>
-            )}
-            {passError && (
-              <div className="p-3 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg">
-                {passError}
-              </div>
-            )}
 
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>

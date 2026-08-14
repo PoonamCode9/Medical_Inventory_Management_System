@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/Api";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +22,7 @@ function Login() {
     e.preventDefault();
 
     if (!email.trim() || !password) {
-      alert("Please enter both email and password");
+      toast.error("Please enter both email and password.");
       return;
     }
 
@@ -40,15 +41,16 @@ function Login() {
         sessionStorage.setItem("role", response.data.role);
       }
 
-      alert("Login Successful");
+      toast.success("Login Successful!");
       navigate("/dashboard");
     } catch (error) {
-      console.log(error);
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("Something went wrong");
-      }
+      console.error("Login Error:", error);
+      const errorMsg =
+        error.response?.data?.message ||
+        (typeof error.response?.data === "string" ? error.response?.data : "") ||
+        "Something went wrong. Please try again.";
+
+      toast.error(errorMsg);
     }
   };
 
@@ -101,13 +103,13 @@ function Login() {
               Email Address
             </label>
             <input
-              className="w-full border rounded-lg px-4 py-3 focus:ring-blue-500 shadow-sm"
+              className="w-full border rounded-lg px-4 py-3 focus:ring-blue-500 focus:outline-none focus:border-blue-500 shadow-sm"
               id="email"
               type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            ></input>
+            />
           </div>
 
           <div>
@@ -119,7 +121,7 @@ function Login() {
             </label>
             <div className="relative">
               <input
-                className="w-full border rounded-lg pl-4 pr-12 py-3 focus:ring-blue-500 shadow-sm"
+                className="w-full border rounded-lg pl-4 pr-12 py-3 focus:ring-blue-500 focus:outline-none focus:border-blue-500 shadow-sm"
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
@@ -164,13 +166,16 @@ function Login() {
             </Link>
           </div>
 
-          <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg cursor-pointer">
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 shadow-lg cursor-pointer"
+          >
             Login
           </button>
         </form>
 
         <div className="mt-3">
-          <p className="mb-3">or</p>
+          <p className="mb-3 text-gray-400">or</p>
           <button
             type="button"
             onClick={handleGoogleLogin}
@@ -182,13 +187,13 @@ function Login() {
         </div>
 
         <div className="flex justify-between mt-3">
-          <p>Don't have an account?</p>
-          <a
-            href="/register"
+          <p className="text-gray-600">Don't have an account?</p>
+          <Link
+            to="/register"
             className="text-blue-600 hover:underline font-medium"
           >
             Register
-          </a>
+          </Link>
         </div>
       </div>
     </div>
