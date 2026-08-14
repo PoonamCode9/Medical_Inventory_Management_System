@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import MedicineStatusChart from "../components/MedicineStatusChart";
+import MedicineCategoryChart from "../components/MedicineCategoryChart";
+import ExpiryStatusChart from "../components/ExpiryStatusChart";
+import StockMovementChart from "../components/StockMovementChart";
 
 import "../styles/AdminDashboard.css";
 
@@ -157,6 +160,15 @@ function AdminDashboard() {
           <h2>{validCount}</h2>
         </div>
 
+      </div>
+      <div className="charts-row">
+        <MedicineStatusChart />
+        <MedicineCategoryChart />
+
+      </div>
+      <div className="charts-row">
+        <ExpiryStatusChart />
+        <StockMovementChart />
       </div>
 
     </div>

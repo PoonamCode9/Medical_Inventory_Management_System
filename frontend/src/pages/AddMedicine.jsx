@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "../styles/AddMedicine.css";
 
 function AddMedicine() {
   const [medicine, setMedicine] = useState({
@@ -55,8 +56,7 @@ function AddMedicine() {
       batchNo: medicine.batchNo,
       expiryDate: medicine.expiryDate,
       unitPrice: medicine.unitPrice,
-      quantity:
-        Number(medicine.quantity),
+      quantity: Number(medicine.quantity),
       supplier: {
         supplierId: Number(medicine.supplierId),
       },
@@ -92,7 +92,6 @@ function AddMedicine() {
         quantity: "",
         supplierId: "",
       });
-
     } catch (error) {
       console.error(error);
       alert("Error adding medicine.");
@@ -100,104 +99,134 @@ function AddMedicine() {
   };
 
   return (
-    <div className="medicine-container">
-      <h1>Add Medicine</h1>
+    <div className="medicine-page">
 
-      <form onSubmit={handleSubmit}>
+      <div className="medicine-card">
 
-        <label>Medicine Name</label><br />
-        <input
-          type="text"
-          name="medicineName"
-          value={medicine.medicineName}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+        {/* Page Heading */}
+        <div className="medicine-header">
+          <h1>Add Medicine</h1>
+          <p>Add a new medicine to your inventory</p>
+        </div>
 
-        <label>Category</label><br />
-        <input
-          type="text"
-          name="category"
-          value={medicine.category}
-          onChange={handleChange}
-        />
-        <br /><br />
+        {/* Medicine Details Section */}
+        <div className="medicine-section">
 
-        <label>Manufacturer</label><br />
-        <input
-          type="text"
-          name="manufacturer"
-          value={medicine.manufacturer}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <h2>Medicine Details</h2>
 
-        <label>Batch No</label><br />
-        <input
-          type="text"
-          name="batchNo"
-          value={medicine.batchNo}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <form onSubmit={handleSubmit}>
 
-        <label>Expiry Date</label><br />
-        <input
-          type="date"
-          name="expiryDate"
-          value={medicine.expiryDate}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+            <div className="medicine-field">
+              <label>Medicine Name</label>
+              <input
+                type="text"
+                name="medicineName"
+                value={medicine.medicineName}
+                onChange={handleChange}
+                placeholder="Enter medicine name"
+                required
+              />
+            </div>
 
-        <label>Unit Price</label><br />
-        <input
-          type="number"
-          name="unitPrice"
-          value={medicine.unitPrice}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+            <div className="medicine-field">
+              <label>Category</label>
+              <input
+                type="text"
+                name="category"
+                value={medicine.category}
+                onChange={handleChange}
+                placeholder="Enter category"
+              />
+            </div>
 
-        <label>Quantity</label><br />
-        <input
-          type="number"
-          name="quantity"
-          value={medicine.quantity}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+            <div className="medicine-field">
+              <label>Manufacturer</label>
+              <input
+                type="text"
+                name="manufacturer"
+                value={medicine.manufacturer}
+                onChange={handleChange}
+                placeholder="Enter manufacturer"
+              />
+            </div>
 
-        <label>Supplier</label><br />
-        <select
-          name="supplierId"
-          value={medicine.supplierId}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Supplier</option>
+            <div className="medicine-field">
+              <label>Batch No</label>
+              <input
+                type="text"
+                name="batchNo"
+                value={medicine.batchNo}
+                onChange={handleChange}
+                placeholder="Enter batch number"
+              />
+            </div>
 
-          {suppliers.map((supplier) => (
-            <option
-              key={supplier.supplierId}
-              value={supplier.supplierId}
-            >
-              {supplier.supplierName}
-            </option>
-          ))}
-        </select>
+            <div className="medicine-field">
+              <label>Expiry Date</label>
+              <input
+                type="date"
+                name="expiryDate"
+                value={medicine.expiryDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <br /><br />
+            <div className="medicine-field">
+              <label>Unit Price</label>
+              <input
+                type="number"
+                name="unitPrice"
+                value={medicine.unitPrice}
+                onChange={handleChange}
+                placeholder="Enter unit price"
+                required
+              />
+            </div>
 
-        <button type="submit">
-          Add Medicine
-        </button>
+            <div className="medicine-field">
+              <label>Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                value={medicine.quantity}
+                onChange={handleChange}
+                placeholder="Enter quantity"
+                required
+              />
+            </div>
 
-      </form>
+            <div className="medicine-field">
+              <label>Supplier</label>
+              <select
+                name="supplierId"
+                value={medicine.supplierId}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Supplier</option>
+
+                {suppliers.map((supplier) => (
+                  <option
+                    key={supplier.supplierId}
+                    value={supplier.supplierId}
+                  >
+                    {supplier.supplierName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" className="add-medicine-btn">
+              Add Medicine
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

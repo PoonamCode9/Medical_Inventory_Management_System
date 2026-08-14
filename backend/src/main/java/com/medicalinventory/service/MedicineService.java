@@ -3,6 +3,7 @@ package com.medicalinventory.service;
 import com.medicalinventory.entity.Medicine;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MedicineService {
 
@@ -21,4 +22,8 @@ public interface MedicineService {
     Medicine stockIn(Long medicineId, Integer quantity);
 
     Medicine stockOut(Long medicineId, Integer quantity);
+
+    Map<String, Long> getMedicineStatusCounts();
+
+    Map<String, Long> getMedicineCategoryCounts();
 }

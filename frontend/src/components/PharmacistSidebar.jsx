@@ -43,6 +43,10 @@ function PharmacistSidebar() {
                     View Suppliers
                 </li>
 
+                <li onClick={() => navigate("/pharmacist-reports")}>
+                    📄 Reports
+                </li>
+
                 <li onClick={() => navigate("/pharmacist-profile")}>
                     Profile
                 </li>

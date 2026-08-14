@@ -1,0 +1,160 @@
+.medicine-page {
+    min-height: 100vh;
+    padding: 35px 30px;
+    background: #f7f9fc;
+    box-sizing: border-box;
+}
+
+.medicine-card {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px 50px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+
+.medicine-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.medicine-header h1 {
+    margin: 0;
+    color: #123b70;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.medicine-header p {
+    margin: 10px 0 0;
+    color: #666;
+    font-size: 17px;
+}
+
+/* Section */
+
+.medicine-section {
+    border: 1px solid #e5e9ef;
+    border-radius: 10px;
+    padding: 30px 25px 35px;
+}
+
+.medicine-section h2 {
+    text-align: center;
+    margin: 0 0 30px;
+    color: #0878c9;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+/* Form */
+
+.medicine-section form {
+    width: 100%;
+}
+
+/* Individual field */
+
+.medicine-field {
+    margin-bottom: 22px;
+}
+
+.medicine-field label {
+    display: block;
+    text-align: center;
+    margin-bottom: 9px;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.medicine-field input,
+.medicine-field select {
+    display: block;
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #d7dce2;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    font-size: 15px;
+    box-sizing: border-box;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.medicine-field input::placeholder {
+    color: #999;
+}
+
+/* Focus */
+
+.medicine-field input:focus,
+.medicine-field select:focus {
+    border-color: #1689d5;
+    box-shadow: 0 0 0 3px rgba(22, 137, 213, 0.10);
+}
+
+/* Button */
+
+.add-medicine-btn {
+    display: block;
+    width: 220px;
+    height: 48px;
+    margin: 32px auto 0;
+    border: none;
+    border-radius: 8px;
+    background: #0878c9;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.add-medicine-btn:hover {
+    background: #0565aa;
+    transform: translateY(-1px);
+}
+
+.add-medicine-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+    .medicine-page {
+        padding: 20px 12px;
+    }
+
+    .medicine-card {
+        padding: 25px 18px;
+    }
+
+    .medicine-header h1 {
+        font-size: 28px;
+    }
+
+    .medicine-header p {
+        font-size: 15px;
+    }
+
+    .medicine-section {
+        padding: 25px 18px;
+    }
+
+    .medicine-section h2 {
+        font-size: 22px;
+    }
+
+    .add-medicine-btn {
+        width: 100%;
+    }
+}

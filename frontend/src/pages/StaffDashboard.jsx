@@ -1,6 +1,9 @@
 
 import { useEffect, useState } from "react";
 import "../styles/StaffDashboard.css";
+import MedicineStatusChart from "../components/MedicineStatusChart";
+import MedicineCategoryChart from "../components/MedicineCategoryChart";
+import StockMovementChart from "../components/StockMovementChart";
 
 function StaffDashboard() {
   const [totalMedicines, setTotalMedicines] = useState(0);
@@ -86,6 +89,10 @@ function StaffDashboard() {
           <p> Available stock</p>
           <h2>{inStockCount}</h2>
         </div>
+      </div>
+      <div className="charts-row">
+        <MedicineStatusChart />
+        <MedicineCategoryChart />
       </div>
     </div>
 

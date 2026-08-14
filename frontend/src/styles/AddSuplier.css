@@ -1,0 +1,176 @@
+/* Main page */
+.supplier-page {
+    min-height: 100vh;
+    padding: 35px 40px;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+}
+
+/* Main white card */
+.supplier-card {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 35px 45px 45px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+/* Page heading */
+.supplier-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.supplier-header h1 {
+    margin: 0;
+    color: #123b70;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.supplier-header p {
+    margin-top: 8px;
+    color: #777;
+    font-size: 16px;
+}
+
+/* Supplier details box */
+.supplier-section {
+    border: 1px solid #e1e5ea;
+    border-radius: 10px;
+    padding: 30px 35px 35px;
+}
+
+/* Section heading */
+.supplier-section h2 {
+    text-align: center;
+    margin: 0 0 30px;
+    color: #0878c9;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Individual field */
+.supplier-field {
+    margin-bottom: 22px;
+}
+
+/* Labels */
+.supplier-field label {
+    display: block;
+    text-align: center;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* Inputs */
+.supplier-field input,
+.supplier-field textarea {
+    display: block;
+    width: 100%;
+    padding: 0 14px;
+    border: 1px solid #d5dbe2;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #333;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Input height */
+.supplier-field input {
+    height: 46px;
+}
+
+/* Address textarea */
+.supplier-field textarea {
+    min-height: 100px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Placeholder */
+.supplier-field input::placeholder,
+.supplier-field textarea::placeholder {
+    color: #999;
+}
+
+/* Focus */
+.supplier-field input:focus,
+.supplier-field textarea:focus {
+    border-color: #0878c9;
+    box-shadow: 0 0 0 3px rgba(8, 120, 201, 0.10);
+}
+
+/* Button */
+.add-supplier-btn {
+    display: block;
+    width: 210px;
+    height: 46px;
+    margin: 32px auto 0;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: #0878c9;
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.add-supplier-btn:hover {
+    background-color: #0565aa;
+    transform: translateY(-1px);
+}
+
+.add-supplier-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    .supplier-page {
+        padding: 20px 12px;
+    }
+
+    .supplier-card {
+        padding: 25px 18px 30px;
+    }
+
+    .supplier-header h1 {
+        font-size: 28px;
+    }
+
+    .supplier-header p {
+        font-size: 14px;
+    }
+
+    .supplier-section {
+        padding: 25px 18px 30px;
+    }
+
+    .supplier-section h2 {
+        font-size: 21px;
+    }
+
+    .add-supplier-btn {
+        width: 100%;
+    }
+}

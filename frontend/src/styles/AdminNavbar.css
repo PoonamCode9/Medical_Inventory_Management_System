@@ -1,0 +1,100 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: white;
+    position: relative;
+}
+
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.notification {
+    position: relative;
+    cursor: pointer;
+    font-size: 22px;
+}
+
+
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+.notification-box {
+    position: absolute;
+    top: 40px;
+    right: -10px;
+    width: 260px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+.unread-notification,
+.read-notification {
+    padding: 8px;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+
+.unread-notification {
+    background: #e3f2fd;
+    font-weight: 600;
+}
+
+
+.read-notification {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 8px;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+
+.notification-box p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+
+.notification-box span {
+    font-size: 12px;
+}
+
+
+.notification-box button {
+    font-size: 11px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    cursor: pointer;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+
+button {
+    cursor: pointer;
+}

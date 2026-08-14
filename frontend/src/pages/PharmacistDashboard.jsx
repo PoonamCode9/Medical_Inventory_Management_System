@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 
 import "../styles/PharmacistDashboard.css";
 
+import MedicineStatusChart from "../components/MedicineStatusChart";
+import MedicineCategoryChart from "../components/MedicineCategoryChart";
+import ExpiryStatusChart from "../components/ExpiryStatusChart";
+import StockMovementChart from "../components/StockMovementChart";
+
 function PharmacistDashboard() {
 
   const [totalMedicines, setTotalMedicines] = useState(0);
@@ -130,6 +135,16 @@ function PharmacistDashboard() {
           <h2>{validCount}</h2>
         </div>
 
+      </div>
+
+      <div className="charts-row">
+        <MedicineStatusChart />
+        <MedicineCategoryChart />
+
+      </div>
+      <div className="charts-row">
+        <ExpiryStatusChart />
+        <StockMovementChart />
       </div>
 
 

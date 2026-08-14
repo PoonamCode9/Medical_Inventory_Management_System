@@ -24,6 +24,7 @@ import AdminLowStock from "./pages/AdminLowStock";
 import AdminLayout from "./layouts/AdminLayout";
 import StaffLayout from "./layouts/StaffLayout";
 import PharmacistLayout from "./layouts/PharmacistLayout";
+import Reports from "./pages/Reports";
 
 function App() {
   return (
@@ -91,6 +92,10 @@ function App() {
             path="/users"
             element={<ViewUsers />}
           />
+          <Route
+            path="/reports"
+            element={<Reports />}
+          />
 
           <Route
             path="/admin-profile"
@@ -131,7 +136,10 @@ function App() {
             path="/stock-logs"
             element={<StockLogs />}
           />
-
+          <Route
+            path="/staff-reports"
+            element={<Reports />}
+          />
           <Route
             path="/staff-profile"
             element={<StaffProfile />}
@@ -161,6 +169,11 @@ function App() {
           <Route
             path="/pharmacist-suppliers"
             element={<ViewSuppliers />}
+          />
+
+          <Route
+            path="/pharmacist-reports"
+            element={<Reports />}
           />
 
           <Route

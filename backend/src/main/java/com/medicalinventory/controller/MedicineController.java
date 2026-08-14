@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/medicines")
@@ -55,6 +56,16 @@ public class MedicineController {
     @GetMapping("/count")
     public ResponseEntity<Long> getMedicineCount() {
         return ResponseEntity.ok(medicineService.getMedicineCount());
+    }
+
+    @GetMapping("/status-count")
+    public ResponseEntity<Map<String, Long>> getMedicineStatusCounts() {
+        return ResponseEntity.ok(medicineService.getMedicineStatusCounts());
+    }
+
+    @GetMapping("/category-count")
+    public ResponseEntity<Map<String, Long>> getMedicineCategoryCounts() {
+        return ResponseEntity.ok(medicineService.getMedicineCategoryCounts());
     }
 
     @PutMapping("/{id}/stock-in/{quantity}")

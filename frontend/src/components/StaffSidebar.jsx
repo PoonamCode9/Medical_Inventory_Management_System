@@ -33,6 +33,10 @@ function StaffSidebar() {
                     Stock Logs
                 </li>
 
+                <li onClick={() => navigate("/staff-reports")}>
+                    📄 Reports
+                </li>
+
                 <li onClick={() => navigate("/staff-profile")}>
                     Profile
                 </li>

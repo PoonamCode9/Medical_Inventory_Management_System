@@ -87,6 +87,11 @@ function AdminSidebar() {
           </ul>
         )}
 
+        {/* Reports */}
+        <li onClick={() => navigate("/reports")}>
+          📄 Reports
+        </li>
+
         {/* Users */}
         <li onClick={() => navigate("/users")}>
           👥 Users

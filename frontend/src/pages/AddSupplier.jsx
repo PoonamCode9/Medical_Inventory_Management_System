@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/AddSuplier.css";
 
 function AddSupplier() {
 
@@ -55,65 +56,92 @@ function AddSupplier() {
   };
 
   return (
-    <div className="medicine-container">
-      <h1>Add Supplier</h1>
+    <div className="supplier-page">
 
-      <form onSubmit={handleSubmit}>
+      <div className="supplier-card">
 
-        <label>Supplier Name</label><br />
-        <input
-          type="text"
-          name="supplierName"
-          value={supplier.supplierName}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+        {/* Page Heading */}
+        <div className="supplier-header">
+          <h1>Add Supplier</h1>
+          <p>Add a new supplier to your inventory</p>
+        </div>
 
-        <label>Contact Person</label><br />
-        <input
-          type="text"
-          name="contactPerson"
-          value={supplier.contactPerson}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+        {/* Supplier Details */}
+        <div className="supplier-section">
 
-        <label>Phone</label><br />
-        <input
-          type="text"
-          name="phone"
-          value={supplier.phone}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <h2>Supplier Details</h2>
 
-        <label>Email</label><br />
-        <input
-          type="email"
-          name="email"
-          value={supplier.email}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <form onSubmit={handleSubmit}>
 
-        <label>Address</label><br />
-        <textarea
-          name="address"
-          value={supplier.address}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+            <div className="supplier-field">
+              <label>Supplier Name</label>
+              <input
+                type="text"
+                name="supplierName"
+                value={supplier.supplierName}
+                onChange={handleChange}
+                placeholder="Enter supplier name"
+                required
+              />
+            </div>
 
-        <button type="submit">
-          Add Supplier
-        </button>
+            <div className="supplier-field">
+              <label>Contact Person</label>
+              <input
+                type="text"
+                name="contactPerson"
+                value={supplier.contactPerson}
+                onChange={handleChange}
+                placeholder="Enter contact person"
+                required
+              />
+            </div>
 
-      </form>
+            <div className="supplier-field">
+              <label>Phone</label>
+              <input
+                type="text"
+                name="phone"
+                value={supplier.phone}
+                onChange={handleChange}
+                placeholder="Enter phone number"
+                required
+              />
+            </div>
+
+            <div className="supplier-field">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={supplier.email}
+                onChange={handleChange}
+                placeholder="Enter email address"
+                required
+              />
+            </div>
+
+            <div className="supplier-field">
+              <label>Address</label>
+              <textarea
+                name="address"
+                value={supplier.address}
+                onChange={handleChange}
+                placeholder="Enter supplier address"
+                required
+              />
+            </div>
+
+            <button type="submit" className="add-supplier-btn">
+              Add Supplier
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

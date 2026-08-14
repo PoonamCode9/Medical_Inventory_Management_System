@@ -18,8 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import com.medicalinventory.service.NotificationService;
 
 import java.util.List;
+import org.springframework.data.domain.Sort;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class MedicineServiceImpl implements MedicineService {
@@ -28,17 +32,20 @@ public class MedicineServiceImpl implements MedicineService {
     private final StockLogRepository stockLogRepository;
     private final UserRepository userRepository;
     private final ExpiryTrackingRepository expiryTrackingRepository;
+    private final NotificationService notificationService;
 
     public MedicineServiceImpl(
             MedicineRepository medicineRepository,
             StockLogRepository stockLogRepository,
             UserRepository userRepository,
-            ExpiryTrackingRepository expiryTrackingRepository) {
+            ExpiryTrackingRepository expiryTrackingRepository,
+            NotificationService notificationService) {
 
         this.medicineRepository = medicineRepository;
         this.stockLogRepository = stockLogRepository;
         this.userRepository = userRepository;
         this.expiryTrackingRepository = expiryTrackingRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -61,6 +68,8 @@ public class MedicineServiceImpl implements MedicineService {
                 calculateExpiryStatus(savedMedicine.getExpiryDate()));
 
         expiryTrackingRepository.save(expiryTracking);
+        notificationService.checkExpiryForMedicine(savedMedicine);
+        notificationService.checkLowStockAndNotify(savedMedicine);
 
         return savedMedicine;
     }
@@ -81,7 +90,8 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     public List<Medicine> getAllMedicines() {
-        return medicineRepository.findAll();
+        return medicineRepository.findAll(
+                Sort.by(Sort.Direction.ASC, "medicineId"));
     }
 
     @Override
@@ -118,6 +128,7 @@ public class MedicineServiceImpl implements MedicineService {
         expiryTracking.setStatus(calculateExpiryStatus(updatedMedicine.getExpiryDate()));
 
         expiryTrackingRepository.save(expiryTracking);
+        notificationService.checkExpiryForMedicine(updatedMedicine);
 
         return updatedMedicine;
     }
@@ -146,6 +157,73 @@ public class MedicineServiceImpl implements MedicineService {
     @Override
     public Long getMedicineCount() {
         return medicineRepository.count();
+    }
+
+    @Override
+    public Map<String, Long> getMedicineStatusCounts() {
+
+        List<Medicine> medicines = medicineRepository.findAll();
+
+        long lowStock = 0;
+        long expired = 0;
+        long expiringSoon = 0;
+        long valid = 0;
+
+        LocalDate today = LocalDate.now();
+        LocalDate expiringSoonDate = today.plusDays(30);
+
+        for (Medicine medicine : medicines) {
+
+            // Low stock is independent
+            if (medicine.getQuantity() <= 50) {
+                lowStock++;
+            }
+
+            // Expiry status
+            if (medicine.getExpiryDate().isBefore(today)) {
+                expired++;
+            } else if (!medicine.getExpiryDate().isAfter(expiringSoonDate)) {
+                expiringSoon++;
+            } else {
+                valid++;
+            }
+        }
+
+        Map<String, Long> statusCounts = new HashMap<>();
+
+        statusCounts.put("lowStock", lowStock);
+        statusCounts.put("expired", expired);
+        statusCounts.put("expiringSoon", expiringSoon);
+        statusCounts.put("valid", valid);
+
+        return statusCounts;
+    }
+
+    @Override
+    public Map<String, Long> getMedicineCategoryCounts() {
+
+        List<Medicine> medicines = medicineRepository.findAll();
+
+        Map<String, Long> categoryCounts = new HashMap<>();
+
+        for (Medicine medicine : medicines) {
+
+            String category = medicine.getCategory();
+
+            if (category != null && !category.isBlank()) {
+
+                String normalizedCategory = category.trim().toLowerCase();
+
+                normalizedCategory = normalizedCategory.substring(0, 1).toUpperCase()
+                        + normalizedCategory.substring(1);
+
+                categoryCounts.put(
+                        normalizedCategory,
+                        categoryCounts.getOrDefault(normalizedCategory, 0L) + 1);
+            }
+        }
+
+        return categoryCounts;
     }
 
     @Override
@@ -191,6 +269,7 @@ public class MedicineServiceImpl implements MedicineService {
         stockLog.setRemarks("Stock added");
 
         stockLogRepository.save(stockLog);
+        notificationService.checkLowStockAndNotify(updatedMedicine);
 
         return updatedMedicine;
     }
@@ -243,6 +322,7 @@ public class MedicineServiceImpl implements MedicineService {
         stockLog.setRemarks("Stock removed");
 
         stockLogRepository.save(stockLog);
+        notificationService.checkLowStockAndNotify(updatedMedicine);
 
         return updatedMedicine;
     }
