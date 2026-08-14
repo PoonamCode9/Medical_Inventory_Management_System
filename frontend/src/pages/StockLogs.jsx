@@ -26,29 +26,61 @@ const StockLogs = () => {
 
   const getActionBadge = (action) => {
     switch (action) {
-      case 'PURCHASE':
-        return <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-emerald-200">PURCHASE</span>;
-      case 'SALE':
-        return <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-blue-200">SALE</span>;
-      case 'ADJUSTMENT':
-        return <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-purple-200">ADJUSTMENT</span>;
-      case 'EXPIRED':
-        return <span className="bg-red-50 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-red-200">EXPIRED</span>;
-      case 'DAMAGED':
-        return <span className="bg-amber-50 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-amber-200">DAMAGED</span>;
-      case 'DELETE':
-        return <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-200">DELETED</span>;
-      default:
-        return <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-md">{action}</span>;
+    case 'ADDED':
+      return (
+        <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-emerald-200">
+          ADDED
+        </span>
+      );
+    case 'PURCHASE_RECEIVED':
+      return (
+        <span className="bg-teal-50 text-teal-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-teal-200">
+          PURCHASE_RECEIVED
+        </span>
+      );
+    case 'SOLD':
+      return (
+        <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-blue-200">
+          SOLD
+        </span>
+      );
+    case 'ADJUSTED':
+      return (
+        <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-purple-200">
+          ADJUSTED
+        </span>
+      );
+    case 'REMOVED_EXPIRED':
+      return (
+        <span className="bg-red-50 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-red-200">
+          REMOVED_EXPIRED
+        </span>
+      );
+    case 'REMOVED_DAMAGED':
+      return (
+        <span className="bg-amber-50 text-amber-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-amber-200">
+          REMOVED_DAMAGED
+        </span>
+      );
+    case 'DELETED':
+      return (
+        <span className="bg-rose-100 text-rose-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-rose-200">
+          DELETED
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-200">
+          {action}
+        </span>
+      );
     }
   };
 
   const filteredLogs = logs.filter((log) => {
     const matchesSearch =
       log.medicineName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.batchNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.remarks?.toLowerCase().includes(searchTerm.toLowerCase());
-
+      log.batchNo?.toLowerCase().includes(searchTerm.toLowerCase()) 
     const matchesAction = selectedAction === 'ALL' || log.action === selectedAction;
 
     return matchesSearch && matchesAction;
@@ -70,7 +102,7 @@ const StockLogs = () => {
           <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
           <input
             type="text"
-            placeholder="Search medicine, batch, or remark..."
+            placeholder="Search medicine & batch.."
             className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -85,12 +117,13 @@ const StockLogs = () => {
             onChange={(e) => setSelectedAction(e.target.value)}
           >
             <option value="ALL">All Actions</option>
-            <option value="PURCHASE">Purchase (+)</option>
-            <option value="SALE">Sale (-)</option>
-            <option value="ADJUSTMENT">Adjustment</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="DAMAGED">Damaged</option>
-            <option value="DELETE">Deleted</option>
+            <option value="ADDED">Added (+)</option>
+            <option value="PURCHASE_RECEIVED">Purchase_Received (+)</option>
+            <option value="SOLD">Sold (-)</option>
+            <option value="ADJUSTED">Adjusted</option>
+            <option value="REMOVED_EXPIRED">Removed_Expired (-)</option>
+            <option value="REMOVED_DAMAGED">Removed_Damaged (-)</option>
+            <option value="DELETED">Deleted (-)</option>
           </select>
         </div>
       </div>

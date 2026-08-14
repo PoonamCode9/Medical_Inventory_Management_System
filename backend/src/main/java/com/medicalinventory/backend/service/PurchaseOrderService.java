@@ -159,7 +159,7 @@ public class PurchaseOrderService {
             stockLogService.createLog(
                     order.getMedicine(),
                     goodQty,
-                    "PURCHASE_RECEIVE",
+                    "PURCHASE_RECEIVED",
                     remarks,
                     beforeQty,
                     afterQty,

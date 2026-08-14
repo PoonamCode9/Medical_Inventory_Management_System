@@ -22,17 +22,17 @@ public class StockLogService {
 
     //  Sale/Dispense Stock Log
     public void logSale(Medicine medicine, Integer quantitySold, Integer beforeQty, Integer afterQty, String performedBy) {
-        createLog(medicine, -quantitySold, "SALE", "Medicine dispensed", beforeQty, afterQty, performedBy);
+        createLog(medicine, -quantitySold, "SOLD", "Medicine dispensed", beforeQty, afterQty, performedBy);
     }
 
     // Expired Stock Removal Log
     public void logExpiryRemoval(Medicine medicine, Integer expiredQty, Integer beforeQty, Integer afterQty, String performedBy) {
-        createLog(medicine, -expiredQty, "EXPIRED", "Removed expired stock from inventory", beforeQty, afterQty, performedBy);
+        createLog(medicine, -expiredQty, "REMOVED_EXPIRED", "Removed expired stock from inventory", beforeQty, afterQty, performedBy);
     }
 
     // Damaged Stock Log
     public void logDamagedRemoval(Medicine medicine, Integer damagedQty, Integer beforeQty, Integer afterQty, String reason, String performedBy) {
-        createLog(medicine, -damagedQty, "DAMAGED", "Damaged stock removed: " + reason, beforeQty, afterQty, performedBy);
+        createLog(medicine, -damagedQty, "REMOVED_DAMAGED", "Damaged stock removed: " + reason, beforeQty, afterQty, performedBy);
     }
 
     public List<StockLogDTO> getAllLogs() {

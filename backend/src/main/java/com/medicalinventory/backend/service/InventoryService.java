@@ -62,8 +62,8 @@ public class InventoryService {
         stockLogService.createLog(
             savedInventory.getMedicine(),
             savedInventory.getQuantity(),
-            "PURCHASE",
-            "Initial inventory added",
+            "ADDED",
+            "Inventory added",
             0,
             savedInventory.getQuantity(),
             performedBy
@@ -94,7 +94,7 @@ public class InventoryService {
         stockLogService.createLog(
             updatedInventory.getMedicine(),
             quantityChanged,
-            "ADJUSTMENT",
+            "ADJUSTED",
             "Inventory quantity updated",
             previousQuantity,
             newQuantity,
@@ -125,7 +125,7 @@ public class InventoryService {
         stockLogService.createLog(
             medicine,
             -quantity,
-            "DELETE",
+            "DELETED",
             "Inventory record deleted",
             quantity,
             0,
