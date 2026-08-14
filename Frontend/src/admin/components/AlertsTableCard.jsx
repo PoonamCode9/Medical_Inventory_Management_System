@@ -1,8 +1,6 @@
-import { useState } from 'react'
+import { toast } from 'react-toastify'
 
 export default function AlertsTableCard({ title, columns, rows, viewAllLabel }) {
-  const [toast, setToast] = useState(null)
-
   return (
     <div className="bb-card bb-card--tight">
       <div className="bb-card-header bb-card-header--row">
@@ -13,13 +11,11 @@ export default function AlertsTableCard({ title, columns, rows, viewAllLabel }) 
         <button
           type="button"
           className="bb-btn bb-btn--ghost bb-btn--sm"
-          onClick={() => setToast('View All clicked (mock)')}
+          onClick={() => toast.info('View All clicked (mock)')}
         >
           {viewAllLabel}
         </button>
       </div>
-
-      {toast && <div className="bb-toast">{toast}</div>}
 
       <div className="bb-card-body">
         <div className="bb-table-wrap bb-table-wrap--compact">

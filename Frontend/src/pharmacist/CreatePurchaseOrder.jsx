@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 import { fetchAdminSuppliers, fetchAdminMedicines, createPharmacistPurchaseOrder } from '../api'
 import PharmacistLayout from './PharmacistLayout.jsx'
 
@@ -113,11 +114,13 @@ export default function CreatePurchaseOrder() {
 
     try {
       await createPharmacistPurchaseOrder(payload)
-      alert('Purchase Order created successfully')
+      toast.success('Purchase Order created successfully')
       setItems([{ medicineId: '', quantity: '', unitPrice: '' }])
       setOrderForm({ supplierId: '', requiredDate: '', specialInstructions: '' })
     } catch (err) {
-      setFormError(err?.message || 'Failed to create purchase order')
+      const message = err?.message || 'Failed to create purchase order'
+      setFormError(message)
+      toast.error(message)
     }
   }
 

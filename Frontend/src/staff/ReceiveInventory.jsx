@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import StaffLayout from './StaffLayout.jsx'
 import { fetchStaffAwaitingReceipt, confirmGoodsReceipt } from '../api'
 
@@ -33,9 +34,11 @@ export default function ReceiveInventory() {
       setRemarks('')
       setSelectedPo(null)
       await refresh()
-      alert('Goods receipt confirmed')
+      toast.success('Goods receipt confirmed')
     } catch (e) {
-      setError(e?.message || 'Failed to confirm receipt')
+      const message = e?.message || 'Failed to confirm receipt'
+      setError(message)
+      toast.error(message)
     }
   }
 
