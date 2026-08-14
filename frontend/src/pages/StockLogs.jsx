@@ -119,7 +119,15 @@ const StockLogs = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredLogs.map((log, index) => (
                   <tr key={log.logId || index} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-600 font-semibold">{log.medicineName}</td>
+                    <td className="p-4">
+                      {log.medicineName === "Deleted Medicine" ? (
+                        <span className="text-gray-600 font-semibold italic text-xs">
+                          [Deleted Medicine]
+                        </span>
+                      ) : (
+                        <span className="text-gray-600 font-semibold">{log.medicineName}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
                         {log.batchNo}

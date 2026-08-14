@@ -304,6 +304,8 @@ function PurchaseOrders() {
                 <th className="p-4 text-center w-32">Received Qty</th>
                 <th className="p-4 text-center w-32">Damaged Qty</th>
                 <th className="p-4">Remarks</th>
+                <th className="p-4">Order Date</th>
+                <th className="p-4">Expected Delivery</th>
                 <th className="p-4 text-center">Status</th>
                 {(role === "Admin" || role === "Pharmacist") && (
                   <th className="p-4 text-right">Actions</th>
@@ -318,17 +320,33 @@ function PurchaseOrders() {
 
                   return (
                     <tr key={order.orderId} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 font-semibold text-slate-800">
+                      <td className="p-4">
                         <div className="flex items-center gap-2">
                           <Pill className="w-4 h-4 text-blue-500" />
-                          <span>{order.medicine?.medicineName || "N/A"}</span>
+                          {order.medicine && order.medicine.medicineName ? (
+                            <span className="font-semibold text-slate-800">
+                              {order.medicine.medicineName}
+                            </span>
+                          ) : (
+                            <span className="italic font-medium text-xs">
+                              [Deleted Medicine]
+                            </span>
+                          )}
                         </div>
                       </td>
 
-                      <td className="p-4 text-slate-600">
+                      <td className="p-4">
                         <div className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{order.supplier?.supplierName || "N/A"}</span>
+                          <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          {order.supplier && order.supplier.supplierName ? (
+                            <span className="text-slate-600">
+                              {order.supplier.supplierName}
+                            </span>
+                          ) : (
+                            <span className="italic font-medium text-xs">
+                              [Deleted Supplier]
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -386,6 +404,19 @@ function PurchaseOrders() {
                           </span>
                         )}
                       </td>
+                      <td className="p-4 text-slate-700 font-medium text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{order.orderDate || "—"}</span>
+                        </div>
+                      </td>
+
+                      <td className="p-4 text-slate-500 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{order.expectedDelivery || "—"}</span>
+                        </div>
+                      </td>
 
                       <td className="p-4 text-center">{getStatusBadge(order.status)}</td>
 
@@ -421,7 +452,7 @@ function PurchaseOrders() {
               ) : (
                 <tr>
                   <td
-                    colSpan={role === "Admin" || role === "Pharmacist" ? "8" : "7"}
+                    colSpan={role === "Admin" || role === "Pharmacist" ? "9" : "8"}
                     className="text-center py-10 text-slate-400"
                   >
                     No purchase orders found.
