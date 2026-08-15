@@ -6,8 +6,19 @@
   <component name="ChangeListManager">
     <list default="true" id="08e27dff-8c51-43f0-867d-c80cb5afad8f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/InventoryRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/MedicineRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/repository/MedicineRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/DashboardService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/DashboardService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/InventoryCleanupService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/medical/om/om_backend/service/InventoryCleanupService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/MedicineRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/repository/MedicineRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/medical/om/om_backend/service/DashboardService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/DashboardViews.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/src/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/src/config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +43,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,

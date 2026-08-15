@@ -324,6 +324,31 @@ export function MedicinesView({ role = 'ADMIN' }) {
     return () => clearTimeout(timer);
   }, [searchQuery, role]);
 
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const nonExpiredInventory = useMemo(() =>
+    inventoryItems.filter(i => !i.expiration_date || new Date(i.expiration_date + 'T00:00:00') >= today),
+  [inventoryItems]);
+
+  const activeMedicines = useMemo(() => {
+    const expiredMedIds = new Set();
+    const medBatches = {};
+    inventoryItems.forEach(i => {
+      const id = i.medicine?.id;
+      if (!id) return;
+      if (!medBatches[id]) medBatches[id] = { hasExpired: false, hasActive: false };
+      if (i.expiration_date && new Date(i.expiration_date + 'T00:00:00') < today) {
+        medBatches[id].hasExpired = true;
+      } else {
+        medBatches[id].hasActive = true;
+      }
+    });
+    Object.entries(medBatches).forEach(([id, b]) => {
+      if (b.hasExpired && !b.hasActive) expiredMedIds.add(Number(id));
+    });
+    return medicines.filter(m => !expiredMedIds.has(m.id));
+  }, [medicines, inventoryItems]);
+
   const handleSave = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -349,14 +374,14 @@ export function MedicinesView({ role = 'ADMIN' }) {
 
   const stockByMedicine = useMemo(() => {
     const map = {};
-    inventoryItems.forEach(i => {
+    nonExpiredInventory.forEach(i => {
       const id = i.medicine?.id;
       if (!map[id]) map[id] = { qty: 0, batches: 0 };
       map[id].qty += i.available_qty || 0;
       map[id].batches += 1;
     });
     return map;
-  }, [inventoryItems]);
+  }, [nonExpiredInventory]);
 
   return (
     <div className="space-y-6">
@@ -426,9 +451,9 @@ export function MedicinesView({ role = 'ADMIN' }) {
 
       {loading ? <Spinner color="border-emerald-300" /> : (
         <motion.div className="grid gap-4 md:grid-cols-2" variants={{ visible: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="visible">
-          {medicines.length === 0 ? (
+          {activeMedicines.length === 0 ? (
             <div className="md:col-span-2"><EmptyState icon="💊" title={searchQuery ? 'No matching medicines' : 'No medicines in catalog'} subtitle={searchQuery ? 'Try a different search term.' : 'Click "Add Medicine" to define your first formula.'} /></div>
-          ) : medicines.map((m, i) => {
+          ) : activeMedicines.map((m, i) => {
             const stock = stockByMedicine[m.id] || { qty: 0, batches: 0 };
             return (
             <motion.div
@@ -510,7 +535,23 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
     return () => clearTimeout(timer);
   }, [stockSearch, movementSearch, role]);
 
+  const nonExpiredItems = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return items.filter(i => !i.expiration_date || new Date(i.expiration_date + 'T00:00:00') >= today);
+  }, [items]);
+
   const stockByMedicine = useMemo(() => {
+    const map = {};
+    nonExpiredItems.forEach(i => {
+      const name = i.medicine?.name || 'Unknown';
+      if (!map[name]) map[name] = { name, totalQty: 0, batches: [] };
+      map[name].totalQty += i.available_qty;
+      map[name].batches.push(i);
+    });
+    return Object.values(map).sort((a, b) => b.totalQty - a.totalQty);
+  }, [nonExpiredItems]);
+
+  const allStockByMedicine = useMemo(() => {
     const map = {};
     items.forEach(i => {
       const name = i.medicine?.name || 'Unknown';
@@ -529,20 +570,104 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
     stockByMedicine.slice(0, 10).map(s => ({ name: s.name.length > 15 ? s.name.slice(0, 12) + '…' : s.name, quantity: s.totalQty })),
   [stockByMedicine]);
 
-  const totalStock = useMemo(() => items.reduce((s, i) => s + i.available_qty, 0), [items]);
+  const totalStock = useMemo(() => nonExpiredItems.reduce((s, i) => s + i.available_qty, 0), [nonExpiredItems]);
 
   const handlePrint = () => {
     const w = window.open('', '_blank');
     const today = new Date().toLocaleDateString();
-    let html = `<html><head><title>OM Medical - Stock Report</title>
-      <style>body{font-family:system-ui,sans-serif;color:#1e293b;padding:40px}h1{margin-bottom:5px}.date{color:#64748b;font-size:14px;margin-bottom:30px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #e2e8f0;padding:10px;text-align:left;font-size:13px}th{background:#f8fafc;font-weight:600;color:#475569}.badge{padding:3px 8px;border-radius:9999px;font-size:11px;font-weight:bold}.in{background:#dcfce7;color:#15803d}.out{background:#fee2e2;color:#b91c1c}</style>
-      </head><body><h1>OM Medical Inventory Report</h1><div class="date">Generated ${today}</div>`;
+    const now = new Date();
+    const getExpiryStatus = (expStr) => {
+      if (!expStr) return { label: 'N/A', color: '#64748b', bg: '#f1f5f9' };
+      const exp = new Date(expStr + 'T00:00:00');
+      const diff = Math.round((exp - now) / 86400000);
+      if (diff < 0) return { label: 'EXPIRED', color: '#fff', bg: '#dc2626' };
+      if (diff < 10) return { label: `${diff}d left`, color: '#fff', bg: '#ef4444' };
+      if (diff <= 30) return { label: `${diff}d left`, color: '#000', bg: '#fbbf24' };
+      return { label: `${diff}d left`, color: '#fff', bg: '#16a34a' };
+    };
+
+    let html = `<html><head><title>OM Medical - Inventory Report</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1e293b; padding: 40px; }
+        h1 { font-size: 24px; color: #0f172a; }
+        h2 { font-size: 18px; color: #0f172a; margin-top: 30px; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+        h3 { font-size: 15px; color: #334155; margin-top: 20px; margin-bottom: 8px; }
+        .date { color: #64748b; font-size: 13px; margin-bottom: 25px; }
+        .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .summary-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 20px; min-width: 140px; }
+        .summary-box .label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .summary-box .value { font-size: 26px; font-weight: 800; color: #0f172a; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 12px; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+        th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .exp-badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-block; }
+        .medicine-header { background: #f1f5f9; font-weight: 700; color: #0f172a; }
+        @media print { body { padding: 20px; } }
+      </style>
+      </head><body>
+      <h1>OM Medical — Inventory Report</h1>
+      <div class="date">Generated on ${today} &nbsp;|&nbsp; Total Medicines: ${allStockByMedicine.length} &nbsp;|&nbsp; Total Batches: ${items.length}</div>`;
+
     if (activeTab === 'stock') {
-      html += `<h2>Stock by Medicine</h2><table><thead><tr><th>Medicine</th><th>Total Qty</th><th>Batches</th></tr></thead><tbody>${stockByMedicine.map(s => `<tr><td><b>${s.name}</b></td><td>${s.totalQty}</td><td>${s.batches.length}</td></tr>`).join('')}</tbody></table>`;
-      html += `<h2>Batch Details</h2><table><thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Supplier</th><th>Mfg</th><th>Exp</th></tr></thead><tbody>${items.map(i => `<tr><td><b>${i.medicine?.name || '—'}</b></td><td>${i.batch || '—'}</td><td>${i.available_qty}</td><td>${i.supplier || '—'}</td><td>${formatDate(i.manufacturing_date)}</td><td>${formatDate(i.expiration_date)}</td></tr>`).join('')}</tbody></table>`;
+      const totalCount = items.length;
+      const totalUnits = items.reduce((s, i) => s + i.available_qty, 0);
+      const expiredCount = items.filter(i => i.expiration_date && new Date(i.expiration_date + 'T00:00:00') < now).length;
+      const criticalCount = items.filter(i => { if (!i.expiration_date) return false; const d = Math.round((new Date(i.expiration_date+'T00:00:00') - now) / 86400000); return d >= 0 && d < 10; }).length;
+      const warningCount = items.filter(i => { if (!i.expiration_date) return false; const d = Math.round((new Date(i.expiration_date+'T00:00:00') - now) / 86400000); return d >= 10 && d <= 30; }).length;
+      const safeCount = items.filter(i => { if (!i.expiration_date) return true; const d = Math.round((new Date(i.expiration_date+'T00:00:00') - now) / 86400000); return d > 30; }).length;
+
+      html += `<div class="summary">
+        <div class="summary-box"><div class="label">Total Medicines</div><div class="value">${allStockByMedicine.length}</div></div>
+        <div class="summary-box"><div class="label">Total Units</div><div class="value">${totalUnits}</div></div>
+        <div class="summary-box"><div class="label">Total Batches</div><div class="value">${totalCount}</div></div>
+        <div class="summary-box" style="border-color:#dc2626"><div class="label" style="color:#dc2626">Expired</div><div class="value" style="color:#dc2626">${expiredCount}</div></div>
+        <div class="summary-box" style="border-color:#ef4444"><div class="label" style="color:#ef4444">Critical (&lt;10d)</div><div class="value" style="color:#ef4444">${criticalCount}</div></div>
+        <div class="summary-box" style="border-color:#f59e0b"><div class="label" style="color:#f59e0b">Warning (&lt;30d)</div><div class="value" style="color:#f59e0b">${warningCount}</div></div>
+        <div class="summary-box" style="border-color:#16a34a"><div class="label" style="color:#16a34a">Safe</div><div class="value" style="color:#16a34a">${safeCount}</div></div>
+      </div>`;
+
+      html += `<h2>Batch-Wise Stock Details</h2>`;
+      allStockByMedicine.forEach(med => {
+        html += `<h3>${med.name} &nbsp; <span style="font-weight:400;color:#64748b;font-size:13px">(${med.totalQty} units · ${med.batches.length} batch${med.batches.length > 1 ? 'es' : ''})</span></h3>`;
+        html += `<table><thead><tr><th>Batch</th><th>Qty</th><th>Supplier</th><th>Mfg Date</th><th>Exp Date</th><th>Days Left</th><th>Status</th></tr></thead><tbody>`;
+        med.batches.forEach(b => {
+          const s = getExpiryStatus(b.expiration_date);
+          const daysText = b.expiration_date
+            ? (() => { const d = Math.round((new Date(b.expiration_date+'T00:00:00') - now) / 86400000); return d < 0 ? 'EXPIRED' : `${d} days`; })()
+            : '—';
+          html += `<tr>
+            <td style="font-family:monospace;font-weight:600">${b.batch || '—'}</td>
+            <td style="font-weight:700">${b.available_qty}</td>
+            <td>${b.supplier || '—'}</td>
+            <td>${formatDate(b.manufacturing_date)}</td>
+            <td>${formatDate(b.expiration_date)}</td>
+            <td style="font-weight:600">${daysText}</td>
+            <td><span class="exp-badge" style="background:${s.bg};color:${s.color}">${s.label}</span></td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+      });
+
     } else {
-      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>${movements.map(m => `<tr><td>${formatDate(m.date)}</td><td><span class="badge ${m.type === 'PURCHASE' ? 'in' : 'out'}">${m.type}</span></td><td><b>${m.medicine?.name || '—'}</b></td><td>${m.batch || '—'}</td><td>${m.quantity}</td><td>₹${m.amount?.toFixed(2)}</td><td>${m.supplier?.name || '—'}</td></tr>`).join('')}</tbody></table>`;
+      html += `<h2>Transaction Log</h2>`;
+      html += `<table><thead><tr><th>Date</th><th>Type</th><th>Medicine</th><th>Batch</th><th>Qty</th><th>Amount</th><th>Supplier</th></tr></thead><tbody>`;
+      movements.forEach(m => {
+        const typeColor = m.type === 'PURCHASE' ? '#16a34a' : '#dc2626';
+        const typeBg = m.type === 'PURCHASE' ? '#dcfce7' : '#fee2e2';
+        html += `<tr>
+          <td>${formatDate(m.date)}</td>
+          <td><span class="exp-badge" style="background:${typeBg};color:${typeColor}">${m.type}</span></td>
+          <td style="font-weight:700">${m.medicine?.name || '—'}</td>
+          <td style="font-family:monospace">${m.batch || '—'}</td>
+          <td style="font-weight:700">${m.quantity}</td>
+          <td style="font-weight:700">₹{m.amount?.toFixed(2)}</td>
+          <td>${m.supplier?.name || '—'}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
     }
+
     html += '</body></html>';
     w.document.write(html);
     w.document.close();
@@ -592,11 +717,11 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-amber-500">
                   <p className="text-xs text-slate-500 font-medium">Total Batches</p>
-                  <p className="text-2xl font-black text-slate-900 mt-1 leading-none">{items.length}</p>
+                  <p className="text-2xl font-black text-slate-900 mt-1 leading-none">{nonExpiredItems.length}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 border-l-4 border-l-rose-500">
                   <p className="text-xs text-slate-500 font-medium">Low Stock Items</p>
-                  <p className="text-2xl font-black text-amber-600 mt-1 leading-none">{items.filter(i => i.available_qty < 15).length}</p>
+                  <p className="text-2xl font-black text-amber-600 mt-1 leading-none">{nonExpiredItems.filter(i => i.available_qty < 15).length}</p>
                 </div>
               </div>
 
@@ -701,7 +826,7 @@ export function InventoryView({ role = 'ADMIN', onNavigate }) {
                     <td className="px-5 py-3.5 font-bold text-slate-800 whitespace-nowrap">{m.medicine?.name}</td>
                     <td className="px-5 py-3.5 font-mono text-slate-600 whitespace-nowrap">{m.batch || '—'}</td>
                     <td className="px-5 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{m.quantity}</td>
-                    <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">₹${m.amount?.toFixed(2)}</td>
+                    <td className="px-5 py-3.5 font-bold text-slate-900 whitespace-nowrap">₹{m.amount?.toFixed(2)}</td>
                     <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap">{m.supplier?.name || '—'}</td>
                   </motion.tr>
                 ))}
@@ -978,7 +1103,7 @@ export function SalesView({ role = 'ADMIN' }) {
   const saleCount = records.filter(r => r.type === 'SALE').length;
 
   const availableBatches = form.medicineId && form.medicineId !== 'new'
-    ? inventoryItems.filter(i => i.medicine?.id === Number(form.medicineId) && i.available_qty > 0)
+    ? inventoryItems.filter(i => i.medicine?.id === Number(form.medicineId) && i.available_qty > 0 && !(i.expiration_date && new Date(i.expiration_date) < new Date()))
     : [];
   const medicinesWithStock = medicines.filter(m => inventoryItems.some(i => i.medicine?.id === m.id && i.available_qty > 0));
   const selectedBatch = form.type === 'SALE' && form.batch
@@ -1181,7 +1306,8 @@ export function SalesView({ role = 'ADMIN' }) {
                   <div className="mt-3 pt-2 border-t border-slate-50 space-y-1.5 text-xs">
                     <div className="flex justify-between"><span className="text-slate-400">Quantity</span><span className="font-bold text-slate-700">{r.quantity} units</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Amount</span><span className="font-black text-slate-900">₹{r.amount?.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Date</span><span className="font-semibold text-slate-600">{formatDate(r.date)}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Transaction Date</span><span className="font-semibold text-slate-600">{formatDate(r.date)}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Expiration Date</span><span className="font-semibold text-slate-600">{formatDate(r.expiration_date)}</span></div>
                     {r.supplier && <div className="flex justify-between border-t border-dashed border-slate-100 pt-1.5"><span className="text-slate-400">Vendor</span><span className="font-semibold text-slate-600">{r.supplier.name}</span></div>}
                   </div>
                   {canManage && (

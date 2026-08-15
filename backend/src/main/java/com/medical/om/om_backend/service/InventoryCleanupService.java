@@ -16,12 +16,12 @@ public class InventoryCleanupService {
     }
 
     /**
-     * Removes already-expired batch records from the database.
-     * 0-quantity batches are intentionally KEPT in the database but hidden
-     * from views/reports by the expiry query (available_qty > 0).
+     * Expired batch records are intentionally KEPT in the database so they
+     * remain visible in the Expiry report (Expired section). Only zero-quantity
+     * batches are hidden from views/reports by queries that filter available_qty > 0.
      */
     @Transactional
     public void cleanup() {
-        inventoryRepository.deleteExpiredBefore(LocalDate.now());
+        // expired batches are retained for the Expiry view; nothing is deleted here
     }
 }

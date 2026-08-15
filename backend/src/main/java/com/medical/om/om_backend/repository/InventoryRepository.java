@@ -29,4 +29,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     @Modifying
     @Query("DELETE FROM Inventory i WHERE i.medicine.id = :medicineId")
     void deleteByMedicineId(@Param("medicineId") Long medicineId);
+
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.expiration_date IS NULL OR i.expiration_date >= CURRENT_DATE")
+    long countActive();
+
+    @Query("SELECT COALESCE(SUM(i.available_qty), 0) FROM Inventory i WHERE i.expiration_date IS NULL OR i.expiration_date >= CURRENT_DATE")
+    long sumActiveStock();
 }

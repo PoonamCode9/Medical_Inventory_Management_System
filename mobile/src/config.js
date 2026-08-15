@@ -7,4 +7,4 @@
 //   Windows Mobile Hotspot ... http://192.168.137.1:8080
 //   AWS / production ......... https://your-backend-url
 // ─────────────────────────────────────────────────────────────
-export const API_BASE = 'http://192.168.47.98:8080';
+export const API_BASE = 'http://192.168.60.98:8080';

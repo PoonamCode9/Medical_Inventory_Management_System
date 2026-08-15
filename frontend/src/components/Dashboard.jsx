@@ -243,7 +243,7 @@ export default function Dashboard({ user, onLogout }) {
                   layout
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-slate-900">Profit vs Loss</h2>
+                    <h2 className="text-lg font-bold text-slate-900">Purchases vs Sales</h2>
                     <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Last {stats.profitSales.length} months</span>
                   </div>
                   <ResponsiveContainer width="100%" height={300}>
@@ -252,15 +252,12 @@ export default function Dashboard({ user, onLogout }) {
                       <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
                       <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
                       <RechartsTooltip
-                        formatter={(value, name) => {
-                          const v = Number(value);
-                          if (name === 'Profit (₹)' && v < 0) return [`₹${Math.abs(v).toFixed(2)}`, 'Loss'];
-                          return [`₹${v.toFixed(2)}`, name];
-                        }}
+                        formatter={(value, name) => [`₹${Number(value).toFixed(2)}`, name]}
                         contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13, boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)' }}
                       />
                       <Legend wrapperStyle={{ fontSize: 13 }} iconType="circle" />
-                      <Line type="monotone" dataKey="profit" name="Profit (₹)" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 6 }} animationDuration={1200} />
+                      <Line type="monotone" dataKey="purchases" name="Purchases (₹)" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 6 }} animationDuration={1200} />
+                      <Line type="monotone" dataKey="sales" name="Sales (₹)" stroke="#ef4444" strokeWidth={3} dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }} activeDot={{ r: 6 }} animationDuration={1200} />
                     </LineChart>
                   </ResponsiveContainer>
                 </motion.div>

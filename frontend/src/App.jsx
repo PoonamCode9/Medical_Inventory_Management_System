@@ -261,42 +261,6 @@ function App() {
             initial="hidden"
             animate="visible"
           >
-{/*             <motion.div */}
-{/*               className="auth-image-panel" */}
-{/*               variants={itemVariants} */}
-{/*               whileHover={{ scale: 1.01 }} */}
-{/*               transition={{ type: 'spring', stiffness: 200 }} */}
-{/*             > */}
-{/*               <motion.img */}
-{/*                 src="/medicine.jpg" */}
-{/*                 alt="Medicine" */}
-{/*                 className="auth-side-image" */}
-{/*                 initial={{ filter: 'blur(8px)', scale: 0.9 }} */}
-{/*                 animate={{ filter: 'blur(0px)', scale: 1 }} */}
-{/*                 transition={{ delay: 0.4, duration: 0.6 }} */}
-{/*                 whileHover={{ scale: 1.03 }} */}
-{/*               /> */}
-{/*               <motion.div */}
-{/*                 className="auth-lottie-wrapper" */}
-{/*                 initial={{ scale: 0, rotate: -90 }} */}
-{/*                 animate={{ scale: 1, rotate: 0 }} */}
-{/*                 transition={{ delay: 0.6, type: 'spring', stiffness: 120, damping: 10 }} */}
-{/*               > */}
-{/*                 <svg className="auth-lottie" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"> */}
-{/*                   <circle cx="30" cy="30" r="26" stroke="#d92d20" strokeWidth="3" fill="rgba(217,45,32,0.08)" /> */}
-{/*                   <path d="M22 22L38 38M38 22L22 38" stroke="#d92d20" strokeWidth="3" strokeLinecap="round" /> */}
-{/*                 </svg> */}
-{/*               </motion.div> */}
-{/*               <motion.p */}
-{/*                 className="auth-image-caption" */}
-{/*                 initial={{ opacity: 0, y: 10 }} */}
-{/*                 animate={{ opacity: 1, y: 0 }} */}
-{/*                 transition={{ delay: 0.8 }} */}
-{/*               > */}
-{/*                 Secure healthcare management platform */}
-{/*               </motion.p> */}
-{/*             </motion.div> */}
-
             <motion.div className="auth-form-panel" variants={itemVariants}>
               {error && (
                 <motion.div

@@ -38,15 +38,31 @@ public class DashboardService {
     public Map<String, Object> getCommonStats() {
         cleanupService.cleanup();
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalMedicines", medicineRepository.count());
-        stats.put("totalInventoryItems", inventoryRepository.count());
+
+        List<Inventory> allInv = inventoryRepository.findAll();
+        LocalDate today = LocalDate.now();
+
+        Set<Long> activeMedicineIds = new HashSet<>();
+        for (Inventory i : allInv) {
+            if (i.getMedicine() == null) continue;
+            if (i.getExpiration_date() == null || !i.getExpiration_date().isBefore(today)) {
+                activeMedicineIds.add(i.getMedicine().getId());
+            }
+        }
+        long totalMedicines = medicineRepository.count();
+        long activeMedicines = medicineRepository.countByIdIn(activeMedicineIds);
+
+        stats.put("totalMedicines", activeMedicines);
+        stats.put("totalInventoryItems", allInv.stream()
+            .filter(i -> i.getExpiration_date() == null || !i.getExpiration_date().isBefore(today))
+            .count());
         stats.put("totalSuppliers", supplierRepository.count());
         stats.put("recentMedicines", medicineRepository.findTop5ByOrderByIdDesc());
         stats.put("recentInventoryItems", inventoryRepository.findTop5ByOrderByIdDesc());
         stats.put("recentSuppliers", supplierRepository.findTop5ByOrderByIdDesc());
 
-        List<Inventory> allInv = inventoryRepository.findAll();
         Map<String, Long> stockByMedicine = allInv.stream()
+            .filter(i -> i.getExpiration_date() == null || !i.getExpiration_date().isBefore(today))
             .collect(Collectors.groupingBy(
                 i -> i.getMedicine() != null ? i.getMedicine().getName() : "Unknown",
                 Collectors.summingLong(Inventory::getAvailable_qty)
@@ -56,7 +72,9 @@ public class DashboardService {
             .sorted((a, b) -> Long.compare((Long) b.get("value"), (Long) a.get("value")))
             .collect(Collectors.toList());
         stats.put("stockByMedicine", pieData);
-        stats.put("totalStock", allInv.stream().mapToLong(Inventory::getAvailable_qty).sum());
+        stats.put("totalStock", allInv.stream()
+            .filter(i -> i.getExpiration_date() == null || !i.getExpiration_date().isBefore(today))
+            .mapToLong(Inventory::getAvailable_qty).sum());
         stats.put("profitSales", getProfitSales(6));
         return stats;
     }
