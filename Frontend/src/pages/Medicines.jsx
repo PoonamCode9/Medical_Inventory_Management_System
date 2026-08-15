@@ -95,7 +95,7 @@ const updateMedicine = async () => {
 
 <button
     className="back-btn"
-    onClick={() => navigate(`/${role}-dashboard`)}
+    onClick={() => navigate(-1)}
 >
     <FaArrowLeft />
 </button>

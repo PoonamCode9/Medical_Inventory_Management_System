@@ -90,14 +90,15 @@ public class SecurityConfig {
                 // ==================================================
                 // PUBLIC
                 // ==================================================
-
                 .requestMatchers(
-                        "/",
-                        "/error",
-                        "/favicon.ico",
-                        "/api/auth/**"
-                )
-                .permitAll()
+        "/",
+        "/error",
+        "/favicon.ico",
+        "/api/auth/**",
+        "/api/auth/login",
+        "/api/auth/register"
+)
+.permitAll()
 
 
                 // ==================================================

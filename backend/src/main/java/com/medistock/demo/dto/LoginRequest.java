@@ -13,5 +13,4 @@ public class LoginRequest {
 
     // Used for ADMIN, PHARMACIST and STAFF
     private String secretCode;
-
 }

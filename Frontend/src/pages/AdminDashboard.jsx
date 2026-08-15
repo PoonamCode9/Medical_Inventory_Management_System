@@ -151,9 +151,13 @@ setExpiredList(expiryResponse.data);
               <button onClick={() => navigate("/users")}>
     Users
 </button>
+<button onClick={() => navigate("/analytics")}>
+    Analytics
+</button>
 <button onClick={() => navigate("/reports")}>
     Reports
 </button>
+
             </div>
 
             {/* Main */}

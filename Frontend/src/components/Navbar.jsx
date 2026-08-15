@@ -25,6 +25,7 @@ function Navbar(){
                 <Link to="/reports">
                     Reports
                 </Link>
+                
 
             </div>
 
