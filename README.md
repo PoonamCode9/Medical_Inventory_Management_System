@@ -191,8 +191,8 @@ A relationship between suppliers and medicines allows the system to determine wh
 - CSS3
 
 ### Backend
-- Node.js
-- Express.js
+- Java
+- SpringBoot
 - REST APIs
 
 ### Database
@@ -202,7 +202,6 @@ A relationship between suppliers and medicines allows the system to determine wh
 - Git
 - GitHub
 - VS Code
-- GitHub Copilot / AI-assisted development
 
 > Update this section if your final implementation uses additional libraries or technologies.
 
@@ -227,7 +226,7 @@ A relationship between suppliers and medicines allows the system to determine wh
                                │
                                ▼
                     ┌─────────────────────┐
-                    │ Node.js / Express   │
+                    │ Java / SpringBoot   │
                     │ Backend             │
                     └──────────┬──────────┘
                                │
