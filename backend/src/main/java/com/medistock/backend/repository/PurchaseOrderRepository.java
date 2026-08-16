@@ -18,6 +18,9 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, In
     @Query("SELECT po.supplier.supplierName, COUNT(po) FROM PurchaseOrder po GROUP BY po.supplier.supplierName ORDER BY COUNT(po) DESC")
     List<Object[]> findSupplierPurchaseOrderCounts();
 
-    @Query("SELECT COALESCE(AVG(po.totalAmount), 0.0) FROM PurchaseOrder po")
-    double getAveragePurchaseVolume();
+    @Query("SELECT po.supplier.supplierName, COUNT(po), SUM(po.totalAmount) FROM PurchaseOrder po WHERE po.supplier IS NOT NULL GROUP BY po.supplier.supplierName ORDER BY COUNT(po) DESC")
+    List<Object[]> findSupplierPurchaseOrderCountsAndValue();
+
+    @Query("SELECT AVG(po.totalAmount) FROM PurchaseOrder po")
+    Double getAveragePurchaseVolume();
 }

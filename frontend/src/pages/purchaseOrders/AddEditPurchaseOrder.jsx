@@ -10,6 +10,9 @@ export default function AddEditPurchaseOrder() {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // Per-item validation errors: array of objects { quantity, unitPrice, duplicate }
+  const [itemErrors, setItemErrors] = useState([{}]);
+
   // States
   const [suppliers, setSuppliers] = useState([]);
   const [medicines, setMedicines] = useState([]);
@@ -76,6 +79,7 @@ export default function AddEditPurchaseOrder() {
         unitPrice: defaultMed ? defaultMed.purchasePrice?.toString() || '10.00' : '' 
       }
     ]);
+    setItemErrors(prev => [...prev, {}]);
   };
 
   const handleItemChange = (index, field, value) => {
@@ -88,18 +92,65 @@ export default function AddEditPurchaseOrder() {
       }
     }
     setOrderItems(items);
+    // Clear errors for the changed field
+    setItemErrors(prev => {
+      const updated = [...prev];
+      if (updated[index]) {
+        const err = { ...updated[index] };
+        delete err[field];
+        delete err.duplicate;
+        updated[index] = err;
+      }
+      return updated;
+    });
   };
 
   const handleRemoveItemRow = (index) => {
     if (orderItems.length === 1) return;
     const items = orderItems.filter((_, idx) => idx !== index);
     setOrderItems(items);
+    setItemErrors(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const validateItems = () => {
+    const errors = orderItems.map(() => ({}));
+    let valid = true;
+
+    orderItems.forEach((item, idx) => {
+      const qty = parseInt(item.quantity, 10);
+      const price = parseFloat(item.unitPrice);
+
+      if (!item.quantity || isNaN(qty) || qty <= 0) {
+        errors[idx].quantity = 'Quantity must be ≥ 1';
+        valid = false;
+      }
+      if (!item.unitPrice || isNaN(price) || price <= 0) {
+        errors[idx].unitPrice = 'Price must be > 0';
+        valid = false;
+      }
+    });
+
+    // Duplicate medicine check
+    const medIds = orderItems.map(i => i.medicineId);
+    medIds.forEach((id, idx) => {
+      if (medIds.indexOf(id) !== idx) {
+        errors[idx].duplicate = 'Duplicate medicine in order.';
+        valid = false;
+      }
+    });
+
+    setItemErrors(errors);
+    return valid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedSupplierId) {
       triggerToast('Please select a supplier.', 'WARNING');
+      return;
+    }
+    if (!validateItems()) {
+      triggerToast('Please fix the errors in the line items below.', 'WARNING');
       return;
     }
 
@@ -246,12 +297,16 @@ export default function AddEditPurchaseOrder() {
                   const qty = parseInt(item.quantity || 0, 10);
                   const price = parseFloat(item.unitPrice || 0);
                   const lineVal = qty * price;
+                  const rowErr = itemErrors[idx] || {};
+                  const hasRowError = rowErr.quantity || rowErr.unitPrice || rowErr.duplicate;
 
                   return (
-                    <tr key={idx} className="hover:bg-slate-50/20 font-sans">
+                    <tr key={idx} className={`font-sans transition-colors ${hasRowError ? 'bg-red-50/40' : 'hover:bg-slate-50/20'}`}>
                       <td className="p-2">
                         <select
-                          className="w-full bg-white border border-gray-300 rounded-card p-1.5 text-xs focus:outline-none"
+                          className={`w-full bg-white border rounded-card p-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+                            rowErr.duplicate ? 'border-red-400' : 'border-gray-300'
+                          }`}
                           value={item.medicineId}
                           onChange={(e) => handleItemChange(idx, 'medicineId', e.target.value)}
                         >
@@ -261,26 +316,38 @@ export default function AddEditPurchaseOrder() {
                             </option>
                           ))}
                         </select>
+                        {rowErr.duplicate && (
+                          <p className="text-[9px] text-red-500 font-bold mt-0.5">{rowErr.duplicate}</p>
+                        )}
                       </td>
                       <td className="p-2">
                         <input
                           type="number"
-                          required
                           min="1"
-                          className="w-full bg-white border border-gray-300 rounded-card p-1.5 text-xs text-center"
+                          className={`w-full bg-white border rounded-card p-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+                            rowErr.quantity ? 'border-red-400 bg-red-50/20' : 'border-gray-300'
+                          }`}
                           value={item.quantity}
                           onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
                         />
+                        {rowErr.quantity && (
+                          <p className="text-[9px] text-red-500 font-bold mt-0.5 text-center">{rowErr.quantity}</p>
+                        )}
                       </td>
                       <td className="p-2">
                         <input
                           type="number"
-                          required
                           step="0.01"
-                          className="w-full bg-white border border-gray-300 rounded-card p-1.5 text-xs text-right"
+                          min="0.01"
+                          className={`w-full bg-white border rounded-card p-1.5 text-xs text-right focus:outline-none focus:ring-1 focus:ring-teal-700/30 ${
+                            rowErr.unitPrice ? 'border-red-400 bg-red-50/20' : 'border-gray-300'
+                          }`}
                           value={item.unitPrice}
                           onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
                         />
+                        {rowErr.unitPrice && (
+                          <p className="text-[9px] text-red-500 font-bold mt-0.5 text-right">{rowErr.unitPrice}</p>
+                        )}
                       </td>
                       <td className="p-2 text-right font-mono font-bold text-gray-800">
                         ₹{lineVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -291,6 +358,7 @@ export default function AddEditPurchaseOrder() {
                           onClick={() => handleRemoveItemRow(idx)}
                           className="text-gray-400 hover:text-red-600 cursor-pointer font-bold"
                           title="Remove item"
+                          disabled={orderItems.length === 1}
                         >
                           <svg className="w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

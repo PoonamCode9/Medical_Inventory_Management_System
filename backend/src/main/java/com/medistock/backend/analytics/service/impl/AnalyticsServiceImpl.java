@@ -33,6 +33,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final StockLogRepository stockLogRepository;
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -465,6 +466,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 .totalMedicines(totalMedicines)
                 .totalSuppliers(totalSuppliers)
                 .totalCategories(totalCategories)
+                .totalUsers(userRepository.count())
                 .totalInventoryQuantity(totalInventoryQuantity)
                 .totalInventoryValue(totalInventoryValue)
                 .lowStockMedicines(lowStockMedicines)

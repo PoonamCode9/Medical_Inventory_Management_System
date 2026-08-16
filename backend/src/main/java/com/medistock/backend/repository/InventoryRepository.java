@@ -20,21 +20,21 @@ public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
     @Query("SELECT COALESCE(SUM(i.quantity), 0) FROM Inventory i")
     long sumTotalQuantity();
 
-    @Query("SELECT COALESCE(SUM(CAST(i.quantity AS BigDecimal) * COALESCE(m.purchasePrice, 0)), 0) FROM Inventory i JOIN i.medicine m")
+    @Query("SELECT COALESCE(SUM(i.quantity * COALESCE(m.sellingPrice, m.purchasePrice, m.unitPrice, 0)), 0) FROM Inventory i LEFT JOIN i.medicine m")
     BigDecimal sumInventoryValue();
 
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > 0")
     long countAvailableStock();
 
-    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > 0 AND i.quantity <= i.minimumStock")
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > 0 AND i.quantity <= COALESCE(i.minimumStock, 10)")
     long countLowStock();
 
     @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity = 0")
     long countOutOfStock();
 
-    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > i.minimumStock")
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > COALESCE(i.minimumStock, 10)")
     long countGoodStock();
 
-    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > 0 AND i.quantity * 10 <= i.minimumStock * 3")
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.quantity > 0 AND i.quantity <= 3")
     long countCriticalStock();
 }

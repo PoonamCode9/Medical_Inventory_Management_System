@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/suppliers/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/purchase-orders/**").hasAnyRole("ADMIN", "PHARMACIST")
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "PHARMACIST", "VIEWER")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "PHARMACIST", "VIEWER", "STAFF", "USER")
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "PHARMACIST")
                         .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "PHARMACIST")
                         .requestMatchers(org.springframework.http.HttpMethod.PATCH, "/api/**").hasAnyRole("ADMIN", "PHARMACIST")

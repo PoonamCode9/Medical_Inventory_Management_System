@@ -22,6 +22,7 @@ import Categories from '../pages/categories/Categories';
 import AddEditMedicine from '../pages/medicines/AddEditMedicine';
 import AddEditSupplier from '../pages/suppliers/AddEditSupplier';
 import AddEditPurchaseOrder from '../pages/purchaseOrders/AddEditPurchaseOrder';
+import AdvancedAnalytics from '../pages/analytics/AdvancedAnalytics';
 
 export default function AppRoutes() {
   return (
@@ -95,6 +96,11 @@ export default function AppRoutes() {
         } />
         
         <Route path="stock-logs" element={<StockLogs />} />
+        <Route path="analytics" element={
+          <ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_PHARMACIST']}>
+            <AdvancedAnalytics />
+          </ProtectedRoute>
+        } />
       </Route>
     </Routes>
   );

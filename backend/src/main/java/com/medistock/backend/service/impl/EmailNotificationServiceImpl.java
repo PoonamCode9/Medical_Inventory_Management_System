@@ -72,21 +72,6 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             String dateStr = notification.getCreatedAt() != null ? DateTimeFormatter.ofPattern("yyyy-MM-dd").format(notification.getCreatedAt()) : DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDateTime.now());
             String timeStr = notification.getCreatedAt() != null ? DateTimeFormatter.ofPattern("HH:mm:ss").format(notification.getCreatedAt()) : DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now());
 
-            String notifTitle = notification.getTitle() != null ? notification.getTitle().replace("Alert", "Notification") : "MediStock Inventory Notification";
-
-            // Extract creator from message if present
-            String msg = notification.getMessage() != null ? notification.getMessage() : "";
-            if (msg.contains(" by ")) {
-                int idx = msg.indexOf(" by ");
-                String extracted = msg.substring(idx + 4).trim();
-                if (extracted.endsWith(".")) {
-                    extracted = extracted.substring(0, extracted.length() - 1);
-                }
-                if (!extracted.isEmpty()) {
-                    createdBy = extracted;
-                }
-            }
-
             // Determine dynamic priority if missing or normalize
             if (priority == null || priority.trim().isEmpty()) {
                 if ("LOW_STOCK".equalsIgnoreCase(notifType)) {
@@ -100,6 +85,40 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 } else {
                     priority = "Medium";
                 }
+            }
+
+            // Map priority/type to appropriate classification label
+            String classification = "Information";
+            String priorityUpper = priority.toUpperCase();
+            String typeUpper = notifType.toUpperCase();
+            if ("CRITICAL".equals(priorityUpper) || "EXPIRED".equals(typeUpper) || "CRITICAL".equals(typeUpper)) {
+                classification = "Critical";
+            } else if ("HIGH".equals(priorityUpper) || "MEDIUM".equals(priorityUpper) || "LOW_STOCK".equals(typeUpper) || "OUT_OF_STOCK".equals(typeUpper) || "WARNING".equals(typeUpper)) {
+                classification = "Warning";
+            } else if (typeUpper.contains("SUCCESS") || "SUCCESS".equals(priorityUpper)) {
+                classification = "Success";
+            }
+
+            String notifTitle = notification.getTitle() != null 
+                ? notification.getTitle().replace("Alert", classification).replace("Warning", classification).replace("Notification", classification)
+                : ("MediStock " + classification + " Message");
+            notifTitle = notifTitle.replace("Alert", classification).replace("Warning", classification).replace("Notification", classification).replace("N/A", "");
+
+            // Extract creator from message if present
+            String msg = notification.getMessage() != null ? notification.getMessage() : "";
+            msg = msg.replace("Alert", classification).replace("Warning", classification).replace("Notification", classification).replace("N/A", "");
+            if (msg.contains(" by ")) {
+                int idx = msg.indexOf(" by ");
+                String extracted = msg.substring(idx + 4).trim();
+                if (extracted.endsWith(".")) {
+                    extracted = extracted.substring(0, extracted.length() - 1);
+                }
+                if (!extracted.isEmpty()) {
+                    createdBy = extracted;
+                }
+            }
+            if (createdBy == null || "N/A".equalsIgnoreCase(createdBy.trim())) {
+                createdBy = "System";
             }
 
             // Fetch related entity context dynamically from backend DB
@@ -276,9 +295,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Date</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + dateStr + "</td></tr>" +
                 "    <tr><td style='padding: 8px 0; font-size: 13px; color: #64748B; font-weight: 500;'>Time</td><td style='padding: 8px 0; font-size: 13px; color: #0F172A; font-weight: 600;'>" + timeStr + "</td></tr>" +
                 "  </table>" +
-                "</div>";
-
-            String htmlContent = "<!DOCTYPE html>" +
+                "</div>";            String htmlContent = "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
                 "<meta charset='utf-8'>" +
@@ -302,7 +319,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 "<div class='wrapper'>" +
                 "  <div class='header-banner'>" +
                 "    <h1>MediStock Pharmacy Portal</h1>" +
-                "    <p>Inventory Management Notification</p>" +
+                "    <p>Inventory Management " + classification + "</p>" +
                 "  </div>" +
                 "  <div class='main-body'>" +
                 "    <div class='message-card'>" +
@@ -323,13 +340,13 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 "</div>" +
                 "</body>" +
                 "</html>";
-
+ 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(recipientEmail);
-            helper.setSubject("MediStock Inventory Notification: " + notifTitle);
+            helper.setSubject("MediStock " + classification + ": " + notifTitle);
             helper.setText(htmlContent, true);
-
+ 
             mailSender.send(message);
             log.info("EmailNotificationService: Successfully sent HTML notification email to {}", recipientEmail);
         } catch (Exception e) {

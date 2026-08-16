@@ -21,6 +21,7 @@ public class AnalyticsData {
     private long totalMedicines;
     private long totalSuppliers;
     private long totalCategories;
+    private long totalUsers;
     private long totalInventoryQuantity;
     private BigDecimal totalInventoryValue;
     private long lowStockMedicines;

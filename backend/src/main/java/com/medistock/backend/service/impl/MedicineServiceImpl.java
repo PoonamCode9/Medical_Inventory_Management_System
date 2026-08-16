@@ -114,7 +114,7 @@ public class MedicineServiceImpl implements MedicineService {
         StockLog stockLog = StockLog.builder()
                 .medicine(saved)
                 .user(user)
-                .action("CREATE")
+                .action("MEDICINE_CREATED")
                 .oldQuantity(0)
                 .newQuantity(request.getQuantity())
                 .reason("New medicine catalog registration")
@@ -187,7 +187,7 @@ public class MedicineServiceImpl implements MedicineService {
 
         Medicine saved = medicineRepository.save(medicine);
 
-        // Update inventory levels and log stock if quantity changed
+        // Update inventory levels and log stock
         Inventory inventory = saved.getInventory();
         if (inventory == null) {
             inventory = Inventory.builder().medicine(saved).build();
@@ -201,34 +201,33 @@ public class MedicineServiceImpl implements MedicineService {
         inventory.setLastUpdated(LocalDateTime.now());
         inventoryRepository.save(inventory);
 
-        // Create Stock Log if quantity adjusted
-        if (oldQty != newQty) {
-            User user = null;
-            if (email != null && !email.trim().isEmpty()) {
-                user = userRepository.findByEmail(email).orElse(null);
-            }
-            StockLog stockLog = StockLog.builder()
-                    .medicine(saved)
-                    .user(user)
-                    .action("ADJUST")
-                    .oldQuantity(oldQty)
-                    .newQuantity(newQty)
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            stockLogRepository.save(stockLog);
-            
-            // Low Stock notification trigger
-            if (newQty <= request.getMinimumStock()) {
-                notificationService.createNotification(
-                        null,
-                        "Low Stock Alert",
-                        "Medicine \"" + saved.getMedicineName() + "\" is running low on stock. Current quantity: " + newQty,
-                        "LOW_STOCK",
-                        "HIGH",
-                        "INVENTORY",
-                        saved.getMedicineId()
-                );
-            }
+        // Create Stock Log for medicine update
+        User user = null;
+        if (email != null && !email.trim().isEmpty()) {
+            user = userRepository.findByEmail(email).orElse(null);
+        }
+        StockLog stockLog = StockLog.builder()
+                .medicine(saved)
+                .user(user)
+                .action("MEDICINE_UPDATED")
+                .oldQuantity(oldQty)
+                .newQuantity(newQty)
+                .reason(oldQty != newQty ? "Manual Stock Update (Quantity changed from " + oldQty + " to " + newQty + ")" : "Medicine details updated")
+                .updatedAt(LocalDateTime.now())
+                .build();
+        stockLogRepository.save(stockLog);
+        
+        // Low Stock notification trigger
+        if (newQty <= request.getMinimumStock()) {
+            notificationService.createNotification(
+                    null,
+                    "Low Stock Alert",
+                    "Medicine \"" + saved.getMedicineName() + "\" is running low on stock. Current quantity: " + newQty,
+                    "LOW_STOCK",
+                    "HIGH",
+                    "INVENTORY",
+                    saved.getMedicineId()
+            );
         }
 
         notificationService.createNotification(
@@ -261,12 +260,12 @@ public class MedicineServiceImpl implements MedicineService {
 
         // Log Stock Removal
         StockLog stockLog = StockLog.builder()
-                .medicine(medicine)
+                .medicine(null)
                 .user(user)
-                .action("DELETE")
+                .action("MEDICINE_DELETED")
                 .oldQuantity(currentQty)
                 .newQuantity(0)
-                .reason("Medicine item removed from system catalog by " + email)
+                .reason("Medicine '" + medicine.getMedicineName() + "' (Batch: " + medicine.getBatchNumber() + ") removed from system catalog by " + email)
                 .updatedAt(LocalDateTime.now())
                 .build();
         stockLogRepository.save(stockLog);

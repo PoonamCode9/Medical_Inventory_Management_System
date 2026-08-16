@@ -7,12 +7,15 @@ import com.medistock.backend.entity.PurchaseOrder;
 import com.medistock.backend.entity.PurchaseOrderItem;
 import com.medistock.backend.entity.Supplier;
 import com.medistock.backend.entity.User;
+import com.medistock.backend.entity.StockLog;
+import com.medistock.backend.entity.Inventory;
 import com.medistock.backend.exception.ResourceNotFoundException;
 import com.medistock.backend.repository.MedicineRepository;
 import com.medistock.backend.repository.PurchaseOrderItemRepository;
 import com.medistock.backend.repository.PurchaseOrderRepository;
 import com.medistock.backend.repository.SupplierRepository;
 import com.medistock.backend.repository.UserRepository;
+import com.medistock.backend.repository.StockLogRepository;
 import com.medistock.backend.service.InventoryService;
 import com.medistock.backend.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +41,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     private final MedicineRepository medicineRepository;
     private final InventoryService inventoryService;
     private final com.medistock.backend.service.NotificationService notificationService;
+    private final StockLogRepository stockLogRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -115,6 +120,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         savedOrder.setTotalAmount(calculatedTotal);
         PurchaseOrder finalSaved = purchaseOrderRepository.save(savedOrder);
 
+        // Generate stock log for PO creation
+        for (PurchaseOrderItem item : finalSaved.getItems()) {
+            int currentQty = item.getMedicine().getInventory() != null ? item.getMedicine().getInventory().getQuantity() : 0;
+            StockLog logEntry = StockLog.builder()
+                    .medicine(item.getMedicine())
+                    .user(orderedBy)
+                    .action("PURCHASE_ORDER_CREATED")
+                    .oldQuantity(currentQty)
+                    .newQuantity(currentQty)
+                    .reason("Purchase Order PO-" + finalSaved.getPurchaseOrderId() + " created")
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+            stockLogRepository.save(logEntry);
+        }
+
         notificationService.createNotification(
                 null,
                 "Purchase Order Created",
@@ -157,13 +177,26 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         // Transition: Automatically update inventory stock when PO is RECEIVED or DELIVERED
         if ("RECEIVED".equalsIgnoreCase(status) || "DELIVERED".equalsIgnoreCase(status)) {
             log.info("Order RECEIVED/DELIVERED. Triggering automatic stock-in sync...");
+            User operatorUser = userRepository.findByEmail(email).orElse(null);
             for (PurchaseOrderItem item : order.getItems()) {
-                inventoryService.stockIn(
+                Inventory updatedInv = inventoryService.stockIn(
                         item.getMedicine().getMedicineId(), 
                         item.getQuantity(), 
                         "Received Purchase Order #PO-" + saved.getPurchaseOrderId(),
                         email
                 );
+
+                int finalQty = updatedInv != null ? updatedInv.getQuantity() : 0;
+                StockLog logEntry = StockLog.builder()
+                        .medicine(item.getMedicine())
+                        .user(operatorUser)
+                        .action("PURCHASE_ORDER_COMPLETED")
+                        .oldQuantity(finalQty - item.getQuantity())
+                        .newQuantity(finalQty)
+                        .reason("Purchase Order PO-" + saved.getPurchaseOrderId() + " completed")
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                stockLogRepository.save(logEntry);
             }
             notificationService.createNotification(
                     null,

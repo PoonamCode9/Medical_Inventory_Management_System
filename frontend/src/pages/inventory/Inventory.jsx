@@ -135,6 +135,9 @@ export default function Inventory() {
         triggerToast(`Cannot dispense ${qtyNum} units. Available stock is only ${selectedItem.quantity} units.`);
         return;
       }
+      if (!window.confirm(`Are you sure you want to execute a Stock Out of ${qtyNum} units?`)) {
+        return;
+      }
     }
 
     setSubmitLoading(true);
@@ -415,30 +418,41 @@ export default function Inventory() {
                   ) : filteredInventory.length > 0 ? (
                     filteredInventory.map((item) => {
                       const name = item.medicine?.medicineName || 'Unknown Product';
-                      const generic = item.medicine?.genericName || 'None';
                       const catName = item.medicine?.categoryName || 'General';
-                      const purchasePrice = item.medicine?.purchasePrice || 0;
-                      const totalVal = purchasePrice * item.quantity;
-                      
+                      // Use sellingPrice for retail valuation; fall back to purchasePrice
+                      const unitPrice = item.medicine?.sellingPrice || item.medicine?.purchasePrice || 0;
+                      const totalVal = unitPrice * item.quantity;
+
                       const minStock = item.minimumStock != null ? item.minimumStock : 10;
-                      let statusBadge = (
-                        <span className="inline-flex items-center text-[10px] font-bold text-green-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
-                          Good Stock
-                        </span>
-                      );
+                      const criticalThreshold = Math.ceil(minStock * 0.5); // 50% of min stock = critical
+
+                      let statusBadge;
                       if (item.quantity === 0) {
                         statusBadge = (
-                          <span className="inline-flex items-center text-[10px] font-bold text-gray-700 bg-slate-100 px-2 py-0.5 rounded-[5px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5 animate-pulse"></span>
+                          <span className="inline-flex items-center text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-[5px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mr-1.5 animate-pulse"></span>
                             Out Of Stock
+                          </span>
+                        );
+                      } else if (item.quantity <= criticalThreshold) {
+                        statusBadge = (
+                          <span className="inline-flex items-center text-[10px] font-bold text-red-700 bg-red-100 border border-red-200 px-2 py-0.5 rounded-[5px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5 animate-pulse"></span>
+                            Critical
                           </span>
                         );
                       } else if (item.quantity <= minStock) {
                         statusBadge = (
-                          <span className="inline-flex items-center text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-[5px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>
+                          <span className="inline-flex items-center text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-[5px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
                             Low Stock
+                          </span>
+                        );
+                      } else {
+                        statusBadge = (
+                          <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-[5px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                            Good Stock
                           </span>
                         );
                       }
