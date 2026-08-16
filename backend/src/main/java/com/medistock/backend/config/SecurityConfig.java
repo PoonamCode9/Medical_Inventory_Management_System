@@ -82,78 +82,68 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
 .permitAll()
 
 
-        // =========================
-        // USERS
-        // Admin only CRUD
-        // =========================
-        .requestMatchers("/api/users/**")
-        .hasAuthority("Admin")
+      // =========================
+// USERS
+// Admin only
+// =========================
 
+.requestMatchers("/api/users/**")
+.hasAuthority("Admin")
 
-        // =========================
-        // SUPPLIERS
-        // Admin CRUD
-        // Pharmacist View
-        // =========================
+// =========================
+// SUPPLIERS
+// Admin -> CRUD
+// Pharmacist -> View
+// =========================
 
-        .requestMatchers("/api/suppliers/create/**")
-        .hasAuthority("Admin")
+.requestMatchers("/api/suppliers/create/**")
+.hasAuthority("Admin")
 
-        .requestMatchers("/api/suppliers/update/**")
-        .hasAuthority("Admin")
+.requestMatchers("/api/suppliers/update/**")
+.hasAuthority("Admin")
 
-        .requestMatchers("/api/suppliers/delete/**")
-        .hasAuthority("Admin")
+.requestMatchers("/api/suppliers/delete/**")
+.hasAuthority("Admin")
 
-        .requestMatchers("/api/suppliers/**")
-        .hasAnyAuthority(
-                "Admin",
-                "Pharmacist"
-        )
-        .requestMatchers("/api/chatbot/**")
+.requestMatchers("/api/suppliers/**")
 .hasAnyAuthority(
-        "Staff"
+        "Admin",
+        "Pharmacist"
 )
 
 
-
-    // =========================
+// =========================
 // MEDICINES
 // Admin -> CRUD
-// Pharmacist -> View
+// Pharmacist -> CRUD
 // Staff -> View
 // =========================
 
-.requestMatchers(
-        HttpMethod.POST,
-        "/api/medicines"
+.requestMatchers(HttpMethod.POST, "/api/medicines")
+.hasAnyAuthority(
+        "Admin",
+        "Pharmacist"
 )
-.hasAuthority("Admin")
 
-
-.requestMatchers(
-        HttpMethod.PUT,
-        "/api/medicines/**"
+.requestMatchers(HttpMethod.PUT, "/api/medicines/**")
+.hasAnyAuthority(
+        "Admin",
+        "Pharmacist"
 )
-.hasAuthority("Admin")
 
-
-.requestMatchers(
-        HttpMethod.DELETE,
-        "/api/medicines/**"
+.requestMatchers(HttpMethod.DELETE, "/api/medicines/**")
+.hasAnyAuthority(
+        "Admin",
+        "Pharmacist"
 )
-.hasAuthority("Admin")
 
-
-.requestMatchers(
-        HttpMethod.GET,
-        "/api/medicines/**"
-)
+.requestMatchers(HttpMethod.GET, "/api/medicines/**")
 .hasAnyAuthority(
         "Admin",
         "Pharmacist",
         "Staff"
 )
+
 // =========================
 // INVENTORY
 // Admin -> CRUD
@@ -161,61 +151,41 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http)
 // Staff -> View
 // =========================
 
-
-.requestMatchers(
-        HttpMethod.POST,
-        "/api/inventory"
-)
-.hasAuthority("Admin")
-
-
-.requestMatchers(
-        HttpMethod.PUT,
-        "/api/inventory/**"
-)
+.requestMatchers(HttpMethod.POST, "/api/inventory")
 .hasAnyAuthority(
         "Admin",
         "Pharmacist"
 )
 
-
-.requestMatchers(
-        HttpMethod.DELETE,
-        "/api/inventory/**"
-)
-.hasAuthority("Admin")
-
-
-.requestMatchers(
-        HttpMethod.GET,
-        "/api/inventory/**"
-)
+.requestMatchers(HttpMethod.PUT, "/api/inventory/**")
 .hasAnyAuthority(
         "Admin",
         "Pharmacist",
         "Staff"
 )
 
-        // =========================
-        // PURCHASE ORDERS
-        // Admin Manage
-        // Pharmacist View
-        // =========================
+.requestMatchers(HttpMethod.DELETE, "/api/inventory/**")
+.hasAuthority("Admin")
 
-        .requestMatchers("/api/purchase-orders/create/**")
-        .hasAuthority("Admin")
+.requestMatchers(HttpMethod.GET, "/api/inventory/**")
+.hasAnyAuthority(
+        "Admin",
+        "Pharmacist",
+        "Staff"
+)
 
-        .requestMatchers("/api/purchase-orders/update/**")
-        .hasAuthority("Admin")
 
-        .requestMatchers("/api/purchase-orders/delete/**")
-        .hasAuthority("Admin")
+// =========================
+// PURCHASE ORDERS
+// Admin + Pharmacist
+// =========================
 
-        .requestMatchers("/api/purchase-orders/**")
-        .hasAnyAuthority(
-                "Admin",
-                "Pharmacist"
-        )
+.requestMatchers("/api/purchase-orders/**")
+.hasAnyAuthority(
+        "Admin",
+        "Pharmacist"
+)
+
 
 
         // =========================

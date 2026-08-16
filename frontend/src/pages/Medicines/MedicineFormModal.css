@@ -1,0 +1,85 @@
+/* ==========================================================
+   Medicine Add/Edit form — a wider, 2-column, labeled layout
+   on top of the shared Medicines.css. Scoped to .medicine-modal.wide
+   so it doesn't affect the simpler single-column modals used by
+   Suppliers / Inventory / Users / Purchase Orders.
+   ========================================================== */
+
+.medicine-modal.wide {
+    width: 640px;
+    max-width: 92vw;
+    background: #ffffff;
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+.medicine-modal.wide h3 {
+    color: #14968d;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.medicine-modal.wide .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+    margin-top: 16px;
+}
+
+.medicine-modal.wide .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.medicine-modal.wide .form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.medicine-modal.wide .form-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #14968d;
+    letter-spacing: .2px;
+}
+
+/* Override the generic `.medicine-modal input { margin: 10px 0 }` —
+   the grid's `gap` handles spacing now, so double margins would make
+   rows uneven. */
+.medicine-modal.wide .form-field input,
+.medicine-modal.wide .form-field select,
+.medicine-modal.wide .form-field textarea {
+    margin: 0;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #d9e2ec;
+    background: #f7fafa;
+    color: #222;
+    font-size: 14.5px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.medicine-modal.wide .form-field textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.medicine-modal.wide .form-field input::placeholder,
+.medicine-modal.wide .form-field textarea::placeholder {
+    color: #9aa5b1;
+}
+
+.medicine-modal.wide .form-field input:focus,
+.medicine-modal.wide .form-field select:focus,
+.medicine-modal.wide .form-field textarea:focus {
+    border-color: #14968d;
+    box-shadow: 0 0 0 3px rgba(20, 150, 141, 0.15);
+    background: #fff;
+}
+
+.medicine-modal.wide .supplier-select {
+    margin: 0;
+}

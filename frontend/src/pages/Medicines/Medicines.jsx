@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import "./Medicines.css";
+import "./MedicineFormModal.css";
 import {
     FaPlus,
     FaEdit,
@@ -22,7 +23,7 @@ const Medicines = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [suppliers, setSuppliers] = useState([]);
     const [loading, setLoading] = useState(true);
-const role = localStorage.getItem("roleName");
+    const role = localStorage.getItem("roleName");
     const medicinesPerPage = 6;
 
     const [formData, setFormData] = useState({
@@ -53,27 +54,27 @@ const role = localStorage.getItem("roleName");
         }
     };
 
-const fetchSuppliers = async () => {
-    try {
-        const token = localStorage.getItem("token");
+    const fetchSuppliers = async () => {
+        try {
+            const token = localStorage.getItem("token");
 
-        const response = await axios.get(
-            "http://localhost:8080/api/suppliers",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            const response = await axios.get(
+                "http://localhost:8080/api/suppliers",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            }
-        );
+            );
 
-        console.log(response.data);
+            console.log(response.data);
 
-        setSuppliers(response.data);
+            setSuppliers(response.data);
 
-    } catch (err) {
-        console.log(err);
-    }
-};
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     // Corrected loading lifecycle inside useEffect
     useEffect(() => {
@@ -247,7 +248,7 @@ const fetchSuppliers = async () => {
         indexOfLastMedicine
     );
     const totalPages = Math.ceil(filteredMedicines.length / medicinesPerPage);
- 
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -259,7 +260,6 @@ const fetchSuppliers = async () => {
 
     return (
 
-      
         <div className="medicine-page">
             {/* Header */}
             <div className="medicine-header">
@@ -267,27 +267,27 @@ const fetchSuppliers = async () => {
                     <h1>💊 Medicines Dashboard</h1>
                     <p>Manage medicines, suppliers and inventory efficiently</p>
                 </div>
-{role === "Admin" && (
-                <button
-                    className="add-btn"
-                    onClick={() => {
-                        setSelectedMedicine(null);
-                        setFormData({
-                            medicineName: "",
-                            category: "",
-                            batchNumber: "",
-                            quantity: "",
-                            price: "",
-                            supplierId: "",
-                            manufacturingDate: "",
-                            expiryDate: ""
-                        });
-                        setShowModal(true);
-                    }}
-                >
-                    <FaPlus /> Add Medicine
-                </button>
-)}
+                {(role === "Admin"||role === "Pharmacist") && (
+                    <button
+                        className="add-btn"
+                        onClick={() => {
+                            setSelectedMedicine(null);
+                            setFormData({
+                                medicineName: "",
+                                category: "",
+                                batchNumber: "",
+                                quantity: "",
+                                price: "",
+                                supplierId: "",
+                                manufacturingDate: "",
+                                expiryDate: ""
+                            });
+                            setShowModal(true);
+                        }}
+                    >
+                        <FaPlus /> Add Medicine
+                    </button>
+                )}
             </div>
 
             {/* Cards */}
@@ -320,7 +320,7 @@ const fetchSuppliers = async () => {
                         </thead>
 
                         <tbody>
-                            {filteredMedicines.length > 0 ? (
+                            {currentMedicines.length > 0 ? (
                                 currentMedicines.map((medicine) => {
                                     const expiryDate = new Date(medicine.expiryDate);
                                     const today = new Date();
@@ -331,12 +331,12 @@ const fetchSuppliers = async () => {
                                     const daysLeft = Math.ceil(
                                         (expiryDate - today) / (1000 * 60 * 60 * 24)
                                     );
-                                       const maxStock = 200; // or whatever makes sense for your inventory
+                                    const maxStock = 200; // or whatever makes sense for your inventory
 
-const progress = Math.min(
-    (medicine.quantity / maxStock) * 100,
-    100
-);
+                                    const progress = Math.min(
+                                        (medicine.quantity / maxStock) * 100,
+                                        100
+                                    );
 
 
                                     return (
@@ -360,18 +360,17 @@ const progress = Math.min(
                                             </td>
                                             <td style={{ width: "220px" }}>
                                                 <div className="stock-box">
-                                                  <div className="progress">
-    <div
-        className={`progress-bar ${
-            medicine.quantity <= 20
-                ? "bg-danger"
-                : "bg-success"
-        }`}
-        style={{
-            width: `${progress}%`
-        }}
-    ></div>
-</div>
+                                                    <div className="progress">
+                                                        <div
+                                                            className={`progress-bar ${medicine.quantity <= 20
+                                                                    ? "bg-danger"
+                                                                    : "bg-success"
+                                                                }`}
+                                                            style={{
+                                                                width: `${progress}%`
+                                                            }}
+                                                        ></div>
+                                                    </div>
                                                     <div className="stock-number">
                                                         {medicine.quantity}
                                                     </div>
@@ -381,11 +380,10 @@ const progress = Math.min(
                                             <td>{medicine.supplier?.supplierName || "N/A"}</td>
                                             <td>
                                                 <span
-                                                    className={`status-badge ${
-                                                        medicine.quantity <= 20
+                                                    className={`status-badge ${medicine.quantity <= 20
                                                             ? "low"
                                                             : "instock"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {medicine.quantity <= 20
                                                         ? "Low Stock"
@@ -415,26 +413,25 @@ const progress = Math.min(
                                                     >
                                                         <FaEye />
                                                     </button>
-                                                    {role === "Admin" && (
-        
+                                                    {(role === "Admin" || role === "Pharmacist") && (
 
-                                                    <button
-                                                        className="btn btn-outline-primary btn-sm"
-                                                        onClick={() => editMedicine(medicine)}
-                                                    >
-                                                        <FaEdit />
-                                                    </button>
+                                                        <button
+                                                            className="btn btn-outline-primary btn-sm"
+                                                            onClick={() => editMedicine(medicine)}
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
                                                     )}
-                                                      {role === "Admin" && (
+                                                    {(role === "Admin" || role === "Pharmacist" )&& (
 
-                                                    <button
-                                                        className="btn btn-outline-danger btn-sm"
-                                                        onClick={() => deleteMedicine(medicine.medicineId)}
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                      )}
-  
+                                                        <button
+                                                            className="btn btn-outline-danger btn-sm"
+                                                            onClick={() => deleteMedicine(medicine.medicineId)}
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    )}
+
 
                                                 </div>
                                             </td>
@@ -479,100 +476,128 @@ const progress = Math.min(
                 </div>
             </div>
 
-            {/* Modal for Add / Edit */}
+            {/* Modal for Add / Edit — now a proper 2-column, labeled form */}
             {showModal && (
                 <div className="modal-overlay">
-                    <div className="medicine-modal">
+                    <div className="medicine-modal wide">
                         <h3>{selectedMedicine ? "Edit Medicine" : "Add Medicine"}</h3>
 
-                        <input
-                            type="text"
-                            placeholder="Medicine Name"
-                            value={formData.medicineName}
-                            onChange={(e) =>
-                                setFormData({ ...formData, medicineName: e.target.value })
-                            }
-                        />
+                        <div className="form-grid">
 
-                        <input
-                            type="text"
-                            placeholder="Category"
-                            value={formData.category}
-                            onChange={(e) =>
-                                setFormData({ ...formData, category: e.target.value })
-                            }
-                        />
+                            <div className="form-field full-width">
+                                <label>Medicine Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Amoxicillin 500mg"
+                                    value={formData.medicineName}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, medicineName: e.target.value })
+                                    }
+                                />
+                            </div>
 
-                        <input
-                            type="text"
-                            placeholder="Batch Number"
-                            value={formData.batchNumber}
-                            onChange={(e) =>
-                                setFormData({ ...formData, batchNumber: e.target.value })
-                            }
-                        />
+                            <div className="form-field">
+                                <label>Category</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Antibiotics"
+                                    value={formData.category}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, category: e.target.value })
+                                    }
+                                />
+                            </div>
 
-                        <input
-                            type="number"
-                            placeholder="Quantity"
-                            value={formData.quantity}
-                            onChange={(e) =>
-                                setFormData({ ...formData, quantity: e.target.value })
-                            }
-                        />
+                            <div className="form-field">
+                                <label>Batch Number</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. BAT-22981"
+                                    value={formData.batchNumber}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, batchNumber: e.target.value })
+                                    }
+                                />
+                            </div>
 
-                        <input
-                            type="number"
-                            placeholder="Price"
-                            value={formData.price}
-                            onChange={(e) =>
-                                setFormData({ ...formData, price: e.target.value })
-                            }
-                        />
+                            <div className="form-field">
+                                <label>Quantity</label>
+                                <input
+                                    type="number"
+                                    placeholder="e.g. 150"
+                                    value={formData.quantity}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, quantity: e.target.value })
+                                    }
+                                />
+                            </div>
 
-<select
-    className="supplier-select"
-    value={formData.supplierId}
-    onChange={(e) =>
-        setFormData({
-            ...formData,
-            supplierId: e.target.value
-        })
-    }
->
-    <option value="">Select Supplier</option>
+                            <div className="form-field">
+                                <label>Price (₹)</label>
+                                <input
+                                    type="number"
+                                    placeholder="e.g. 25.50"
+                                    value={formData.price}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, price: e.target.value })
+                                    }
+                                />
+                            </div>
 
-    {suppliers.map((supplier) => (
-        <option
-            key={supplier.supplierId}
-            value={supplier.supplierId}
-        >
-            {supplier.supplierName}
-        </option>
-    ))}
-</select>
+                            <div className="form-field full-width">
+                                <label>Supplier</label>
+                                <select
+                                    className="supplier-select"
+                                    value={formData.supplierId}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            supplierId: e.target.value
+                                        })
+                                    }
+                                >
+                                    <option value="">Select Supplier</option>
 
-                        <input
-                            type="date"
-                            value={formData.manufacturingDate || ""}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    manufacturingDate: e.target.value
-                                })
-                            }
-                        />
+                                    {suppliers.map((supplier) => (
+                                        <option
+                                            key={supplier.supplierId}
+                                            value={supplier.supplierId}
+                                        >
+                                            {supplier.supplierName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        <input
-                            type="date"
-                            value={formData.expiryDate || ""}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    expiryDate: e.target.value
-                                })
-                            }
-                        />
+                            <div className="form-field">
+                                <label>Manufacturing Date</label>
+                                <input
+                                    type="date"
+                                    value={formData.manufacturingDate || ""}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            manufacturingDate: e.target.value
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Expiry Date</label>
+                                <input
+                                    type="date"
+                                    value={formData.expiryDate || ""}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            expiryDate: e.target.value
+                                        })
+                                    }
+                                />
+                            </div>
+
+                        </div>
 
                         <div className="d-flex justify-content-end gap-2 mt-3">
                             <button

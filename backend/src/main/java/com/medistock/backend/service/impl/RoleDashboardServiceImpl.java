@@ -49,86 +49,289 @@ public class RoleDashboardServiceImpl implements RoleDashboardService {
     private final UserRepository userRepository;
     private final StockLogRepository stockLogRepository;
 
+    private List<Map<String, Object>> buildSupplierAnalyticsForAdmin(
+        List<Supplier> suppliers,
+        List<PurchaseOrder> orders) {
+
+    List<Map<String, Object>> result = new ArrayList<>();
+
+    for (Supplier s : suppliers) {
+
+        List<PurchaseOrder> supplierOrders =
+                orders.stream()
+                        .filter(o ->
+                                o.getSupplier() != null &&
+                                o.getSupplier()
+                                        .getSupplierId()
+                                        .equals(s.getSupplierId()))
+                        .collect(Collectors.toList());
+
+        LocalDate lastOrder =
+                supplierOrders.stream()
+                        .map(PurchaseOrder::getPurchaseDate)
+                        .filter(Objects::nonNull)
+                        .max(LocalDate::compareTo)
+                        .orElse(null);
+
+        long orderCount = supplierOrders.size();
+
+        /*
+         * Your database currently does NOT have a delivery date
+         * or expected delivery date.
+         *
+         * Therefore we cannot calculate a real on-time percentage.
+         *
+         * Returning "—" is safer than inventing a percentage.
+         */
+
+        result.add(
+                mapOf(
+                        "supplier",
+                        s.getSupplierName(),
+
+                        "orders",
+                        orderCount,
+
+                        "onTime",
+                        "—",
+
+                        "lastOrder",
+                        lastOrder != null
+                                ? lastOrder.toString()
+                                : "—"
+                )
+        );
+    }
+
+    return result;
+}
+
     // ==========================================================
     // ADMIN
     // ==========================================================
 
-    @Override
-    public Map<String, Object> getAdminDashboard() {
+   @Override
+public Map<String, Object> getAdminDashboard() {
 
-        Map<String, Object> data = new HashMap<>();
+    Map<String, Object> data = new LinkedHashMap<>();
 
-        List<Medicine> medicines = medicineRepository.findAll();
-        List<Inventory> inventories = inventoryRepository.findAll();
-        List<PurchaseOrder> orders = purchaseOrderRepository.findAll();
-        List<Supplier> suppliers = supplierRepository.findAll();
-        List<Notification> notifications = notificationRepository.findAll();
-        List<StockLog> logs = stockLogRepository.findAll();
+    List<Medicine> medicines = medicineRepository.findAll();
+    List<Inventory> inventories = inventoryRepository.findAll();
+    List<PurchaseOrder> orders = purchaseOrderRepository.findAll();
+    List<Supplier> suppliers = supplierRepository.findAll();
+    List<Notification> notifications = notificationRepository.findAll();
+    List<StockLog> logs = stockLogRepository.findAll();
 
-        LocalDate today = LocalDate.now();
-        LocalDate expiryWindowEnd = today.plusDays(EXPIRY_WINDOW_DAYS);
+    LocalDate today = LocalDate.now();
+    LocalDate expiryWindowEnd = today.plusDays(EXPIRY_WINDOW_DAYS);
 
-        data.put("users", userRepository.count());
-        data.put("medicines", (long) medicines.size());
-        data.put("suppliers", (long) suppliers.size());
-        data.put("inventory", (long) inventories.size());
-        data.put("lowStock", medicines.stream()
-                .filter(m -> m.getQuantity() != null && m.getQuantity() <= LOW_STOCK_THRESHOLD)
-                .count());
-        data.put("expiryAlerts", medicines.stream()
-                .filter(m -> inExpiryWindow(m, today, expiryWindowEnd))
-                .count());
+    // ==========================================================
+    // KPI CARDS
+    // ==========================================================
 
-        // Inventory analytics — medicines grouped by category
-        data.put("inventoryByCategory", buildCategoryBreakdown(medicines));
+    data.put("users", userRepository.count());
 
-        // System monitoring — only things we can actually verify from this request.
-        // Deliberately NOT fabricating "active sessions" since there's no session
-        // tracking in this app.
-        List<Map<String, Object>> systemStatus = new ArrayList<>();
-        systemStatus.add(mapOf("label", "API", "status", "Operational"));
-        systemStatus.add(mapOf("label", "Database", "status", "Operational"));
-        systemStatus.add(mapOf("label", "Last Refreshed",
-                "status", DateTimeFormatter.ofPattern("HH:mm:ss").format(java.time.LocalTime.now())));
-        data.put("systemStatus", systemStatus);
+    data.put("medicines", (long) medicines.size());
 
-        // Stock movement reports — most recent stock log entries
-        data.put("stockMovements",
-                logs.stream()
-                        .sorted(Comparator.comparing(StockLog::getTransactionDate,
-                                Comparator.nullsLast(Comparator.reverseOrder())))
-                        .limit(8)
-                        .map(this::stockLogToMovementMap)
-                        .collect(Collectors.toList()));
+    data.put("suppliers", (long) suppliers.size());
 
-        // Supplier analytics — order count + last order date per supplier
-        data.put("supplierAnalytics", buildSupplierAnalytics(suppliers, orders));
+    data.put("inventory", (long) inventories.size());
 
-        // User activity — derived from Notifications, since there's no dedicated
-        // audit-log table yet. This is real data (real users, real timestamps),
-        // just sourced from the closest thing available.
-        data.put("userActivity",
-                notifications.stream()
-                        .sorted(Comparator.comparing(Notification::getCreatedAt,
-                                Comparator.nullsLast(Comparator.reverseOrder())))
-                        .limit(8)
-                        .map(n -> mapOf(
-                                "user", n.getUser() != null ? n.getUser().getFullName() : "System",
-                                "role", n.getUser() != null && n.getUser().getRole() != null
-                                        ? n.getUser().getRole().getRoleName() : "—",
-                                "action", n.getMessage(),
-                                "time", n.getCreatedAt() != null
-                                        ? n.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM d, HH:mm"))
-                                        : "—"
-                        ))
-                        .collect(Collectors.toList()));
+    data.put(
+            "lowStock",
+            medicines.stream()
+                    .filter(m ->
+                            m.getQuantity() != null &&
+                            m.getQuantity() <= LOW_STOCK_THRESHOLD)
+                    .count()
+    );
 
-        data.put("lowStockList", buildLowStockList(medicines));
-        data.put("expiringList", buildExpiringList(medicines, today, expiryWindowEnd));
+    data.put(
+            "expiryAlerts",
+            medicines.stream()
+                    .filter(m ->
+                            inExpiryWindow(
+                                    m,
+                                    today,
+                                    expiryWindowEnd
+                            ))
+                    .count()
+    );
 
-        return data;
-    }
+    // ==========================================================
+    // LOW STOCK ITEMS
+    // ==========================================================
 
+    data.put(
+            "lowStockItems",
+            buildLowStockItemsWithReorder(medicines)
+    );
+
+    // ==========================================================
+    // EXPIRING MEDICINES
+    // ==========================================================
+
+    data.put(
+            "expiringMedicines",
+            buildExpiringMedicinesWithDaysLeft(
+                    medicines,
+                    today,
+                    expiryWindowEnd
+            )
+    );
+
+    // ==========================================================
+    // INVENTORY ANALYTICS
+    // ==========================================================
+
+    data.put(
+            "inventoryByCategory",
+            buildCategoryBreakdown(medicines)
+    );
+
+    // ==========================================================
+    // SUPPLIER ANALYTICS
+    // ==========================================================
+
+    data.put(
+            "supplierAnalytics",
+            buildSupplierAnalyticsForAdmin(
+                    suppliers,
+                    orders
+            )
+    );
+
+    // ==========================================================
+    // STOCK MOVEMENT REPORTS
+    // ==========================================================
+
+    data.put(
+            "stockMovements",
+            logs.stream()
+                    .sorted(
+                            Comparator.comparing(
+                                    StockLog::getTransactionDate,
+                                    Comparator.nullsLast(
+                                            Comparator.reverseOrder()
+                                    )
+                            )
+                    )
+                    .limit(8)
+                    .map(this::stockLogToMovementMap)
+                    .collect(Collectors.toList())
+    );
+
+    // ==========================================================
+    // PURCHASE SUMMARY
+    // Same type of data used by Pharmacist Dashboard
+    // ==========================================================
+
+    data.put(
+            "purchaseSummary",
+            orders.stream()
+                    .sorted(
+                            Comparator.comparing(
+                                    PurchaseOrder::getPurchaseDate,
+                                    Comparator.nullsLast(
+                                            Comparator.reverseOrder()
+                                    )
+                            )
+                    )
+                    .limit(6)
+                    .map(this::purchaseOrderToSummaryMap)
+                    .collect(Collectors.toList())
+    );
+
+    // ==========================================================
+    // USER ACTIVITY
+    // ==========================================================
+
+    data.put(
+            "userActivity",
+            notifications.stream()
+                    .sorted(
+                            Comparator.comparing(
+                                    Notification::getCreatedAt,
+                                    Comparator.nullsLast(
+                                            Comparator.reverseOrder()
+                                    )
+                            )
+                    )
+                    .limit(8)
+                    .map(n -> mapOf(
+                            "user",
+                            n.getUser() != null
+                                    ? n.getUser().getFullName()
+                                    : "System",
+
+                            "role",
+                            n.getUser() != null &&
+                            n.getUser().getRole() != null
+                                    ? n.getUser()
+                                        .getRole()
+                                        .getRoleName()
+                                    : "—",
+
+                            "action",
+                            n.getMessage(),
+
+                            "time",
+                            n.getCreatedAt() != null
+                                    ? n.getCreatedAt()
+                                        .format(
+                                            DateTimeFormatter.ofPattern(
+                                                "MMM d, HH:mm"
+                                            )
+                                        )
+                                    : "—"
+                    ))
+                    .collect(Collectors.toList())
+    );
+
+    // ==========================================================
+    // SYSTEM STATUS
+    // ==========================================================
+
+    List<Map<String, Object>> systemStatus =
+            new ArrayList<>();
+
+    systemStatus.add(
+            mapOf(
+                    "label",
+                    "API",
+                    "status",
+                    "Operational"
+            )
+    );
+
+    systemStatus.add(
+            mapOf(
+                    "label",
+                    "Database",
+                    "status",
+                    "Operational"
+            )
+    );
+
+    systemStatus.add(
+            mapOf(
+                    "label",
+                    "Last Refreshed",
+                    "status",
+                    java.time.LocalTime.now()
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    "HH:mm:ss"
+                                )
+                            )
+            )
+    );
+
+    data.put("systemStatus", systemStatus);
+
+    return data;
+}
+  
     // ==========================================================
     // PHARMACIST
     // ==========================================================
@@ -214,9 +417,14 @@ public class RoleDashboardServiceImpl implements RoleDashboardService {
         data.put("suppliers", supplierRepository.count());
         data.put("purchaseOrders", (long) orders.size());
         data.put("stockLogs", (long) logs.size());
-        data.put("lowStockAlerts", medicines.stream()
-                .filter(m -> m.getQuantity() != null && m.getQuantity() <= LOW_STOCK_THRESHOLD)
-                .count());
+        data.put("lowStockItems", buildLowStockItemsWithReorder(medicines));
+
+data.put("expiringMedicines",
+        buildExpiringMedicinesWithDaysLeft(
+                medicines,
+                LocalDate.now(),
+                LocalDate.now().plusDays(EXPIRY_WINDOW_DAYS)
+        ));
 
         // Full medicine list for the scan & search table — the frontend already
         // filters this client-side. Fine for now; consider paginating server-side

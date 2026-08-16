@@ -1,0 +1,87 @@
+/* ==========================================================
+   Purchase Orders table — layout on top of the shared Medicines.css
+   ========================================================== */
+
+.purchase-orders-table-wrapper table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* ID */
+.purchase-orders-table-wrapper th:nth-child(1),
+.purchase-orders-table-wrapper td:nth-child(1) {
+    width: 56px;
+    text-align: center;
+    color: #9aa5b1;
+    font-weight: 600;
+}
+
+/* Medicine */
+.purchase-orders-table-wrapper th:nth-child(2),
+.purchase-orders-table-wrapper td:nth-child(2) {
+    width: 20%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Supplier */
+.purchase-orders-table-wrapper th:nth-child(3),
+.purchase-orders-table-wrapper td:nth-child(3) {
+    width: 18%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Quantity */
+.purchase-orders-table-wrapper th:nth-child(4),
+.purchase-orders-table-wrapper td:nth-child(4) {
+    width: 10%;
+    text-align: center;
+}
+
+/* Purchase Date */
+.purchase-orders-table-wrapper th:nth-child(5),
+.purchase-orders-table-wrapper td:nth-child(5) {
+    width: 16%;
+    color: #6b7280;
+    font-size: 13.5px;
+}
+
+/* Status */
+.purchase-orders-table-wrapper th:nth-child(6),
+.purchase-orders-table-wrapper td:nth-child(6) {
+    width: 14%;
+    text-align: center;
+}
+
+/* Actions */
+.purchase-orders-table-wrapper th:nth-child(7),
+.purchase-orders-table-wrapper td:nth-child(7) {
+    width: 150px;
+    text-align: center;
+}
+
+.purchase-orders-table-wrapper .action-buttons {
+    justify-content: center;
+}
+
+/* ---------------- Status badges ---------------- */
+
+.status-badge.pending {
+    background: #FFF1D6;
+    color: #B8860B;
+}
+
+.status-badge.completed {
+    background: #DDF8E8;
+    color: #14965C;
+}
+
+.status-badge.cancelled {
+    background: #FFE3E8;
+    color: #d6336c;
+}

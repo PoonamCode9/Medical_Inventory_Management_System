@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "../Medicines/Medicines.css";
 import "./Notifications.css";
+import "./Notifications.css";
 import { FaTrash, FaEnvelopeOpen } from "react-icons/fa";
 
 import {
@@ -9,9 +10,14 @@ import {
     deleteNotification
 } from "../../services/notificationService";
 
+const getTypeClass = (type = "") => type.toLowerCase();
+
 function Notifications() {
 
     const [notifications, setNotifications] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const notificationsPerPage = 8;
 
     const token = localStorage.getItem("token");
 
@@ -36,6 +42,18 @@ function Notifications() {
         loadNotifications();
 
     }, []);
+
+    // Keep currentPage valid if the list shrinks (e.g. after deleting
+    // the last item on the last page).
+    useEffect(() => {
+
+        const totalPages = Math.ceil(notifications.length / notificationsPerPage);
+
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages > 0 ? totalPages : 1);
+        }
+
+    }, [notifications, currentPage]);
 
     const handleRead = async (id) => {
 
@@ -63,211 +81,253 @@ function Notifications() {
         n => n.notificationType === "EXPIRY"
     ).length;
 
+    // Pagination
+    const indexOfLast = currentPage * notificationsPerPage;
+    const indexOfFirst = indexOfLast - notificationsPerPage;
+    const currentNotifications = notifications.slice(indexOfFirst, indexOfLast);
+    const totalPages = Math.ceil(notifications.length / notificationsPerPage);
+
     return (
- <div className="notification-page">
-        <div className="medicine-page">
+        <div className="notification-page">
+            <div className="medicine-page">
 
-            <div className="notification-content">
+                <div className="notification-content">
 
-                {/* Header */}
+                    {/* Header */}
 
-                <div className="medicine-header">
+                    <div className="medicine-header">
 
-                    <div>
+                        <div>
 
-                        <h1>🔔 Notifications Dashboard</h1>
+                            <h1>🔔 Notifications Dashboard</h1>
 
-                        <p>Manage system alerts efficiently</p>
+                            <p>Manage system alerts efficiently</p>
 
-                    </div>
-
-                </div>
-
-                {/* Dashboard Cards */}
-
-                <div className="dashboard-cards">
-
-                    <div className="dashboard-card total">
-
-                        <div className="card-icon">🔔</div>
-
-                        <h5>Total Notifications</h5>
-
-                        <h2>{notifications.length}</h2>
+                        </div>
 
                     </div>
 
-                    <div className="dashboard-card low">
+                    {/* Dashboard Cards */}
 
-                       <div className="card-icon">⚠️</div>
+                    <div className="dashboard-cards">
 
-                        <h5>Unread</h5>
+                        <div className="dashboard-card total">
 
-                        <h2>{unread}</h2>
+                            <div className="card-icon">🔔</div>
+
+                            <h5>Total Notifications</h5>
+
+                            <h2>{notifications.length}</h2>
+
+                        </div>
+
+                        <div className="dashboard-card low">
+
+                            <div className="card-icon">⚠️</div>
+
+                            <h5>Unread</h5>
+
+                            <h2>{unread}</h2>
+
+                        </div>
+
+                        <div className="dashboard-card supplier">
+
+                            <div className="card-icon">✔️</div>
+
+                            <h5>Read</h5>
+
+                            <h2>{read}</h2>
+
+                        </div>
+
+                        <div className="dashboard-card low">
+
+                            <div className="card-icon">❌</div>
+
+                            <h5>Low Stock</h5>
+
+                            <h2>{lowStock}</h2>
+
+                        </div>
+
+                        <div className="dashboard-card low">
+
+                            <div className="card-icon">🔔</div>
+
+                            <h5>Expiry Alerts</h5>
+
+                            <h2>{expiry}</h2>
+
+                        </div>
 
                     </div>
 
-                    <div className="dashboard-card supplier">
+                    {/* Table */}
 
-                       <div className="card-icon">✔️</div>
+                    <div className="card shadow border-0 rounded-4 notifications-table-wrapper">
 
-                        <h5>Read</h5>
+                        <div className="card-body p-0">
 
-                        <h2>{read}</h2>
+                            <table className="table table-hover align-middle mb-0">
 
-                    </div>
+                                <thead style={{ background: "#14968d", color: "white" }}>
 
-                    <div className="dashboard-card low">
+                                    <tr>
 
-                       <div className="card-icon">❌</div>
+                                        <th>Message</th>
 
-                        <h5>Low Stock</h5>
+                                        <th>Type</th>
 
-                        <h2>{lowStock}</h2>
+                                        <th>Status</th>
 
-                    </div>
+                                        <th>Date</th>
 
-                    <div className="dashboard-card low">
+                                        <th>Actions</th>
 
-                        <div className="card-icon">🔔</div>
+                                    </tr>
 
-                        <h5>Expiry Alerts</h5>
+                                </thead>
 
-                        <h2>{expiry}</h2>
+                                <tbody>
 
-                    </div>
+                                    {currentNotifications.length > 0 ? (
 
-                </div>
+                                        currentNotifications.map((notification) => (
 
-                {/* Table */}
+                                            <tr key={notification.notificationId}>
 
-                <div className="card shadow border-0 rounded-4 ">
+                                                <td title={notification.message}>
+                                                    {notification.message}
+                                                </td>
 
-                    <div className="card-body p-0">
+                                                <td>
 
-                        <table className="table table-hover align-middle mb-0">
+                                                    <span className={`type-badge ${getTypeClass(notification.notificationType)}`}>
 
-                            <thead style={{ background: "#14968d", color: "white" }}>
+                                                        {notification.notificationType}
 
-                                <tr>
+                                                    </span>
 
-                                    <th>Message</th>
+                                                </td>
 
-                                    <th>Type</th>
+                                                <td>
 
-                                    <th>Status</th>
+                                                    <span
+                                                        className={`status-badge ${notification.isRead
+                                                                ? "instock"
+                                                                : "low"
+                                                            }`}
+                                                    >
 
-                                    <th>Date</th>
+                                                        {notification.isRead
+                                                            ? "Read"
+                                                            : "Unread"}
 
-                                    <th className="text-center">Actions</th>
+                                                    </span>
 
-                                </tr>
+                                                </td>
 
-                            </thead>
+                                                <td>
 
-                            <tbody>
+                                                    {new Date(
+                                                        notification.createdAt
+                                                    ).toLocaleString()}
 
-                                {notifications.length > 0 ? (
+                                                </td>
 
-                                    notifications.map((notification) => (
+                                                <td>
 
-                                        <tr key={notification.notificationId}>
+                                                    <div className="action-buttons">
 
-                                            <td>{notification.message}</td>
+                                                        {!notification.isRead && (
 
-                                            <td>
+                                                            <button
+                                                                className="btn btn-info btn-sm"
+                                                                onClick={() =>
+                                                                    handleRead(notification.notificationId)
+                                                                }
+                                                            >
 
-                                                <span className="batch-pill">
+                                                                <FaEnvelopeOpen />
 
-                                                    {notification.notificationType}
+                                                            </button>
 
-                                                </span>
-
-                                            </td>
-
-                                            <td>
-
-                                                <span
-                                                    className={`status-badge ${notification.isRead
-                                                            ? "instock"
-                                                            : "low"
-                                                        }`}
-                                                >
-
-                                                    {notification.isRead
-                                                        ? "Read"
-                                                        : "Unread"}
-
-                                                </span>
-
-                                            </td>
-
-                                            <td>
-
-                                                {new Date(
-                                                    notification.createdAt
-                                                ).toLocaleString()}
-
-                                            </td>
-
-                                            <td>
-
-                                                <div className="action-buttons">
-
-                                                    {!notification.isRead && (
+                                                        )}
 
                                                         <button
-                                                            className="btn btn-info btn-sm"
+                                                            className="btn btn-outline-danger btn-sm"
                                                             onClick={() =>
-                                                                handleRead(notification.notificationId)
+                                                                handleDelete(notification.notificationId)
                                                             }
                                                         >
 
-                                                            <FaEnvelopeOpen />
+                                                            <FaTrash />
 
                                                         </button>
 
-                                                    )}
+                                                    </div>
 
-                                                    <button
-                                                        className="btn btn-outline-danger btn-sm"
-                                                        onClick={() =>
-                                                            handleDelete(notification.notificationId)
-                                                        }
-                                                    >
+                                                </td>
 
-                                                        <FaTrash />
+                                            </tr>
 
-                                                    </button>
+                                        ))
 
-                                                </div>
+                                    ) : (
+
+                                        <tr>
+
+                                            <td
+                                                colSpan="5"
+                                                className="text-center p-5"
+                                            >
+
+                                                No Notifications Found
 
                                             </td>
 
                                         </tr>
 
-                                    ))
+                                    )}
 
-                                ) : (
+                                </tbody>
 
-                                    <tr>
+                            </table>
 
-                                        <td
-                                            colSpan="5"
-                                            className="text-center p-5"
-                                        >
+                            {/* Pagination */}
 
-                                            No Notifications Found
+                            <div className="pagination-container">
 
-                                        </td>
+                                <button
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                >
+                                    Previous
+                                </button>
 
-                                    </tr>
+                                {[...Array(totalPages)].map((_, index) => (
+                                    <button
+                                        key={index}
+                                        className={currentPage === index + 1 ? "active-page" : ""}
+                                        onClick={() => setCurrentPage(index + 1)}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
 
-                                )}
+                                <button
+                                    disabled={
+                                        currentPage === totalPages || totalPages === 0
+                                    }
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                >
+                                    Next
+                                </button>
 
-                            </tbody>
+                            </div>
 
-                        </table>
+                        </div>
 
                     </div>
 
@@ -276,8 +336,6 @@ function Notifications() {
             </div>
 
         </div>
-
-         </div>
 
     );
 

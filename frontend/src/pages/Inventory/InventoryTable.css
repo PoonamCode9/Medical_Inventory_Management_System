@@ -1,0 +1,67 @@
+/* ==========================================================
+   Inventory table — layout on top of the shared Medicines.css
+   ========================================================== */
+
+.inventory-table-wrapper table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* ID */
+.inventory-table-wrapper th:nth-child(1),
+.inventory-table-wrapper td:nth-child(1) {
+    width: 56px;
+    text-align: center;
+    color: #9aa5b1;
+    font-weight: 600;
+}
+
+/* Medicine */
+.inventory-table-wrapper th:nth-child(2),
+.inventory-table-wrapper td:nth-child(2) {
+    width: 20%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Available (progress bar + number) */
+.inventory-table-wrapper th:nth-child(3),
+.inventory-table-wrapper td:nth-child(3) {
+    width: 220px;
+}
+
+/* Minimum */
+.inventory-table-wrapper th:nth-child(4),
+.inventory-table-wrapper td:nth-child(4) {
+    width: 100px;
+    text-align: center;
+}
+
+/* Status */
+.inventory-table-wrapper th:nth-child(5),
+.inventory-table-wrapper td:nth-child(5) {
+    width: 14%;
+    text-align: center;
+}
+
+/* Updated */
+.inventory-table-wrapper th:nth-child(6),
+.inventory-table-wrapper td:nth-child(6) {
+    width: 16%;
+    color: #6b7280;
+    font-size: 13.5px;
+}
+
+/* Actions */
+.inventory-table-wrapper th:nth-child(7),
+.inventory-table-wrapper td:nth-child(7) {
+    width: 150px;
+    text-align: center;
+}
+
+.inventory-table-wrapper .action-buttons {
+    justify-content: center;
+}

@@ -11,7 +11,7 @@ export default function AuthLayout({ eyebrow, title, subtitle, children }) {
       {/* Left brand panel — hidden on small screens */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="auth-logo-mark ms-mono">Rx</div>
+          <div className="auth-logo-mark ms-mono">Ms</div>
           <span className="auth-logo-text ms-display">MediStock</span>
         </div>
 

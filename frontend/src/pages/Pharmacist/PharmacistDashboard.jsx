@@ -227,7 +227,7 @@ function PharmacistDashboard() {
         </div>
 
         {/* Notifications */}
-        <div className="panel">
+        {/* <div className="panel">
           <h3 className="panel-title"><FaBell /> Recent notifications</h3>
           <ul className="notif-list">
             {dashboardData.notificationsList.map((n, i) => (
@@ -238,7 +238,7 @@ function PharmacistDashboard() {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
       </div>
 

@@ -1,11 +1,88 @@
-.notification-page{
-    width:100%;
-    min-height:100vh;
-    padding:25px;
-    background:#f4f7fb;
+/* ==========================================================
+   Notifications table — layout on top of the shared Medicines.css
+   ========================================================== */
+
+.notifications-table-wrapper table {
+    table-layout: fixed;
+    width: 100%;
 }
-.notification-content{
-    width:100%;
-    margin-left:0;
-    padding-left:0;
+
+/* Message */
+.notifications-table-wrapper th:nth-child(1),
+.notifications-table-wrapper td:nth-child(1) {
+    width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Type */
+.notifications-table-wrapper th:nth-child(2),
+.notifications-table-wrapper td:nth-child(2) {
+    width: 16%;
+    text-align: center;
+}
+
+/* Status */
+.notifications-table-wrapper th:nth-child(3),
+.notifications-table-wrapper td:nth-child(3) {
+    width: 14%;
+    text-align: center;
+}
+
+/* Date */
+.notifications-table-wrapper th:nth-child(4),
+.notifications-table-wrapper td:nth-child(4) {
+    width: 18%;
+    color: #6b7280;
+    font-size: 13.5px;
+}
+
+/* Actions */
+.notifications-table-wrapper th:nth-child(5),
+.notifications-table-wrapper td:nth-child(5) {
+    width: 130px;
+    text-align: center;
+}
+
+.notifications-table-wrapper .action-buttons {
+    justify-content: center;
+}
+
+/* ---------------- Type badges ---------------- */
+
+.type-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    background: #eef1f4;
+    color: #555;
+}
+
+.type-badge.low_stock {
+    background: #FFF1D6;
+    color: #B8860B;
+}
+
+.type-badge.expiry {
+    background: #EFE6FB;
+    color: #6C4EBE;
+}
+
+.type-badge.out_of_stock {
+    background: #FFE3E8;
+    color: #d6336c;
+}
+
+.type-badge.inventory {
+    background: #E6FAF6;
+    color: #14968d;
+}
+
+.type-badge.purchase_order {
+    background: #E8F0FF;
+    color: #3b5bdb;
 }

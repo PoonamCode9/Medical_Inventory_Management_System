@@ -1,0 +1,119 @@
+/* ==========================================================
+   Users table — layout on top of the shared Medicines.css
+   ========================================================== */
+
+.users-table-wrapper table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* ID */
+.users-table-wrapper th:nth-child(1),
+.users-table-wrapper td:nth-child(1) {
+    width: 64px;
+    text-align: center;
+    color: #9aa5b1;
+    font-weight: 600;
+}
+
+/* User */
+.users-table-wrapper th:nth-child(2),
+.users-table-wrapper td:nth-child(2) {
+    width: 26%;
+}
+
+/* Email */
+.users-table-wrapper th:nth-child(3),
+.users-table-wrapper td:nth-child(3) {
+    width: 26%;
+}
+
+/* Phone */
+.users-table-wrapper th:nth-child(4),
+.users-table-wrapper td:nth-child(4) {
+    width: 16%;
+}
+
+/* Role */
+.users-table-wrapper th:nth-child(5),
+.users-table-wrapper td:nth-child(5) {
+    width: 14%;
+    text-align: center;
+}
+
+/* Actions */
+.users-table-wrapper th:nth-child(6),
+.users-table-wrapper td:nth-child(6) {
+    width: 150px;
+    text-align: center;
+}
+
+.users-table-wrapper td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------------- User cell ---------------- */
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #EAF8F7;
+    color: #14968d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex: none;
+}
+
+.user-cell h6 {
+    margin: 0;
+    font-weight: 700;
+    color: #333;
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------------- Role badges ---------------- */
+
+.role-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
+
+.role-badge.admin {
+    background: #FFE3E8;
+    color: #d6336c;
+}
+
+.role-badge.pharmacist {
+    background: #E8F0FF;
+    color: #3b5bdb;
+}
+
+.role-badge.staff {
+    background: #E6FAF6;
+    color: #14968d;
+}
+
+/* Center the action buttons within their column */
+.users-table-wrapper .action-buttons {
+    justify-content: center;
+}

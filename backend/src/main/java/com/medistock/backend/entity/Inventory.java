@@ -28,10 +28,9 @@ public class Inventory {
     @Column(name = "inventory_id")
     private Integer inventoryId;
 
-    @OneToOne
-    @JoinColumn(name = "medicine_id",nullable =false)
-    private Medicine medicine;
-
+  @OneToOne
+@JoinColumn(name = "medicine_id", nullable = false, unique = true)
+private Medicine medicine;
     @Column(name = "quantity_available", nullable = false)
     private Integer quantityAvailable;
 

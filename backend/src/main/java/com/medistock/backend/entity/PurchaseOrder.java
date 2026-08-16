@@ -33,7 +33,7 @@ public class PurchaseOrder {
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name="medicine_id")
+    @JoinColumn(name = "medicine_id", nullable = false, unique = true)
     private Medicine medicine;
 
     @Column(nullable=false)

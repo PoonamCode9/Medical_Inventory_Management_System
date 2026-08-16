@@ -3,6 +3,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 import "../Medicines/Medicines.css";
+import "./ReportsTable.css";
+import "../Medicines/MedicineFormModal.css";
 
 import {
     FaPlus,
@@ -14,10 +16,20 @@ import {
 import DashboardCards from "./DashboardCards";
 import SearchFilter from "./SearchFilter";
 
+const getReportTypeClass = (type = "") =>
+    type
+        .toLowerCase()
+        .replace(/\s*report\s*$/i, "")
+        .trim()
+        .replace(/\s+/g, "_");
+
 const Reports = () => {
 
     const token = localStorage.getItem("token");
-    const userId = 1;
+
+    // Was hardcoded to 1 — now reads the actual logged-in user, set at
+    // login time (see LoginResponse.userId on the backend).
+    const userId = localStorage.getItem("userId");
 
     const [reports, setReports] = useState([]);
     const [filteredReports, setFilteredReports] = useState([]);
@@ -100,34 +112,33 @@ const Reports = () => {
 
     //------------------------------------
     // Search + Filter
+    //
+    // Fixed: this used to run the activeFilter check twice — the second
+    // pass compared reportType.toUpperCase() against activeFilter (which
+    // is NOT uppercased, e.g. "Inventory Report"), so it could never
+    // match and silently wiped out every result whenever a filter button
+    // was clicked. It also never actually applied `search` to anything.
     //------------------------------------
 
     useEffect(() => {
 
         let temp = [...reports];
 
-      if (activeFilter !== "ALL") {
+        if (search.trim() !== "") {
 
-    temp = temp.filter(report =>
-        report.reportType
-            ?.toLowerCase()
-            .includes(activeFilter.toLowerCase())
-    );
+            const term = search.toLowerCase();
 
-}
+            temp = temp.filter(report =>
+                report.reportType?.toLowerCase().includes(term) ||
+                (report.generatedByName || "").toLowerCase().includes(term)
+            );
+
+        }
 
         if (activeFilter !== "ALL") {
 
             temp = temp.filter(
-
-                report =>
-
-                    report.reportType
-
-                        .toUpperCase()
-
-                        .includes(activeFilter)
-
+                report => report.reportType === activeFilter
             );
 
         }
@@ -135,6 +146,13 @@ const Reports = () => {
         setFilteredReports(temp);
 
     }, [reports, search, activeFilter]);
+
+    // Reset to page 1 whenever search or filter changes.
+    useEffect(() => {
+
+        setCurrentPage(1);
+
+    }, [search, activeFilter]);
 
     //------------------------------------
     // Delete Report History
@@ -203,6 +221,18 @@ const Reports = () => {
     //------------------------------------
 
     const generateReport = async () => {
+
+        if (!userId) {
+
+            Swal.fire({
+                icon: "error",
+                title: "Not signed in",
+                text: "Couldn't find your user id — please log in again."
+            });
+
+            return;
+
+        }
 
         try {
 
@@ -360,457 +390,455 @@ const Reports = () => {
 
     return (
 
-<div className="medicine-page">
+        <div className="medicine-page">
 
-<div className="medicine-header">
+            <div className="medicine-header">
 
-<div>
+                <div>
 
-<h1>📄 Reports Dashboard</h1>
+                    <h1>📄 Reports Dashboard</h1>
 
-<p>
+                    <p>
 
-Generate Inventory,
+                        Generate Inventory,
 
-Purchase,
+                        Purchase,
 
-Supplier &
+                        Supplier &
 
-Low Stock Reports
+                        Low Stock Reports
 
-</p>
+                    </p>
 
-</div>
+                </div>
 
-<button
+                <button
 
-className="add-btn"
+                    className="add-btn"
 
-onClick={() => setShowModal(true)}
+                    onClick={() => setShowModal(true)}
 
->
+                >
 
-<FaPlus />
+                    <FaPlus />
 
-Generate Report
+                    Generate Report
 
-</button>
+                </button>
 
-</div>
+            </div>
 
-<DashboardCards reports={reports}/>
+            <DashboardCards reports={reports} />
 
-<SearchFilter
+            <SearchFilter
 
-search={search}
+                search={search}
 
-setSearch={setSearch}
+                setSearch={setSearch}
 
-activeFilter={activeFilter}
+                activeFilter={activeFilter}
 
-setActiveFilter={setActiveFilter}
+                setActiveFilter={setActiveFilter}
 
-/>
+            />
 
-<div className="card shadow border-0 rounded-4">
+            <div className="card shadow border-0 rounded-4 reports-table-wrapper">
 
-<div className="card-body p-0">
+                <div className="card-body p-0">
 
-<table className="table table-hover align-middle mb-0">
+                    <table className="table table-hover align-middle mb-0">
 
-<thead style={{
+                        <thead style={{
 
-background:"#14968d",
+                            background: "#14968d",
 
-color:"white"
+                            color: "white"
 
-}}>
+                        }}>
 
-<tr>
+                            <tr>
 
-<th>ID</th>
+                                <th>ID</th>
 
-<th>Report</th>
+                                <th>Report</th>
 
-<th>Generated By</th>
+                                <th>Generated By</th>
 
-<th>Date</th>
+                                <th>Date</th>
 
-<th>Actions</th>
+                                <th>Actions</th>
 
-</tr>
+                            </tr>
 
-</thead>
+                        </thead>
 
-<tbody>
+                        <tbody>
 
-{currentReports.length > 0 ? (
+                            {currentReports.length > 0 ? (
 
-    currentReports.map((report) => (
+                                currentReports.map((report) => (
 
-        <tr key={report.reportId}>
+                                    <tr key={report.reportId}>
 
-            <td>{report.reportId}</td>
+                                        <td>{report.reportId}</td>
 
-            <td>
+                                        <td>
 
-                <div className="medicine-info">
+                                            <div className="report-cell">
 
-                    <div className="medicine-icon">
+                                                <div className="report-icon">
 
-                        <FaFileAlt/>
+                                                    <FaFileAlt />
 
-                    </div>
+                                                </div>
 
-                    <div>
+                                                <span className={`report-badge ${getReportTypeClass(report.reportType)}`}>
 
-                        <h6>{report.reportType}</h6>
+                                                    {report.reportType}
 
-                        <p>System Report</p>
+                                                </span>
+
+                                            </div>
+
+                                        </td>
+
+                                        <td title={report.generatedByName || report.generatedBy}>
+
+                                            {report.generatedByName || report.generatedBy}
+
+                                        </td>
+
+                                        <td>
+
+                                            {new Date(report.generatedAt).toLocaleString()}
+
+                                        </td>
+
+                                        <td>
+
+                                            <div className="action-buttons">
+
+                                                <button
+
+                                                    className="btn btn-info btn-sm"
+
+                                                    onClick={() => setViewReport(report)}
+
+                                                >
+
+                                                    <FaEye />
+
+                                                </button>
+
+                                                <button
+
+                                                    className="btn btn-outline-danger btn-sm"
+
+                                                    onClick={() => handleDelete(report.reportId)}
+
+                                                >
+
+                                                    <FaTrash />
+
+                                                </button>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
+                                ))
+
+                            ) : (
+
+                                <tr>
+
+                                    <td colSpan="5" className="text-center p-5">
+
+                                        No Reports Found
+
+                                    </td>
+
+                                </tr>
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                    <div className="pagination-container">
+
+                        <button
+
+                            disabled={currentPage === 1}
+
+                            onClick={() => setCurrentPage(currentPage - 1)}
+
+                        >
+
+                            Previous
+
+                        </button>
+
+                        {
+
+                            [...Array(totalPages)].map((_, index) => (
+
+                                <button
+
+                                    key={index}
+
+                                    className={
+
+                                        currentPage === index + 1
+
+                                            ?
+
+                                            "active-page"
+
+                                            :
+
+                                            ""
+
+                                    }
+
+                                    onClick={() => setCurrentPage(index + 1)}
+
+                                >
+
+                                    {index + 1}
+
+                                </button>
+
+                            ))
+
+                        }
+
+                        <button
+
+                            disabled={
+
+                                currentPage === totalPages ||
+
+                                totalPages === 0
+
+                            }
+
+                            onClick={() => setCurrentPage(currentPage + 1)}
+
+                        >
+
+                            Next
+
+                        </button>
 
                     </div>
 
                 </div>
 
-            </td>
+            </div>
 
-            <td>
+            {/* ------------------------ Generate Modal ------------------------ */}
 
-                {report.generatedByName || report.generatedBy}
+            {
 
-            </td>
+                showModal && (
 
-            <td>
+                    <div className="modal-overlay">
 
-                {new Date(report.generatedAt).toLocaleString()}
+                        <div className="medicine-modal wide">
 
-            </td>
+                            <h3>
 
-            <td>
+                                Generate Report
 
-                <div className="action-buttons">
+                            </h3>
 
-                    <button
+                            <select
 
-                        className="btn btn-info btn-sm"
+                                className="supplier-select"
 
-                        onClick={() => setViewReport(report)}
+                                value={formData.reportType}
 
-                    >
+                                onChange={(e) =>
 
-                        <FaEye/>
+                                    setFormData({
 
-                    </button>
+                                        ...formData,
 
-                    <button
+                                        reportType: e.target.value
 
-                        className="btn btn-outline-danger btn-sm"
+                                    })
 
-                        onClick={() => handleDelete(report.reportId)}
+                                }
 
-                    >
+                            >
 
-                        <FaTrash/>
+                                <option value="INVENTORY">
 
-                    </button>
+                                    Inventory Report
 
-                </div>
+                                </option>
 
-            </td>
+                                <option value="PURCHASE">
 
-        </tr>
+                                    Purchase Report
 
-    ))
+                                </option>
 
-) : (
+                                <option value="SUPPLIER">
 
-<tr>
+                                    Supplier Report
 
-<td colSpan="5" className="text-center p-5">
+                                </option>
 
-No Reports Found
+                                <option value="LOW_STOCK">
 
-</td>
+                                    Low Stock Report
 
-</tr>
+                                </option>
 
-)}
+                            </select>
 
-</tbody>
+                            <div
 
-</table>
+                                className="d-flex justify-content-end gap-2 mt-3"
 
-<div className="pagination-container">
+                            >
 
-<button
+                                <button
 
-disabled={currentPage===1}
+                                    className="modal-cancel-btn"
 
-onClick={()=>setCurrentPage(currentPage-1)}
+                                    onClick={() => setShowModal(false)}
 
->
+                                >
 
-Previous
+                                    Cancel
 
-</button>
+                                </button>
 
-{
+                                <button
 
-[...Array(totalPages)].map((_,index)=>(
+                                    className="modal-save-btn"
 
-<button
+                                    onClick={generateReport}
 
-key={index}
+                                >
 
-className={
+                                    Generate
 
-currentPage===index+1
+                                </button>
 
-?
+                            </div>
 
-"active-page"
+                        </div>
 
-:
+                    </div>
 
-""
+                )
 
-}
+            }
 
-onClick={()=>setCurrentPage(index+1)}
+            {/* ------------------------ View Drawer ------------------------ */}
 
->
+            {
 
-{index+1}
+                viewReport && (
 
-</button>
+                    <div className="drawer-overlay">
 
-))
+                        <div className="drawer">
 
-}
+                            <div className="drawer-header">
 
-<button
+                                <h2>
 
-disabled={
+                                    📄 {viewReport.reportType}
 
-currentPage===totalPages ||
+                                </h2>
 
-totalPages===0
+                                <button
 
-}
+                                    className="close-btn"
 
-onClick={()=>setCurrentPage(currentPage+1)}
+                                    onClick={() => setViewReport(null)}
 
->
+                                >
 
-Next
+                                    ✖
 
-</button>
+                                </button>
 
-</div>
+                            </div>
 
-</div>
+                            <div className="drawer-content">
 
-</div>
+                                <div className="drawer-card">
 
-{/* ------------------------ Generate Modal ------------------------ */}
+                                    <h5>
 
-{
+                                        Report Details
 
-showModal && (
+                                    </h5>
 
-<div className="modal-overlay">
+                                    <p>
 
-<div className="medicine-modal">
+                                        <strong>ID :</strong>
 
-<h3>
+                                        {" "}
 
-Generate Report
+                                        {viewReport.reportId}
 
-</h3>
+                                    </p>
 
-<select
+                                    <p>
 
-className="supplier-select"
+                                        <strong>Type :</strong>
 
-value={formData.reportType}
+                                        {" "}
 
-onChange={(e)=>
+                                        {viewReport.reportType}
 
-setFormData({
+                                    </p>
 
-...formData,
+                                    <p>
 
-reportType:e.target.value
+                                        <strong>Generated By :</strong>
 
-})
+                                        {" "}
 
-}
+                                        {viewReport.generatedByName || viewReport.generatedBy}
 
->
+                                    </p>
 
-<option value="INVENTORY">
+                                    <p>
 
-Inventory Report
+                                        <strong>Date :</strong>
 
-</option>
+                                        {" "}
 
-<option value="PURCHASE">
+                                        {new Date(viewReport.generatedAt).toLocaleString()}
 
-Purchase Report
+                                    </p>
 
-</option>
+                                </div>
 
-<option value="SUPPLIER">
+                            </div>
 
-Supplier Report
+                        </div>
 
-</option>
+                    </div>
 
-<option value="LOW_STOCK">
+                )
 
-Low Stock Report
+            }
 
-</option>
+        </div>
 
-</select>
-
-<div
-
-className="d-flex justify-content-end gap-2 mt-3"
-
->
-
-<button
-
-className="modal-cancel-btn"
-
-onClick={()=>setShowModal(false)}
-
->
-
-Cancel
-
-</button>
-
-<button
-
-className="modal-save-btn"
-
-onClick={generateReport}
-
->
-
-Generate
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-)
-
-}
-
-{/* ------------------------ View Drawer ------------------------ */}
-
-{
-
-viewReport && (
-
-<div className="drawer-overlay">
-
-<div className="drawer">
-
-<div className="drawer-header">
-
-<h2>
-
-📄 {viewReport.reportType}
-
-</h2>
-
-<button
-
-className="close-btn"
-
-onClick={()=>setViewReport(null)}
-
->
-
-✖
-
-</button>
-
-</div>
-
-<div className="drawer-content">
-
-<div className="drawer-card">
-
-<h5>
-
-Report Details
-
-</h5>
-
-<p>
-
-<strong>ID :</strong>
-
-{" "}
-
-{viewReport.reportId}
-
-</p>
-
-<p>
-
-<strong>Type :</strong>
-
-{" "}
-
-{viewReport.reportType}
-
-</p>
-
-<p>
-
-<strong>Generated By :</strong>
-
-{" "}
-
-{viewReport.generatedByName || viewReport.generatedBy}
-
-</p>
-
-<p>
-
-<strong>Date :</strong>
-
-{" "}
-
-{new Date(viewReport.generatedAt).toLocaleString()}
-
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-)
-
-}
-
-</div>
-
-);
+    );
 
 };
 

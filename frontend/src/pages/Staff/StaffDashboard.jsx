@@ -7,13 +7,16 @@ import DashboardCard from "../../components/DashboardCard/DashboardCard";
 import ChatBot from "../../components/ChatBot/ChatBot";
 
 import {
+  FaPills,
   FaBoxes,
   FaTruck,
+  FaBell,
   FaShoppingCart,
   FaClipboardList,
   FaExclamationTriangle,
   FaSearch,
-  FaSyncAlt
+  FaSyncAlt,
+  FaCalendarAlt
 } from "react-icons/fa";
 
 import { getDashboardData } from "../../services/authService";
@@ -26,8 +29,9 @@ const DEFAULT_STATE = {
   inventory: 0,
   suppliers: 0,
   purchaseOrders: 0,
-  stockLogs: 0,
-  lowStockAlerts: 0,
+  stockAvailable: 0,
+  lowStock: 0,
+  expiryAlerts: 0,
 
   medicines: [
     { medicine: "Amoxicillin 500mg", batch: "BAT-22981", qty: 1240, status: "In stock" },
@@ -48,11 +52,15 @@ const DEFAULT_STATE = {
     { orderId: "PO-2298", supplier: "PharmaLink Ltd.", status: "In transit", expected: "2026-08-03" },
     { orderId: "PO-2302", supplier: "Global Health Distributors", status: "Pending", expected: "2026-08-06" },
   ],
+ lowStockItems: [
+    { medicine: "Insulin Glargine", batch: "BAT-23015", qty: 38, reorderLevel: 50 },
+    { medicine: "Azithromycin 250mg", batch: "BAT-22899", qty: 0, reorderLevel: 40 },
+    { medicine: "Paracetamol 650mg", batch: "BAT-22750", qty: 60, reorderLevel: 100 },
+  ],
 
-  lowStockAlertsList: [
-    { medicine: "Insulin Glargine", batch: "BAT-23015", qty: 38 },
-    { medicine: "Azithromycin 250mg", batch: "BAT-22899", qty: 0 },
-    { medicine: "Paracetamol 650mg", batch: "BAT-22750", qty: 60 },
+  expiringMedicines: [
+    { medicine: "Paracetamol 650mg", batch: "BAT-22750", expires: "08/2026", daysLeft: 30 },
+    { medicine: "Azithromycin 250mg", batch: "BAT-22899", expires: "06/2026", daysLeft: 12 },
   ],
 };
 
@@ -184,61 +192,61 @@ function StaffDashboard() {
           </table>
         </div>
 
-        {/* Quick stock update + Low-stock alerts */}
-        <div className="grid-2">
+        {/*  Low-stock alerts + expiry alerts*/}
+  <div className="grid-2">
 
           <div className="panel">
-            <h3 className="panel-title"><FaSyncAlt /> Quick stock update</h3>
-            <form className="update-form" onSubmit={handleStockUpdate}>
-              <div className="form-field">
-                <label>Medicine</label>
-                <select
-                  value={updateMedicine}
-                  onChange={(e) => setUpdateMedicine(e.target.value)}
-                >
-                  <option value="">Select a medicine…</option>
-                  {dashboardData.medicines.map((m) => (
-                    <option key={m.batch} value={m.medicine}>
-                      {m.medicine} — {m.batch}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-field">
-                <label>Quantity change</label>
-                <input
-                  type="number"
-                  placeholder="e.g. +50 or -10"
-                  value={updateQty}
-                  onChange={(e) => setUpdateQty(e.target.value)}
-                />
-              </div>
-              <div className="form-field">
-                <label>Note (optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Received new batch"
-                  value={updateNote}
-                  onChange={(e) => setUpdateNote(e.target.value)}
-                />
-              </div>
-              <button type="submit" className="btn-primary">Submit update</button>
-            </form>
+            <h3 className="panel-title"><FaExclamationTriangle /> Low-stock items</h3>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Medicine</th>
+                  <th>Batch</th>
+                  <th>Qty</th>
+                  <th>Reorder at</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dashboardData.lowStockItems.map((item) => (
+                  <tr key={item.batch}>
+                    <td>{item.medicine}</td>
+                    <td className="mono">{item.batch}</td>
+                    <td>
+                      <span className={`badge ${item.qty === 0 ? "badge-danger" : "badge-warning"}`}>{item.qty}</span>
+                    </td>
+                    <td>{item.reorderLevel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="panel">
-            <h3 className="panel-title"><FaExclamationTriangle /> Low-stock alerts</h3>
-            <ul className="alert-list">
-              {dashboardData.lowStockAlertsList.map((item) => (
-                <li key={item.batch}>
-                  <span>{item.medicine}</span>
-                  <span className="mono">{item.batch}</span>
-                  <span className={`badge ${item.qty === 0 ? "badge-danger" : "badge-warning"}`}>
-                    {item.qty} left
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <h3 className="panel-title"><FaCalendarAlt /> Expiring medicines</h3>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Medicine</th>
+                  <th>Batch</th>
+                  <th>Expires</th>
+                  <th>Days left</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dashboardData.expiringMedicines.map((item) => (
+                  <tr key={item.batch}>
+                    <td>{item.medicine}</td>
+                    <td className="mono">{item.batch}</td>
+                    <td>{item.expires}</td>
+                    <td>
+                      <span className={`badge ${item.daysLeft <= 15 ? "badge-danger" : "badge-warning"}`}>
+                        {item.daysLeft}d
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
         </div>
