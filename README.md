@@ -66,6 +66,7 @@
                   ┌─────────────────────────────┐
                   │     PostgreSQL Database     │
                   └─────────────────────────────┘
+```
 
 ## 🔑 Role-Based Access Control (RBAC)
 
@@ -113,7 +114,7 @@ MediStock/
     │   ├── App.jsx                 # Routing Setup
     │   └── main.jsx                # Entrypoint
     └── vite.config.js              # Vite Build Config
-
+```
 
 ## ⚡ Prerequisites
 
@@ -133,13 +134,14 @@ Start your PostgreSQL service and create a new database named medical_inventory:
 
 ```sql
 CREATE DATABASE medical_inventory
-
+```
 Configure your database connection credentials in `backend/src/main/resources/application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/medical_inventory
 spring.datasource.username=postgres
 spring.datasource.password=YOUR_PASSWORD
+```
 
 ### 2. Run Backend Application
 Navigate to the backend directory and launch the Spring Boot application using the Maven Wrapper:
@@ -147,6 +149,7 @@ Navigate to the backend directory and launch the Spring Boot application using t
 ```bash
 cd backend
 ./mvnw spring-boot:run
+```
 
 ### 3. Run Frontend Application
 Open a new terminal window, navigate to the frontend directory, install npm packages, and launch Vite dev server:
@@ -155,6 +158,7 @@ Open a new terminal window, navigate to the frontend directory, install npm pack
 cd frontend
 npm install
 npm run dev
+```
 
 The React web application will start at http://localhost:5173.
 
