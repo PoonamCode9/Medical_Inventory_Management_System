@@ -38,3 +38,35 @@
     color:#64748b;
     font-size:14px;
 }
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.navbar-icon-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 18px;
+    transition: .2s;
+}
+
+.navbar-icon-button:hover {
+    background: #e0e7ff;
+    color: #2563eb;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 700px) {
+    .navbar-title {
+        display: none;
+    }
+}

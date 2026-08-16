@@ -1,42 +1,28 @@
 import "../css/Reports.css";
-
 import { useEffect, useState } from "react";
 import API from "../services/api";
-
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-
 function Reports() {
-
     const [reports, setReports] = useState([]);
-
     const [reportName, setReportName] = useState("");
     const [reportType, setReportType] = useState("");
     const [generatedDate, setGeneratedDate] = useState("");
-
     const [editingId, setEditingId] = useState(null);
-
     const [dashboard, setDashboard] = useState({});
-
     const [inventoryReport, setInventoryReport] = useState([]);
     const [lowStockReport, setLowStockReport] = useState([]);
     const [expiryReport, setExpiryReport] = useState([]);
     const [supplierReport, setSupplierReport] = useState([]);
     const [purchaseReport, setPurchaseReport] = useState([]);
-
     const [generatedReport, setGeneratedReport] = useState(null);
-
-
     // =========================
     // LOAD ALL REPORT DATA
     // =========================
-
     useEffect(() => {
         loadReports();
     }, []);
-
-
     const loadReports = async () => {
 
         try {
@@ -1774,8 +1760,6 @@ function Reports() {
                         >
                             📊 Download Excel Report
                         </button>
-
-
                         <button
                             className="btn btn-primary"
                             onClick={exportStockData}
@@ -1795,6 +1779,5 @@ function Reports() {
     );
 
 }
-
 
 export default Reports;

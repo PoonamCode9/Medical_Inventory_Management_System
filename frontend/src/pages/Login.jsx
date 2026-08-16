@@ -132,6 +132,12 @@ function Login() {
                                 Login
                             </button>
 
+                            <div className="forgot-password-link">
+                                <Link to="/forgot-password">
+                                    Forgot Password?
+                                </Link>
+                            </div>
+
                         </form>
 
                         {/* GOOGLE LOGIN */}

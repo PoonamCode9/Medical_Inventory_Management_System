@@ -27,42 +27,32 @@ public class SecurityConfig {
 
         http
                 .cors(Customizer.withDefaults())
-
                 .csrf(csrf -> csrf.disable())
-
-                /*
-                 * OAuth2 login needs a session during the login process.
-                 * JWT is still used for normal API authentication.
-                 */
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.IF_REQUIRED
                         )
                 )
-
                 .authorizeHttpRequests(auth -> auth
 
-                        // Normal login and registration
                         .requestMatchers(
                                 "/api/users/register",
-                                "/api/users/login"
+                                "/api/users/login",
+                                "/api/users/forgot-password",
+                                "/api/users/reset-password-token"
                         ).permitAll()
 
-                        // Google OAuth2
                         .requestMatchers(
                                 "/login/**",
                                 "/oauth2/**"
                         ).permitAll()
 
-                        // Reports
                         .requestMatchers("/api/reports/**")
                         .permitAll()
 
-                        // Purchase orders
                         .requestMatchers("/api/purchaseorders/**")
                         .hasAnyRole("ADMIN", "PHARMACIST")
 
-                        // Medicines, inventory, expiry and notifications
                         .requestMatchers(
                                 "/api/medicines/**",
                                 "/api/inventory/**",
@@ -77,15 +67,11 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
-
-                // Google OAuth2 Login
                 .oauth2Login(oauth -> oauth
                         .successHandler(oAuth2LoginSuccessHandler)
                 )
-
                 .httpBasic(Customizer.withDefaults());
 
-        // JWT authentication for normal API requests
         http.addFilterBefore(
                 jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class

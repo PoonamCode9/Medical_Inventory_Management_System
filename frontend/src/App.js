@@ -13,10 +13,15 @@ import StockLogs from "./pages/StockLogs";
 import Register from "./pages/Register";
 import Analytics from "./pages/Analytics";
 import OAuthSuccess from "./pages/OAuthSuccess";
+import Settings from "./pages/Settings";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/medicines" element={<Medicines />} />
@@ -29,10 +34,11 @@ function App() {
         <Route path="/stocklogs" element={<StockLogs />} />
         <Route path="/register" element={<Register />} />
         <Route path="/analytics" element={<Analytics />} />
-        <Route
-    path="/oauth-success"
-    element={<OAuthSuccess />}
-/>
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { FaBell, FaCog } from "react-icons/fa";
 import "../css/Navbar.css";
 
 function Navbar() {
@@ -9,21 +11,38 @@ function Navbar() {
 
         <div className="top-navbar">
 
-            <div className="navbar-title"></div>
+            <div className="navbar-title">
+                <span>MediStock Dashboard</span>
+            </div>
 
-            <div className="profile">
+            <div className="navbar-actions">
 
-                <div className="avatar">
+                <Link
+                    to="/notifications"
+                    className="navbar-icon-button"
+                    title="Notifications"
+                >
+                    <FaBell />
+                </Link>
 
-                    {name ? name.charAt(0).toUpperCase() : "U"}
+                <Link
+                    to="/settings"
+                    className="navbar-icon-button"
+                    title="Settings"
+                >
+                    <FaCog />
+                </Link>
 
-                </div>
+                <div className="profile">
 
-                <div>
+                    <div className="avatar">
+                        {name ? name.charAt(0).toUpperCase() : "U"}
+                    </div>
 
-                    <h5>{name}</h5>
-
-                    <span>{role}</span>
+                    <div>
+                        <h5>{name}</h5>
+                        <span>{role}</span>
+                    </div>
 
                 </div>
 
