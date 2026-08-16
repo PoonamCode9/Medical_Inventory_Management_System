@@ -1,4 +1,5 @@
 import {
+    Chip,
     IconButton,
     Paper,
     Table,
@@ -7,65 +8,60 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Typography,
-    Chip
+    Typography
 } from "@mui/material";
 
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import EditRoundedIcon
+    from "@mui/icons-material/EditRounded";
+
+import DeleteRoundedIcon
+    from "@mui/icons-material/DeleteRounded";
+
+
+const getRoleChip = role => {
+
+    const roles = {
+        ADMIN: {
+            label: "Admin",
+            color: "error"
+        },
+
+        PHARMACIST: {
+            label: "Pharmacist",
+            color: "primary"
+        },
+
+        STAFF: {
+            label: "Staff",
+            color: "success"
+        }
+    };
+
+    const config =
+        roles[role] || {
+            label: role || "Unknown",
+            color: "default"
+        };
+
+    return (
+        <Chip
+            label={config.label}
+            color={config.color}
+            size="small"
+            sx={{
+                fontWeight: 600
+            }}
+        />
+    );
+
+};
+
 
 function UserTable({
     users,
     onEdit,
     onDelete
 }) {
-
-    const getRoleChip = (role) => {
-
-        switch (role) {
-
-            case "ADMIN":
-
-                return (
-                    <Chip
-                        label="Admin"
-                        color="error"
-                        size="small"
-                    />
-                );
-
-            case "PHARMACIST":
-
-                return (
-                    <Chip
-                        label="Pharmacist"
-                        color="primary"
-                        size="small"
-                    />
-                );
-
-            case "STAFF":
-
-                return (
-                    <Chip
-                        label="Staff"
-                        color="success"
-                        size="small"
-                    />
-                );
-
-            default:
-
-                return (
-                    <Chip
-                        label={role}
-                        size="small"
-                    />
-                );
-
-        }
-
-    };
 
     if (users.length === 0) {
 
@@ -75,11 +71,14 @@ function UserTable({
                 elevation={2}
                 sx={{
                     p: 4,
-                    textAlign: "center"
+                    textAlign: "center",
+                    borderRadius: 2
                 }}
             >
 
-                <Typography color="text.secondary">
+                <Typography
+                    color="text.secondary"
+                >
                     No users found.
                 </Typography>
 
@@ -89,61 +88,130 @@ function UserTable({
 
     }
 
+
     return (
 
         <TableContainer
             component={Paper}
             elevation={3}
+            sx={{
+                borderRadius: 2,
+                overflowX: "auto"
+            }}
         >
 
-            <Table>
+            <Table
+                size="small"
+                sx={{
+                    "& .MuiTableCell-root": {
+                        py: 1.25
+                    }
+                }}
+            >
 
                 <TableHead>
 
-                    <TableRow>
+                    <TableRow
+                        sx={{
+                            backgroundColor:
+                                "action.hover"
+                        }}
+                    >
 
-                        <TableCell>
-                            <strong>Name</strong>
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color: "text.secondary"
+                            }}
+                        >
+                            Name
                         </TableCell>
 
-                        <TableCell>
-                            <strong>Email</strong>
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color: "text.secondary"
+                            }}
+                        >
+                            Email
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Role</strong>
+
+                        <TableCell
+                            align="center"
+                            sx={{
+                                fontWeight: 700,
+                                color: "text.secondary",
+                                width: 150
+                            }}
+                        >
+                            Role
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Actions</strong>
+
+                        <TableCell
+                            align="center"
+                            sx={{
+                                fontWeight: 700,
+                                color: "text.secondary",
+                                width: 130
+                            }}
+                        >
+                            Actions
                         </TableCell>
 
                     </TableRow>
 
                 </TableHead>
 
+
                 <TableBody>
 
-                    {users.map((user) => (
+                    {users.map(user => (
 
                         <TableRow
                             key={user.userId}
                             hover
+                            sx={{
+                                "&:last-child td": {
+                                    borderBottom: 0
+                                }
+                            }}
                         >
 
                             <TableCell>
-                                {user.name}
+
+                                <Typography
+                                    variant="body2"
+                                    fontWeight={600}
+                                >
+                                    {user.name}
+                                </Typography>
+
                             </TableCell>
 
+
                             <TableCell>
-                                {user.email}
+
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                >
+                                    {user.email}
+                                </Typography>
+
                             </TableCell>
+
 
                             <TableCell align="center">
 
-                                {getRoleChip(user.roleName)}
+                                {getRoleChip(
+                                    user.roleName
+                                )}
 
                             </TableCell>
+
 
                             <TableCell align="center">
 
@@ -151,23 +219,37 @@ function UserTable({
 
                                     <IconButton
                                         color="primary"
-                                        onClick={() => onEdit(user)}
+                                        size="small"
+                                        onClick={() =>
+                                            onEdit(user)
+                                        }
+                                        sx={{
+                                            mr: 0.5
+                                        }}
                                     >
 
-                                        <EditRoundedIcon />
+                                        <EditRoundedIcon
+                                            fontSize="small"
+                                        />
 
                                     </IconButton>
 
                                 )}
 
+
                                 {onDelete && (
 
                                     <IconButton
                                         color="error"
-                                        onClick={() => onDelete(user)}
+                                        size="small"
+                                        onClick={() =>
+                                            onDelete(user)
+                                        }
                                     >
 
-                                        <DeleteRoundedIcon />
+                                        <DeleteRoundedIcon
+                                            fontSize="small"
+                                        />
 
                                     </IconButton>
 
@@ -188,5 +270,6 @@ function UserTable({
     );
 
 }
+
 
 export default UserTable;

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 
+
 function DashboardLayout() {
 
     return (
@@ -11,7 +12,7 @@ function DashboardLayout() {
             style={{
                 display: "flex",
                 minHeight: "100vh",
-                background: "#F4F6F8"
+                background: "#F6F8FB"
             }}
         >
 
@@ -20,6 +21,7 @@ function DashboardLayout() {
             <div
                 style={{
                     flex: 1,
+                    minWidth: 0,
                     display: "flex",
                     flexDirection: "column"
                 }}
@@ -29,8 +31,10 @@ function DashboardLayout() {
 
                 <main
                     style={{
-                        padding: "30px",
-                        flex: 1
+                        flex: 1,
+                        minWidth: 0,
+                        padding: "28px",
+                        overflowX: "hidden"
                     }}
                 >
 
@@ -45,5 +49,6 @@ function DashboardLayout() {
     );
 
 }
+
 
 export default DashboardLayout;

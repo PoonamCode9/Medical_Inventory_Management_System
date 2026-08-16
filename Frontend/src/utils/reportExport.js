@@ -1,256 +1,274 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 
-const columns = {
+/* =========================================================
+   REPORT CONFIGURATION
+   ========================================================= */
 
-    medicines: [
-        ["ID", "medicineId"],
-        ["Medicine", "name"],
-        ["Category", "category"],
-        ["Price", "price"],
-        ["Supplier", "supplierName"]
-    ],
+const reportSections = {
+    medicines: {
+        title: "MEDICINES",
+        records: "medicineRecords",
+        columns: [
+            ["ID", "medicineId"],
+            ["Medicine", "name"],
+            ["Category", "category"],
+            ["Price", "price"],
+            ["Supplier", "supplierName"]
+        ]
+    },
 
-    inventory: [
-        ["Batch", "batchNumber"],
-        ["Medicine", "medicineName"],
-        ["Category", "category"],
-        ["Quantity", "quantity"],
-        ["Value", "batchValue"],
-        ["Mfg Date", "mfgDate"],
-        ["Expiry", "expDate"],
-        ["Status", "status"]
-    ],
+    inventory: {
+        title: "INVENTORY",
+        records: "inventoryRecords",
+        columns: [
+            ["Batch", "batchNumber"],
+            ["Medicine", "medicineName"],
+            ["Category", "category"],
+            ["Quantity", "quantity"],
+            ["Value", "batchValue"],
+            ["Mfg Date", "mfgDate"],
+            ["Expiry", "expDate"],
+            ["Status", "status"]
+        ]
+    },
 
-    suppliers: [
-        ["ID", "supplierId"],
-        ["Name", "name"],
-        ["Phone", "phNo"],
-        ["Email", "email"],
-        ["Address", "address"]
-    ],
+    suppliers: {
+        title: "SUPPLIERS",
+        records: "supplierRecords",
+        columns: [
+            ["ID", "supplierId"],
+            ["Name", "name"],
+            ["Phone", "phNo"],
+            ["Email", "email"],
+            ["Address", "address"]
+        ]
+    },
 
-    purchases: [
-        ["ID", "orderId"],
-        ["Medicine", "medicineName"],
-        ["Supplier", "supplierName"],
-        ["Quantity", "quantity"],
-        ["Amount", "totalAmount"],
-        ["Status", "status"],
-        ["Order Date", "orderDate"]
-    ],
+    purchases: {
+        title: "PURCHASE ORDERS",
+        records: "purchaseOrderRecords",
+        dateField: "orderDate",
+        columns: [
+            ["ID", "orderId"],
+            ["Medicine", "medicineName"],
+            ["Supplier", "supplierName"],
+            ["Quantity", "quantity"],
+            ["Amount", "totalAmount"],
+            ["Status", "status"],
+            ["Order Date", "orderDate"]
+        ]
+    },
 
-    notifications: [
-        ["ID", "notificationId"],
-        ["Medicine", "medicineName"],
-        ["Batch", "batchNumber"],
-        ["Alert", "alertType"],
-        ["Quantity", "quantity"],
-        ["Days Left", "daysRemaining"],
-        ["Expiry", "expDate"],
-        ["Status", "status"],
-        ["Created", "createdDate"],
-        ["Reviewed By", "reviewedBy"],
-        ["Reviewed Date", "reviewedDate"]
-    ],
+    sales: {
+        title: "SALES",
+        records: "salesRecords",
+        dateField: "saleDate",
+        columns: [
+            ["Sale ID", "saleId"],
+            ["Medicine", "medicineName"],
+            ["Category", "category"],
+            ["Batch", "batchNumber"],
+            ["Customer", "customerName"],
+            ["Quantity", "quantity"],
+            ["Unit Price", "unitPrice"],
+            ["Total Amount", "totalAmount"],
+            ["Sold By", "soldBy"],
+            ["Sale Date", "saleDate"]
+        ]
+    },
 
-    users: [
-        ["ID", "userId"],
-        ["Name", "name"],
-        ["Email", "email"],
-        ["Role", "roleName"]
-    ],
+    notifications: {
+        title: "NOTIFICATIONS",
+        records: "notificationRecords",
+        dateField: "createdDate",
+        columns: [
+            ["ID", "notificationId"],
+            ["Medicine", "medicineName"],
+            ["Batch", "batchNumber"],
+            ["Alert", "alertType"],
+            ["Quantity", "quantity"],
+            ["Days Left", "daysRemaining"],
+            ["Expiry", "expDate"],
+            ["Status", "status"],
+            ["Created", "createdDate"],
+            ["Reviewed By", "reviewedBy"],
+            ["Reviewed Date", "reviewedDate"]
+        ]
+    },
 
-    activity: [
-        ["ID", "logId"],
-        ["Date", "performedAt"],
-        ["User", "performedBy"],
-        ["Role", "userRole"],
-        ["Module", "module"],
-        ["Action", "action"],
-        ["Description", "description"],
-        ["Reference", "referenceName"]
-    ]
+    users: {
+        title: "USERS",
+        records: "userRecords",
+        columns: [
+            ["ID", "userId"],
+            ["Name", "name"],
+            ["Email", "email"],
+            ["Role", "roleName"]
+        ]
+    },
 
+    activity: {
+        title: "ACTIVITY HISTORY",
+        records: "activityLogs",
+        dateField: "performedAt",
+        columns: [
+            ["ID", "logId"],
+            ["Date", "performedAt"],
+            ["User", "performedBy"],
+            ["Role", "userRole"],
+            ["Module", "module"],
+            ["Action", "action"],
+            ["Description", "description"],
+            ["Reference", "referenceName"]
+        ]
+    }
 };
 
 
-const sectionTitles = {
-    medicines: "MEDICINES",
-    inventory: "INVENTORY",
-    suppliers: "SUPPLIERS",
-    purchases: "PURCHASE ORDERS",
-    notifications: "NOTIFICATIONS",
-    users: "USERS",
-    activity: "ACTIVITY HISTORY"
-};
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+const getValue = (record, key) =>
+    record?.[key] ?? "";
 
 
 const getPeriodLabel = options => {
+    if (options?.period === "CUSTOM") {
+        return `${options.startDate} to ${options.endDate}`;
+    }
 
-    const labels = {
+    return {
         ALL: "Entire History",
         WEEK: "Past Week",
         MONTH: "Past Month",
         YEAR: "Past Year"
-    };
-
-    return options.period === "CUSTOM"
-        ? `${options.startDate} to ${options.endDate}`
-        : labels[options.period] || "Entire History";
-
+    }[options?.period] || "Entire History";
 };
 
 
 const getStartDate = period => {
-
     const date = new Date();
 
-    if (period === "WEEK")
+    if (period === "WEEK") {
         date.setDate(date.getDate() - 7);
+    }
 
-    if (period === "MONTH")
+    if (period === "MONTH") {
         date.setMonth(date.getMonth() - 1);
+    }
 
-    if (period === "YEAR")
+    if (period === "YEAR") {
         date.setFullYear(date.getFullYear() - 1);
+    }
 
     return date;
-
 };
 
 
 const filterRecords = (
     records = [],
-    field,
-    options
+    dateField,
+    options = {}
 ) => {
-
-    if (options.period === "ALL")
+    if (!dateField || options.period === "ALL") {
         return records;
+    }
 
     const start =
         options.period === "CUSTOM"
-            ? new Date(
-                `${options.startDate}T00:00:00`
-            )
+            ? new Date(`${options.startDate}T00:00:00`)
             : getStartDate(options.period);
 
     const end =
         options.period === "CUSTOM"
-            ? new Date(
-                `${options.endDate}T23:59:59`
-            )
+            ? new Date(`${options.endDate}T23:59:59`)
             : new Date();
 
     return records.filter(record => {
+        if (!record?.[dateField]) {
+            return false;
+        }
 
-        const date =
-            new Date(record[field]);
+        const date = new Date(record[dateField]);
 
         return date >= start && date <= end;
-
     });
-
 };
 
 
+/* =========================================================
+   PREPARE REPORT DATA
+   ========================================================= */
+
 export const filterReportData = (
     data,
-    options
-) => ({
+    options = {}
+) => {
+    const result = { ...data };
 
-    ...data,
+    Object.values(reportSections).forEach(section => {
+        const records = data?.[section.records] || [];
 
-    medicineRecords:
-        data.medicineRecords || [],
+        result[section.records] =
+            filterRecords(
+                records,
+                section.dateField,
+                options
+            );
+    });
 
-    inventoryRecords:
-        data.inventoryRecords || [],
-
-    supplierRecords:
-        data.supplierRecords || [],
-
-    userRecords:
-        data.userRecords || [],
-
-    purchaseOrderRecords:
-        filterRecords(
-            data.purchaseOrderRecords,
-            "orderDate",
-            options
-        ),
-
-    notificationRecords:
-        filterRecords(
-            data.notificationRecords,
-            "createdDate",
-            options
-        ),
-
-    activityLogs:
-        filterRecords(
-            data.activityLogs,
-            "performedAt",
-            options
-        )
-
-});
+    return result;
+};
 
 
-const getValue = (
-    record,
-    key
-) => record[key] ?? "";
+const getSections = data =>
+    Object.entries(reportSections).map(
+        ([key, config]) => ({
+            key,
+            ...config,
+            data: data?.[config.records] || []
+        })
+    );
 
 
-const sections = data => [
+/* =========================================================
+   SALES SUMMARY
+   ========================================================= */
 
-    [
-        "medicines",
-        columns.medicines,
-        data.medicineRecords
-    ],
+const getSalesSummary = records => {
+    const transactions = records.length;
 
-    [
-        "inventory",
-        columns.inventory,
-        data.inventoryRecords
-    ],
+    const units = records.reduce(
+        (total, sale) =>
+            total + Number(sale.quantity || 0),
+        0
+    );
 
-    [
-        "suppliers",
-        columns.suppliers,
-        data.supplierRecords
-    ],
+    const revenue = records.reduce(
+        (total, sale) =>
+            total + Number(sale.totalAmount || 0),
+        0
+    );
 
-    [
-        "purchases",
-        columns.purchases,
-        data.purchaseOrderRecords
-    ],
+    return {
+        transactions,
+        units,
+        revenue,
+        average:
+            transactions
+                ? revenue / transactions
+                : 0
+    };
+};
 
-    [
-        "notifications",
-        columns.notifications,
-        data.notificationRecords
-    ],
 
-    [
-        "users",
-        columns.users,
-        data.userRecords
-    ],
-
-    [
-        "activity",
-        columns.activity,
-        data.activityLogs
-    ]
-
-];
-
+/* =========================================================
+   CSV
+   ========================================================= */
 
 const csvEscape = value =>
     `"${String(value)
@@ -258,45 +276,30 @@ const csvEscape = value =>
         .replace(/\r?\n/g, " ")}"`;
 
 
-const addCsvSection = (
-    rows,
-    title,
-    defs,
-    records
-) => {
+const buildCsvSection = section => {
+    const { title, columns, data } = section;
 
-    rows.push([
-        csvEscape(title)
-    ]);
-
-    rows.push(
-        defs.map(([label]) =>
+    return [
+        [csvEscape(title)],
+        columns.map(([label]) =>
             csvEscape(label)
-        )
-    );
-
-    records.forEach(record => {
-
-        rows.push(
-            defs.map(([, key]) =>
+        ),
+        ...data.map(record =>
+            columns.map(([, key]) =>
                 csvEscape(
                     getValue(record, key)
                 )
             )
-        );
-
-    });
-
-    rows.push([]);
-
+        ),
+        []
+    ];
 };
 
 
 export const generateCsvReport = (
     reportData,
-    options
+    options = {}
 ) => {
-
     const data =
         filterReportData(
             reportData,
@@ -304,38 +307,29 @@ export const generateCsvReport = (
         );
 
     const rows = [
-
         [
             csvEscape(
                 "MediStock Reports Analytics"
             )
         ],
-
         [
             csvEscape(
                 `Generated: ${new Date().toLocaleString()}`
             )
         ],
-
         [
             csvEscape(
                 `Period: ${getPeriodLabel(options)}`
             )
         ],
-
         []
-
     ];
 
-    sections(data).forEach(
-        ([key, defs, records]) =>
-            addCsvSection(
-                rows,
-                sectionTitles[key],
-                defs,
-                records
-            )
-    );
+    getSections(data).forEach(section => {
+        rows.push(
+            ...buildCsvSection(section)
+        );
+    });
 
     return new Blob(
         [
@@ -348,41 +342,175 @@ export const generateCsvReport = (
                 "text/csv;charset=utf-8;"
         }
     );
-
 };
 
 
-/* PDF */
+/* =========================================================
+   EXCEL
+   ========================================================= */
 
-export const generatePdfReport = (
-    reportData,
-    options
+const addExcelSheet = (
+    workbook,
+    name,
+    rows,
+    columns
 ) => {
+    const sheet =
+        XLSX.utils.aoa_to_sheet(rows);
 
+    sheet["!cols"] =
+        columns.map(([label]) => ({
+            wch: Math.min(
+                Math.max(
+                    label.length + 4,
+                    14
+                ),
+                30
+            )
+        }));
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        sheet,
+        name.substring(0, 31)
+    );
+};
+
+
+export const generateExcelReport = (
+    reportData,
+    options = {}
+) => {
     const data =
         filterReportData(
             reportData,
             options
         );
 
-    const doc =
-        new jsPDF(
-            "landscape",
-            "mm",
-            "a4"
+    const workbook =
+        XLSX.utils.book_new();
+
+    const sales =
+        getSalesSummary(
+            data.salesRecords || []
         );
 
-    const pageWidth =
-        doc.internal.pageSize.getWidth();
+    const summary = [
+        ["MediStock Reports Analytics"],
+        [
+            "Generated",
+            new Date().toLocaleString()
+        ],
+        [
+            "Period",
+            getPeriodLabel(options)
+        ],
+        [],
+        ["Metric", "Value"],
+        [
+            "Medicines",
+            data.summary?.totalMedicines ?? 0
+        ],
+        [
+            "Inventory Batches",
+            data.summary?.totalInventoryBatches ?? 0
+        ],
+        [
+            "Suppliers",
+            data.summary?.totalSuppliers ?? 0
+        ],
+        [
+            "Purchase Orders",
+            data.summary?.totalPurchaseOrders ?? 0
+        ],
+        [
+            "Sales Transactions",
+            sales.transactions
+        ],
+        [
+            "Sales Units",
+            sales.units
+        ],
+        [
+            "Sales Revenue",
+            sales.revenue
+        ],
+        [
+            "Average Sale Value",
+            sales.average
+        ],
+        [
+            "Notifications",
+            data.summary?.totalNotifications ?? 0
+        ],
+        [
+            "Users",
+            data.summary?.totalUsers ?? 0
+        ]
+    ];
 
-    const pageHeight =
-        doc.internal.pageSize.getHeight();
+    addExcelSheet(
+        workbook,
+        "Summary",
+        summary,
+        [
+            ["Metric"],
+            ["Value"]
+        ]
+    );
 
-    const margin = 12;
+    getSections(data).forEach(section => {
+        const rows = [
+            section.columns.map(
+                ([label]) => label
+            ),
+            ...section.data.map(record =>
+                section.columns.map(
+                    ([, key]) =>
+                        getValue(
+                            record,
+                            key
+                        )
+                )
+            )
+        ];
+
+        addExcelSheet(
+            workbook,
+            section.title,
+            rows,
+            section.columns
+        );
+    });
+
+    return new Blob(
+        [
+            XLSX.write(
+                workbook,
+                {
+                    bookType: "xlsx",
+                    type: "array"
+                }
+            )
+        ],
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+};
 
 
-    /* Header */
+/* =========================================================
+   PDF
+   ========================================================= */
 
+const addPdfHeader = (
+    doc,
+    width,
+    margin,
+    options
+) => {
     doc.setFillColor(
         25,
         118,
@@ -392,7 +520,7 @@ export const generatePdfReport = (
     doc.rect(
         0,
         0,
-        pageWidth,
+        width,
         31,
         "F"
     );
@@ -433,79 +561,119 @@ export const generatePdfReport = (
 
     doc.text(
         `Period: ${getPeriodLabel(options)}`,
-        pageWidth - margin,
+        width - margin,
         13,
-        {
-            align: "right"
-        }
+        { align: "right" }
     );
 
     doc.text(
         `Generated: ${new Date().toLocaleString()}`,
-        pageWidth - margin,
+        width - margin,
         20,
-        {
-            align: "right"
-        }
+        { align: "right" }
     );
+};
+
+
+const addPdfFooter = (
+    doc,
+    width,
+    height
+) => {
+    doc.setDrawColor(
+        220,
+        220,
+        220
+    );
+
+    doc.line(
+        12,
+        height - 12,
+        width - 12,
+        height - 12
+    );
+
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    doc.setFontSize(7);
 
     doc.setTextColor(
-        40,
-        40,
-        40
+        120,
+        120,
+        120
     );
 
+    doc.text(
+        "MediStock • Medical Inventory Management Platform",
+        12,
+        height - 7
+    );
 
-    /* Summary */
+    doc.text(
+        `Page ${doc.internal.getNumberOfPages()}`,
+        width - 12,
+        height - 7,
+        { align: "right" }
+    );
+};
 
-    let currentY = 40;
 
-    const summaryItems = [
+const addPdfSummary = (
+    doc,
+    data,
+    margin,
+    width,
+    y
+) => {
+    const sales =
+        getSalesSummary(
+            data.salesRecords || []
+        );
 
+    const items = [
         [
             "Medicines",
             data.summary?.totalMedicines ?? 0
         ],
-
         [
-            "Inventory Batches",
+            "Inventory",
             data.summary?.totalInventoryBatches ?? 0
         ],
-
         [
             "Suppliers",
             data.summary?.totalSuppliers ?? 0
         ],
-
         [
-            "Purchase Orders",
+            "Purchases",
             data.summary?.totalPurchaseOrders ?? 0
         ],
-
         [
-            "Notifications",
-            data.summary?.totalNotifications ?? 0
+            "Sales",
+            sales.transactions
         ],
-
         [
-            "Users",
-            data.summary?.totalUsers ?? 0
+            "Revenue",
+            `₹${sales.revenue.toFixed(2)}`
         ]
-
     ];
 
+    const gap = 2;
     const cardWidth =
-        (pageWidth - margin * 2 - 10) / 6;
+        (
+            width -
+            margin * 2 -
+            gap * 5
+        ) / 6;
 
-    const cardHeight = 17;
-
-    summaryItems.forEach(
+    items.forEach(
         ([label, value], index) => {
-
             const x =
                 margin +
                 index *
-                (cardWidth + 2);
+                (cardWidth + gap);
 
             doc.setFillColor(
                 247,
@@ -515,20 +683,20 @@ export const generatePdfReport = (
 
             doc.roundedRect(
                 x,
-                currentY,
+                y,
                 cardWidth,
-                cardHeight,
+                17,
                 2,
                 2,
                 "F"
             );
 
-            doc.setFontSize(7);
-
             doc.setFont(
                 "helvetica",
                 "normal"
             );
+
+            doc.setFontSize(7);
 
             doc.setTextColor(
                 100,
@@ -539,15 +707,15 @@ export const generatePdfReport = (
             doc.text(
                 label,
                 x + 3,
-                currentY + 6
+                y + 6
             );
-
-            doc.setFontSize(11);
 
             doc.setFont(
                 "helvetica",
                 "bold"
             );
+
+            doc.setFontSize(10);
 
             doc.setTextColor(
                 30,
@@ -558,31 +726,61 @@ export const generatePdfReport = (
             doc.text(
                 String(value),
                 x + 3,
-                currentY + 13
+                y + 13
             );
-
         }
     );
+};
 
-    currentY += cardHeight + 9;
 
+export const generatePdfReport = (
+    reportData,
+    options = {}
+) => {
+    const data =
+        filterReportData(
+            reportData,
+            options
+        );
 
-    /* Sections */
+    const doc =
+        new jsPDF(
+            "landscape",
+            "mm",
+            "a4"
+        );
 
-    sections(data).forEach(
-        ([key, defs, records]) => {
+    const width =
+        doc.internal.pageSize.getWidth();
 
-            if (
-                currentY >
-                pageHeight - 45
-            ) {
+    const height =
+        doc.internal.pageSize.getHeight();
 
+    const margin = 12;
+
+    addPdfHeader(
+        doc,
+        width,
+        margin,
+        options
+    );
+
+    addPdfSummary(
+        doc,
+        data,
+        margin,
+        width,
+        40
+    );
+
+    let y = 66;
+
+    getSections(data).forEach(
+        section => {
+            if (y > height - 45) {
                 doc.addPage();
-
-                currentY = 18;
-
+                y = 18;
             }
-
 
             doc.setFillColor(
                 25,
@@ -592,8 +790,8 @@ export const generatePdfReport = (
 
             doc.roundedRect(
                 margin,
-                currentY,
-                pageWidth - margin * 2,
+                y,
+                width - margin * 2,
                 10,
                 2,
                 2,
@@ -614,42 +812,32 @@ export const generatePdfReport = (
             doc.setFontSize(10);
 
             doc.text(
-                sectionTitles[key],
+                section.title,
                 margin + 4,
-                currentY + 6.8
+                y + 6.8
             );
-
-            doc.setTextColor(
-                90,
-                90,
-                90
-            );
-
-            doc.setFontSize(7);
 
             doc.setFont(
                 "helvetica",
                 "normal"
             );
 
+            doc.setFontSize(7);
+
             doc.text(
-                `${records.length} record${
-                    records.length === 1
+                `${section.data.length} record${
+                    section.data.length === 1
                         ? ""
                         : "s"
                 }`,
-                pageWidth - margin - 4,
-                currentY + 6.8,
-                {
-                    align: "right"
-                }
+                width - margin - 4,
+                y + 6.8,
+                { align: "right" }
             );
 
-            currentY += 14;
+            y += 14;
 
-
-            if (!records.length) {
-
+            if (!section.data.length) {
                 doc.setFillColor(
                     248,
                     248,
@@ -658,8 +846,8 @@ export const generatePdfReport = (
 
                 doc.roundedRect(
                     margin,
-                    currentY,
-                    pageWidth - margin * 2,
+                    y,
+                    width - margin * 2,
                     12,
                     2,
                     2,
@@ -677,33 +865,29 @@ export const generatePdfReport = (
                 doc.text(
                     "No records found for this section.",
                     margin + 4,
-                    currentY + 7
+                    y + 7
                 );
 
-                currentY += 22;
-
+                y += 22;
                 return;
-
             }
-
 
             autoTable(
                 doc,
                 {
-
-                    startY: currentY,
+                    startY: y,
 
                     head: [
-                        defs.map(
+                        section.columns.map(
                             ([label]) =>
                                 label
                         )
                     ],
 
                     body:
-                        records.map(
+                        section.data.map(
                             record =>
-                                defs.map(
+                                section.columns.map(
                                     ([, key]) =>
                                         getValue(
                                             record,
@@ -771,95 +955,94 @@ export const generatePdfReport = (
                         minCellHeight: 7
                     },
 
-                    didDrawPage: () => {
-
+                    didDrawPage: () =>
                         addPdfFooter(
                             doc,
-                            pageWidth,
-                            pageHeight
-                        );
-
-                    }
-
+                            width,
+                            height
+                        )
                 }
             );
 
-            currentY =
+            y =
                 doc.lastAutoTable.finalY +
                 12;
-
         }
     );
-
 
     addPdfFooter(
         doc,
-        pageWidth,
-        pageHeight
+        width,
+        height
     );
 
     return doc.output("blob");
-
 };
 
 
-const addPdfFooter = (
-    doc,
-    pageWidth,
-    pageHeight
-) => {
+/* =========================================================
+   PRINT
+   ========================================================= */
 
-    doc.setDrawColor(
-        220,
-        220,
-        220
-    );
+const printTable = section => {
+    const headers =
+        section.columns
+            .map(
+                ([label]) =>
+                    `<th>${label}</th>`
+            )
+            .join("");
 
-    doc.line(
-        12,
-        pageHeight - 12,
-        pageWidth - 12,
-        pageHeight - 12
-    );
+    const rows =
+        section.data
+            .map(
+                record =>
+                    `<tr>${
+                        section.columns
+                            .map(
+                                ([, key]) =>
+                                    `<td>${getValue(
+                                        record,
+                                        key
+                                    )}</td>`
+                            )
+                            .join("")
+                    }</tr>`
+            )
+            .join("");
 
-    doc.setFont(
-        "helvetica",
-        "normal"
-    );
+    return `
+        <section>
+            <div class="section-title">
+                <strong>${section.title}</strong>
+                <span>${section.data.length} records</span>
+            </div>
 
-    doc.setFontSize(7);
-
-    doc.setTextColor(
-        120,
-        120,
-        120
-    );
-
-    doc.text(
-        "MediStock • Medical Inventory Management Platform",
-        12,
-        pageHeight - 7
-    );
-
-    doc.text(
-        `Page ${doc.internal.getNumberOfPages()}`,
-        pageWidth - 12,
-        pageHeight - 7,
-        {
-            align: "right"
-        }
-    );
-
+            ${
+                section.data.length
+                    ? `
+                        <table>
+                            <thead>
+                                <tr>${headers}</tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    `
+                    : `
+                        <div class="empty">
+                            No records found.
+                        </div>
+                    `
+            }
+        </section>
+    `;
 };
 
-
-/* Native Print */
 
 export const printReport = (
     reportData,
-    options
+    options = {}
 ) => {
-
     const data =
         filterReportData(
             reportData,
@@ -867,76 +1050,9 @@ export const printReport = (
         );
 
     const tables =
-        sections(data)
-            .map(
-                ([key, defs, records]) => {
-
-                    const headers =
-                        defs.map(
-                            ([label]) =>
-                                `<th>${label}</th>`
-                        ).join("");
-
-                    const rows =
-                        records.map(
-                            record =>
-                                `<tr>${
-                                    defs.map(
-                                        ([, key]) =>
-                                            `<td>${getValue(
-                                                record,
-                                                key
-                                            )}</td>`
-                                    ).join("")
-                                }</tr>`
-                        ).join("");
-
-                    return `
-                        <section>
-
-                            <div class="section-title">
-
-                                <strong>
-                                    ${sectionTitles[key]}
-                                </strong>
-
-                                <span>
-                                    ${records.length} records
-                                </span>
-
-                            </div>
-
-                            ${
-                                records.length
-                                    ? `
-                                        <table>
-
-                                            <thead>
-                                                <tr>
-                                                    ${headers}
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                ${rows}
-                                            </tbody>
-
-                                        </table>
-                                    `
-                                    : `
-                                        <div class="empty">
-                                            No records found.
-                                        </div>
-                                    `
-                            }
-
-                        </section>
-                    `;
-
-                }
-            )
+        getSections(data)
+            .map(printTable)
             .join("");
-
 
     const win =
         window.open(
@@ -945,41 +1061,26 @@ export const printReport = (
             "width=1200,height=800"
         );
 
-
     if (!win) {
-
         throw new Error(
             "Unable to open print window. Please allow pop-ups."
         );
-
     }
 
-
     win.document.write(`
-
         <!DOCTYPE html>
-
         <html>
-
         <head>
-
-            <title>
-                MediStock Reports
-            </title>
+            <title>MediStock Reports</title>
 
             <style>
-
                 * {
                     box-sizing: border-box;
                 }
 
                 body {
-                    font-family:
-                        Arial,
-                        sans-serif;
-
+                    font-family: Arial, sans-serif;
                     margin: 25px;
-
                     color: #222;
                 }
 
@@ -1049,7 +1150,6 @@ export const printReport = (
                 }
 
                 @media print {
-
                     @page {
                         size: landscape;
                         margin: 12mm;
@@ -1070,20 +1170,13 @@ export const printReport = (
                     tr {
                         page-break-inside: avoid;
                     }
-
                 }
-
             </style>
-
         </head>
 
         <body>
-
             <div class="header">
-
-                <h1>
-                    MEDISTOCK
-                </h1>
+                <h1>MEDISTOCK</h1>
 
                 <p>
                     Medical Inventory Reports
@@ -1094,43 +1187,31 @@ export const printReport = (
                     Generated:
                     ${new Date().toLocaleString()}
                 </p>
-
             </div>
 
             ${tables}
-
         </body>
-
         </html>
-
     `);
-
 
     win.document.close();
     win.focus();
 
-    /*
-     * Give the browser a moment to finish
-     * rendering before opening its native
-     * print interface.
-     */
-
-    setTimeout(() => {
-
-        win.print();
-
-    }, 300);
-
+    setTimeout(
+        () => win.print(),
+        300
+    );
 };
 
 
-/* Download */
+/* =========================================================
+   DOWNLOAD
+   ========================================================= */
 
 export const downloadBlob = (
     blob,
     fileName
 ) => {
-
     const url =
         URL.createObjectURL(blob);
 
@@ -1146,5 +1227,4 @@ export const downloadBlob = (
     link.remove();
 
     URL.revokeObjectURL(url);
-
 };

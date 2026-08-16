@@ -9,7 +9,9 @@ import {
     Typography
 } from "@mui/material";
 
-import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import HistoryRoundedIcon
+    from "@mui/icons-material/HistoryRounded";
+
 
 function RecentActivity({
     title = "Dashboard Updates",
@@ -18,24 +20,74 @@ function RecentActivity({
 
     return (
 
-        <Card elevation={2} sx={{ borderRadius: 3, height: "100%" }}>
+        <Card
+            sx={{
+                height: "100%",
+                borderRadius: 3,
+                borderColor: "divider"
+            }}
+        >
 
-            <CardContent>
+            <CardContent
+                sx={{
+                    p: 2.5,
 
-                <Typography variant="h6" fontWeight="bold" mb={2}>
+                    "&:last-child": {
+                        pb: 2.5
+                    }
+                }}
+            >
+
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
+                        mb: 1
+                    }}
+                >
                     {title}
                 </Typography>
 
-                <List>
 
-                    {activities.length === 0 && (
+                <Divider
+                    sx={{
+                        mb: 1
+                    }}
+                />
 
-                        <ListItem>
+
+                <List
+                    disablePadding
+                >
+
+                    {!activities.length && (
+
+                        <ListItem
+                            sx={{
+                                px: 0,
+                                py: 2
+                            }}
+                        >
+
+                            <ListItemIcon
+                                sx={{
+                                    minWidth: 40
+                                }}
+                            >
+
+                                <HistoryRoundedIcon
+                                    color="disabled"
+                                />
+
+                            </ListItemIcon>
 
                             <ListItemText
                                 primary="No updates available."
                                 primaryTypographyProps={{
-                                    color: "text.secondary"
+                                    color:
+                                        "text.secondary",
+                                    fontSize:
+                                        "0.9rem"
                                 }}
                             />
 
@@ -43,25 +95,57 @@ function RecentActivity({
 
                     )}
 
-                    {activities.map((activity, index) => (
 
-                        <div key={index}>
+                    {activities.map(
+                        (activity, index) => (
 
-                            <ListItem>
+                            <div
+                                key={index}
+                            >
 
-                                <ListItemIcon>
-                                    <HistoryRoundedIcon color="primary" />
-                                </ListItemIcon>
+                                <ListItem
+                                    sx={{
+                                        px: 0,
+                                        py: 1.25
+                                    }}
+                                >
 
-                                <ListItemText primary={activity} />
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 40
+                                        }}
+                                    >
 
-                            </ListItem>
+                                        <HistoryRoundedIcon
+                                            color="primary"
+                                            fontSize="small"
+                                        />
 
-                            {index !== activities.length - 1 && <Divider />}
+                                    </ListItemIcon>
 
-                        </div>
 
-                    ))}
+                                    <ListItemText
+                                        primary={activity}
+                                        primaryTypographyProps={{
+                                            fontSize:
+                                                "0.9rem",
+                                            color:
+                                                "text.primary"
+                                        }}
+                                    />
+
+                                </ListItem>
+
+
+                                {index <
+                                    activities.length - 1 && (
+                                    <Divider />
+                                )}
+
+                            </div>
+
+                        )
+                    )}
 
                 </List>
 
@@ -72,5 +156,6 @@ function RecentActivity({
     );
 
 }
+
 
 export default RecentActivity;

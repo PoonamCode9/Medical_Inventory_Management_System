@@ -1,15 +1,23 @@
 import {
+    Box,
     Card,
     CardContent,
     Grid,
-    Typography,
-    Box
+    Typography
 } from "@mui/material";
 
-import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
-import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import InventoryRoundedIcon
+    from "@mui/icons-material/InventoryRounded";
+
+import AccessTimeRoundedIcon
+    from "@mui/icons-material/AccessTimeRounded";
+
+import WarningAmberRoundedIcon
+    from "@mui/icons-material/WarningAmberRounded";
+
+import CheckCircleRoundedIcon
+    from "@mui/icons-material/CheckCircleRounded";
+
 
 function NotificationSummaryCards({
     summary
@@ -47,33 +55,32 @@ function NotificationSummaryCards({
 
     ];
 
+
     return (
 
         <Grid
             container
-            spacing={3}
-            sx={{
-                mb: 3
-            }}
+            spacing={2.5}
+            sx={{ mb: 3 }}
         >
 
-            {cards.map((card) => (
+            {cards.map(card => (
 
                 <Grid
-                    item
-                    xs={12}
-                    sm={6}
-                    md={3}
+                    size={{
+                        xs: 12,
+                        sm: 6,
+                        lg: 3
+                    }}
                     key={card.title}
                 >
 
                     <Card
-                        elevation={3}
+                        elevation={2}
                         sx={{
-                            height: 170,
-                            borderRadius: 3,
-
-                            display: "flex",
+                            height: "100%",
+                            minHeight: 135,
+                            borderRadius: 2,
 
                             transition:
                                 "transform 0.2s ease, box-shadow 0.2s ease",
@@ -81,21 +88,17 @@ function NotificationSummaryCards({
                             "&:hover": {
                                 transform:
                                     "translateY(-3px)",
-                                boxShadow: 6
+                                boxShadow: 5
                             }
                         }}
                     >
 
                         <CardContent
                             sx={{
-                                width: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "space-between",
-                                p: 3,
+                                p: 2.5,
 
                                 "&:last-child": {
-                                    pb: 3
+                                    pb: 2.5
                                 }
                             }}
                         >
@@ -103,9 +106,10 @@ function NotificationSummaryCards({
                             <Box
                                 sx={{
                                     display: "flex",
+                                    alignItems:
+                                        "center",
                                     justifyContent:
-                                        "space-between",
-                                    alignItems: "flex-start"
+                                        "space-between"
                                 }}
                             >
 
@@ -121,26 +125,29 @@ function NotificationSummaryCards({
 
                                     <Typography
                                         variant="h4"
-                                        fontWeight="bold"
+                                        fontWeight={700}
                                         sx={{
                                             mt: 0.5,
                                             lineHeight: 1.2
                                         }}
                                     >
-                                        {card.value}
+                                        {card.value ?? 0}
                                     </Typography>
 
                                 </Box>
 
+
                                 <Box
                                     sx={{
-                                        width: 48,
-                                        height: 48,
+                                        width: 46,
+                                        height: 46,
                                         borderRadius: 2,
 
                                         display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
+                                        alignItems:
+                                            "center",
+                                        justifyContent:
+                                            "center",
 
                                         color: card.color,
 
@@ -155,20 +162,22 @@ function NotificationSummaryCards({
 
                             </Box>
 
+
                             <Box
                                 sx={{
-                                    height: 4,
+                                    mt: 2,
+                                    height: 3,
                                     width: "100%",
                                     borderRadius: 2,
                                     backgroundColor:
-                                        `${card.color}25`
+                                        `${card.color}20`
                                 }}
                             >
 
                                 <Box
                                     sx={{
-                                        height: "100%",
                                         width: "40%",
+                                        height: "100%",
                                         borderRadius: 2,
                                         backgroundColor:
                                             card.color
@@ -191,4 +200,5 @@ function NotificationSummaryCards({
 
 }
 
-export default NotificationSummaryCards;
+
+export default NotificationSummaryCards;    

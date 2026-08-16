@@ -7,16 +7,20 @@ import com.MediStock.app.dto.InventoryAnalyticsResponse;
 import com.MediStock.app.dto.MedicineAnalyticsResponse;
 import com.MediStock.app.dto.NotificationAnalyticsResponse;
 import com.MediStock.app.dto.PurchaseAnalyticsResponse;
+import com.MediStock.app.dto.SaleResponse;
+import com.MediStock.app.dto.SalesAnalyticsResponse;
 import com.MediStock.app.dto.SupplierAnalyticsResponse;
 import com.MediStock.app.dto.UserAnalyticsResponse;
 import com.MediStock.app.entities.Inventory;
 import com.MediStock.app.entities.Medicine;
+import com.MediStock.app.entities.Sale;
 import com.MediStock.app.enums.NotificationStatus;
 import com.MediStock.app.enums.PurchaseOrderStatus;
 import com.MediStock.app.repositories.InventoryRepository;
 import com.MediStock.app.repositories.MedicineRepository;
 import com.MediStock.app.repositories.NotificationRepository;
 import com.MediStock.app.repositories.PurchaseOrderRepository;
+import com.MediStock.app.repositories.SaleRepository;
 import com.MediStock.app.repositories.SupplierRepository;
 import com.MediStock.app.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -24,9 +28,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -48,6 +54,8 @@ public class ReportServiceImpl implements ReportService {
     private final NotificationRepository notificationRepository;
 
     private final UserRepository userRepository;
+
+    private final SaleRepository saleRepository;
 
 
     /*
@@ -91,6 +99,8 @@ public class ReportServiceImpl implements ReportService {
 
             UserRepository userRepository,
 
+            SaleRepository saleRepository,
+
             MedicineService medicineService,
 
             InventoryService inventoryService,
@@ -124,6 +134,9 @@ public class ReportServiceImpl implements ReportService {
 
         this.userRepository =
                 userRepository;
+
+        this.saleRepository =
+                saleRepository;
 
         this.medicineService =
                 medicineService;
@@ -163,16 +176,18 @@ public class ReportServiceImpl implements ReportService {
 
 
         /*
-         * Existing summary cards.
+         * Summary cards.
          */
+
         dashboard.setSummary(
                 buildSummary()
         );
 
 
         /*
-         * Existing analytics.
+         * Analytics.
          */
+
         dashboard.setMedicines(
                 buildMedicineAnalytics()
         );
@@ -197,14 +212,15 @@ public class ReportServiceImpl implements ReportService {
                 buildUserAnalytics()
         );
 
+        dashboard.setSales(
+                buildSalesAnalytics()
+        );
+
 
         /*
          |--------------------------------------------------------------------------
          | Detailed Database Records
          |--------------------------------------------------------------------------
-         *
-         * These use the existing services instead of creating
-         * another set of entity-to-DTO mapping methods here.
          */
 
         dashboard.setMedicineRecords(
@@ -233,18 +249,27 @@ public class ReportServiceImpl implements ReportService {
 
 
         /*
+         * Detailed sales records.
+         *
+         * These are ordered from newest sale
+         * to oldest sale.
+         */
+
+        dashboard.setSalesRecords(
+
+                saleRepository
+                        .findAllByOrderBySaleDateDesc()
+                        .stream()
+                        .map(this::mapSaleToResponse)
+                        .collect(Collectors.toList())
+
+        );
+
+
+        /*
          |--------------------------------------------------------------------------
          | Activity / Audit History
          |--------------------------------------------------------------------------
-         *
-         * This gives the Reports page access to:
-         *
-         * - Who performed the action
-         * - Their role
-         * - What action was performed
-         * - Which record was affected
-         * - Description
-         * - Exact timestamp
          */
 
         dashboard.setActivityLogs(
@@ -351,7 +376,8 @@ public class ReportServiceImpl implements ReportService {
 
             if (price == null) {
 
-                price = BigDecimal.ZERO;
+                price =
+                        BigDecimal.ZERO;
 
             }
 
@@ -360,7 +386,9 @@ public class ReportServiceImpl implements ReportService {
                     totalPrice.add(price);
 
 
-            if (medicine.getCategory() != null) {
+            if (
+                    medicine.getCategory() != null
+            ) {
 
                 categories.add(
                         medicine.getCategory()
@@ -523,7 +551,8 @@ public class ReportServiceImpl implements ReportService {
 
             if (quantity == null) {
 
-                quantity = 0;
+                quantity =
+                        0;
 
             }
 
@@ -563,6 +592,7 @@ public class ReportServiceImpl implements ReportService {
             /*
              * Expired has highest priority.
              */
+
             if (
                     inventory.getExpDate()
                             .isBefore(today)
@@ -576,6 +606,7 @@ public class ReportServiceImpl implements ReportService {
             /*
              * Expiring soon.
              */
+
             else if (
                     !inventory
                             .getExpDate()
@@ -595,6 +626,7 @@ public class ReportServiceImpl implements ReportService {
             /*
              * Low stock.
              */
+
             else if (
                     quantity
                             <=
@@ -610,6 +642,7 @@ public class ReportServiceImpl implements ReportService {
             /*
              * Healthy.
              */
+
             else {
 
                 healthy++;
@@ -915,6 +948,420 @@ public class ReportServiceImpl implements ReportService {
                         .size()
 
         );
+
+
+        return response;
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Sales Analytics
+     |--------------------------------------------------------------------------
+     */
+
+    private SalesAnalyticsResponse buildSalesAnalytics() {
+
+        SalesAnalyticsResponse response =
+                new SalesAnalyticsResponse();
+
+
+        /*
+         * Total number of sale transactions.
+         */
+
+        response.setTotalSales(
+                saleRepository.count()
+        );
+
+
+        /*
+         * Total number of medicine units sold.
+         */
+
+        Long totalUnitsSold =
+                saleRepository.getTotalUnitsSold();
+
+
+        response.setTotalUnitsSold(
+
+                totalUnitsSold == null
+                        ? 0L
+                        : totalUnitsSold
+
+        );
+
+
+        /*
+         * Total revenue.
+         */
+
+        BigDecimal totalRevenue =
+                saleRepository.getTotalSales();
+
+
+        if (
+                totalRevenue == null
+        ) {
+
+            totalRevenue =
+                    BigDecimal.ZERO;
+
+        }
+
+
+        response.setTotalRevenue(
+                totalRevenue
+        );
+
+
+        /*
+         * Average sale value.
+         */
+
+        long totalTransactions =
+                saleRepository.count();
+
+
+        if (
+                totalTransactions == 0
+        ) {
+
+            response.setAverageSaleValue(
+                    BigDecimal.ZERO
+            );
+
+        }
+
+        else {
+
+            response.setAverageSaleValue(
+
+                    totalRevenue.divide(
+
+                            BigDecimal.valueOf(
+                                    totalTransactions
+                            ),
+
+                            2,
+
+                            RoundingMode.HALF_UP
+
+                    )
+
+            );
+
+        }
+
+
+        return response;
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | SALES REPORTS
+     |--------------------------------------------------------------------------
+     */
+
+
+    /*
+     * Total revenue from all recorded sales.
+     */
+
+    @Override
+    public BigDecimal getTotalSales() {
+
+        BigDecimal total =
+                saleRepository.getTotalSales();
+
+
+        return total == null
+                ? BigDecimal.ZERO
+                : total;
+
+    }
+
+
+    /*
+     * Total number of sales transactions.
+     */
+
+    @Override
+    public Long getTotalTransactions() {
+
+        return saleRepository.count();
+
+    }
+
+
+    /*
+     * Total number of medicine units sold.
+     */
+
+    @Override
+    public Long getTotalUnitsSold() {
+
+        Long total =
+                saleRepository.getTotalUnitsSold();
+
+
+        return total == null
+                ? 0L
+                : total;
+
+    }
+
+
+    /*
+     * Total revenue between two dates.
+     */
+
+    @Override
+    public BigDecimal getSalesBetween(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        validateDateRange(
+                startDate,
+                endDate
+        );
+
+
+        LocalDateTime start =
+                startDate.atStartOfDay();
+
+
+        /*
+         * Add one day to the end date so
+         * the entire selected end date is
+         * included.
+         */
+
+        LocalDateTime end =
+                endDate
+                        .plusDays(1)
+                        .atStartOfDay();
+
+
+        BigDecimal total =
+                saleRepository.getTotalSalesBetween(
+                        start,
+                        end
+                );
+
+
+        return total == null
+                ? BigDecimal.ZERO
+                : total;
+
+    }
+
+
+    /*
+     * Detailed sales records between two dates.
+     */
+
+    @Override
+    public List<SaleResponse> getSalesBetweenDates(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        validateDateRange(
+                startDate,
+                endDate
+        );
+
+
+        LocalDateTime start =
+                startDate.atStartOfDay();
+
+
+        LocalDateTime end =
+                endDate
+                        .plusDays(1)
+                        .atStartOfDay();
+
+
+        return saleRepository
+                .findBySaleDateBetweenOrderBySaleDateDesc(
+                        start,
+                        end
+                )
+                .stream()
+                .map(this::mapSaleToResponse)
+                .collect(Collectors.toList());
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Validate Sales Report Date Range
+     |--------------------------------------------------------------------------
+     */
+
+    private void validateDateRange(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        if (
+                startDate == null
+        ) {
+
+            throw new RuntimeException(
+                    "Start date is required."
+            );
+
+        }
+
+
+        if (
+                endDate == null
+        ) {
+
+            throw new RuntimeException(
+                    "End date is required."
+            );
+
+        }
+
+
+        if (
+                startDate.isAfter(
+                        endDate
+                )
+        ) {
+
+            throw new RuntimeException(
+                    "Start date cannot be after end date."
+            );
+
+        }
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Map Sale Entity To Sale Response
+     |--------------------------------------------------------------------------
+     */
+
+    private SaleResponse mapSaleToResponse(
+            Sale sale
+    ) {
+
+        SaleResponse response =
+                new SaleResponse();
+
+
+        response.setSaleId(
+                sale.getSaleId()
+        );
+
+
+        response.setCustomerName(
+                sale.getCustomerName()
+        );
+
+
+        response.setQuantity(
+                sale.getQuantity()
+        );
+
+
+        response.setUnitPrice(
+                sale.getUnitPrice()
+        );
+
+
+        response.setTotalAmount(
+                sale.getTotalAmount()
+        );
+
+
+        response.setSaleDate(
+                sale.getSaleDate()
+        );
+
+
+        /*
+         * Inventory information.
+         */
+
+        Inventory inventory =
+                sale.getInventory();
+
+
+        if (
+                inventory != null
+        ) {
+
+            response.setBatchId(
+                    inventory.getBatchId()
+            );
+
+
+            response.setBatchNumber(
+                    inventory.getBatchNumber()
+            );
+
+
+            /*
+             * Medicine information.
+             */
+
+            Medicine medicine =
+                    inventory.getMedicine();
+
+
+            if (
+                    medicine != null
+            ) {
+
+                response.setMedicineId(
+                        medicine.getMedicineId()
+                );
+
+
+                response.setMedicineName(
+                        medicine.getName()
+                );
+
+
+                response.setCategory(
+                        medicine.getCategory()
+                );
+
+            }
+
+        }
+
+
+        /*
+         * User information.
+         */
+
+        if (
+                sale.getUser() != null
+        ) {
+
+            response.setUserId(
+                    sale.getUser().getUserId()
+            );
+
+
+            response.setSoldBy(
+                    sale.getUser().getName()
+            );
+
+        }
 
 
         return response;

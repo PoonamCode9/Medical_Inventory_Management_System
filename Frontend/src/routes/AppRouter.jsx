@@ -1,10 +1,16 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+    BrowserRouter,
+    Navigate,
+    Route,
+    Routes
+} from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
+
 
 /* ================= ADMIN ================= */
 
@@ -15,12 +21,15 @@ import Users from "../pages/admin/Users";
 import Reports from "../pages/admin/Reports";
 import Notifications from "../pages/admin/Notifications";
 import AdminPurchaseOrders from "../pages/admin/PurchaseOrders";
+import Sales from "../pages/admin/Sales";
+
 
 /* ================= STAFF ================= */
 
 import StaffDashboard from "../pages/staff/StaffDashboard";
 import StaffMedicines from "../pages/staff/Medicines";
 import StaffNotifications from "../pages/staff/Notifications";
+
 
 /* ================= PHARMACIST ================= */
 
@@ -30,9 +39,11 @@ import PharmacistSuppliers from "../pages/pharmacist/Suppliers";
 import PurchaseOrders from "../pages/pharmacist/PurchaseOrders";
 import PharmacistNotifications from "../pages/pharmacist/Notifications";
 
+
 /* ================= SHARED PAGES ================= */
 
 import InventoryList from "../pages/inventory/InventoryList";
+
 
 function AppRouter() {
 
@@ -42,18 +53,28 @@ function AppRouter() {
 
             <Routes>
 
+
                 {/* ================= PUBLIC ================= */}
 
-                <Route path="/" element={<Login />} />
+                <Route
+                    path="/"
+                    element={<Login />}
+                />
 
-                <Route path="/register" element={<Register />} />
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
+
 
                 {/* ================= ADMIN ================= */}
 
                 <Route
                     path="/admin"
                     element={
-                        <ProtectedRoute allowedRoles={["ADMIN"]}>
+                        <ProtectedRoute
+                            allowedRoles={["ADMIN"]}
+                        >
                             <DashboardLayout />
                         </ProtectedRoute>
                     }
@@ -61,7 +82,12 @@ function AppRouter() {
 
                     <Route
                         index
-                        element={<Navigate to="dashboard" replace />}
+                        element={
+                            <Navigate
+                                to="dashboard"
+                                replace
+                            />
+                        }
                     />
 
                     <Route
@@ -82,6 +108,11 @@ function AppRouter() {
                     <Route
                         path="inventory"
                         element={<InventoryList />}
+                    />
+
+                    <Route
+                        path="sales"
+                        element={<Sales />}
                     />
 
                     <Route
@@ -106,12 +137,15 @@ function AppRouter() {
 
                 </Route>
 
+
                 {/* ================= PHARMACIST ================= */}
 
                 <Route
                     path="/pharmacist"
                     element={
-                        <ProtectedRoute allowedRoles={["PHARMACIST"]}>
+                        <ProtectedRoute
+                            allowedRoles={["PHARMACIST"]}
+                        >
                             <DashboardLayout />
                         </ProtectedRoute>
                     }
@@ -119,7 +153,12 @@ function AppRouter() {
 
                     <Route
                         index
-                        element={<Navigate to="dashboard" replace />}
+                        element={
+                            <Navigate
+                                to="dashboard"
+                                replace
+                            />
+                        }
                     />
 
                     <Route
@@ -143,6 +182,11 @@ function AppRouter() {
                     />
 
                     <Route
+                        path="sales"
+                        element={<Sales />}
+                    />
+
+                    <Route
                         path="purchase-orders"
                         element={<PurchaseOrders />}
                     />
@@ -154,12 +198,15 @@ function AppRouter() {
 
                 </Route>
 
+
                 {/* ================= STAFF ================= */}
 
                 <Route
                     path="/staff"
                     element={
-                        <ProtectedRoute allowedRoles={["STAFF"]}>
+                        <ProtectedRoute
+                            allowedRoles={["STAFF"]}
+                        >
                             <DashboardLayout />
                         </ProtectedRoute>
                     }
@@ -167,7 +214,12 @@ function AppRouter() {
 
                     <Route
                         index
-                        element={<Navigate to="dashboard" replace />}
+                        element={
+                            <Navigate
+                                to="dashboard"
+                                replace
+                            />
+                        }
                     />
 
                     <Route
@@ -186,17 +238,28 @@ function AppRouter() {
                     />
 
                     <Route
+                        path="sales"
+                        element={<Sales />}
+                    />
+
+                    <Route
                         path="notifications"
                         element={<StaffNotifications />}
                     />
 
                 </Route>
 
+
                 {/* ================= UNKNOWN ROUTES ================= */}
 
                 <Route
                     path="*"
-                    element={<Navigate to="/" replace />}
+                    element={
+                        <Navigate
+                            to="/"
+                            replace
+                        />
+                    }
                 />
 
             </Routes>

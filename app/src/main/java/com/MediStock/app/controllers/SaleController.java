@@ -1,8 +1,9 @@
 package com.MediStock.app.controllers;
 
-import com.MediStock.app.dto.DashboardResponse;
+import com.MediStock.app.dto.SaleRequest;
 import com.MediStock.app.dto.SaleResponse;
-import com.MediStock.app.services.ReportService;
+import com.MediStock.app.services.SaleService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,46 +12,90 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports")
-@CrossOrigin(origins = "*")
-public class ReportController {
+@RequestMapping("/api/sales")
+public class SaleController {
 
-    private final ReportService reportService;
+    private final SaleService saleService;
 
-    public ReportController(
-            ReportService reportService
+    public SaleController(
+            SaleService saleService
     ) {
 
-        this.reportService = reportService;
+        this.saleService = saleService;
 
     }
 
 
     /*
      |--------------------------------------------------------------------------
-     | Dashboard Report
+     | Create Sale
      |--------------------------------------------------------------------------
      */
 
-    @GetMapping("/dashboard")
-    public DashboardResponse getDashboardReport() {
+    @PostMapping
+    public ResponseEntity<SaleResponse> createSale(
+            @RequestBody SaleRequest request
+    ) {
 
-        return reportService.getDashboardReport();
+        SaleResponse response =
+                saleService.createSale(
+                        request
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
 
     }
 
 
     /*
      |--------------------------------------------------------------------------
-     | Total Sales Revenue
+     | Get All Sales
      |--------------------------------------------------------------------------
      */
 
-    @GetMapping("/sales/total")
+    @GetMapping
+    public ResponseEntity<List<SaleResponse>> getAllSales() {
+
+        return ResponseEntity.ok(
+                saleService.getAllSales()
+        );
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Get Sale By ID
+     |--------------------------------------------------------------------------
+     */
+
+    @GetMapping("/{saleId}")
+    public ResponseEntity<SaleResponse> getSaleById(
+            @PathVariable Long saleId
+    ) {
+
+        return ResponseEntity.ok(
+                saleService.getSaleById(
+                        saleId
+                )
+        );
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Get Total Sales Revenue
+     |--------------------------------------------------------------------------
+     */
+
+    @GetMapping("/revenue")
     public ResponseEntity<BigDecimal> getTotalSales() {
 
         return ResponseEntity.ok(
-                reportService.getTotalSales()
+                saleService.getTotalSales()
         );
 
     }
@@ -58,15 +103,15 @@ public class ReportController {
 
     /*
      |--------------------------------------------------------------------------
-     | Total Sales Transactions
+     | Get Total Transactions
      |--------------------------------------------------------------------------
      */
 
-    @GetMapping("/sales/transactions")
+    @GetMapping("/transactions")
     public ResponseEntity<Long> getTotalTransactions() {
 
         return ResponseEntity.ok(
-                reportService.getTotalTransactions()
+                saleService.getTotalTransactions()
         );
 
     }
@@ -74,15 +119,15 @@ public class ReportController {
 
     /*
      |--------------------------------------------------------------------------
-     | Total Units Sold
+     | Get Total Units Sold
      |--------------------------------------------------------------------------
      */
 
-    @GetMapping("/sales/units")
+    @GetMapping("/units")
     public ResponseEntity<Long> getTotalUnitsSold() {
 
         return ResponseEntity.ok(
-                reportService.getTotalUnitsSold()
+                saleService.getTotalUnitsSold()
         );
 
     }
@@ -90,25 +135,25 @@ public class ReportController {
 
     /*
      |--------------------------------------------------------------------------
-     | Sales Revenue Between Dates
+     | Get Sales Revenue Between Dates
      |--------------------------------------------------------------------------
      *
      * Example:
      *
-     * GET /api/reports/sales/revenue
+     * GET /api/sales/revenue/range
      *     ?startDate=2026-08-01
      *     &endDate=2026-08-16
      *
      */
 
-    @GetMapping("/sales/revenue")
-    public ResponseEntity<BigDecimal> getSalesRevenue(
+    @GetMapping("/revenue/range")
+    public ResponseEntity<BigDecimal> getSalesBetween(
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate
     ) {
 
         return ResponseEntity.ok(
-                reportService.getSalesBetween(
+                saleService.getSalesBetween(
                         startDate,
                         endDate
                 )
@@ -119,25 +164,25 @@ public class ReportController {
 
     /*
      |--------------------------------------------------------------------------
-     | Detailed Sales Report Between Dates
+     | Get Sales Between Dates
      |--------------------------------------------------------------------------
      *
      * Example:
      *
-     * GET /api/reports/sales
+     * GET /api/sales/range
      *     ?startDate=2026-08-01
      *     &endDate=2026-08-16
      *
      */
 
-    @GetMapping("/sales")
-    public ResponseEntity<List<SaleResponse>> getSalesReport(
+    @GetMapping("/range")
+    public ResponseEntity<List<SaleResponse>> getSalesBetweenDates(
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate
     ) {
 
         return ResponseEntity.ok(
-                reportService.getSalesBetweenDates(
+                saleService.getSalesBetweenDates(
                         startDate,
                         endDate
                 )

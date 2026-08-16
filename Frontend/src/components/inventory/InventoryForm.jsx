@@ -4,6 +4,7 @@ import {
     TextField
 } from "@mui/material";
 
+
 function InventoryForm({
     formData,
     medicines,
@@ -13,7 +14,13 @@ function InventoryForm({
 
     return (
 
-        <Grid container spacing={2} sx={{ mt: 1 }}>
+        <Grid
+            container
+            spacing={2.5}
+            sx={{ pt: 0.5 }}
+        >
+
+            {/* MEDICINE */}
 
             <Grid size={{ xs: 12 }}>
 
@@ -25,23 +32,35 @@ function InventoryForm({
                     value={formData.medicineId}
                     onChange={onChange}
                     error={!!errors.medicineId}
-                    helperText={errors.medicineId}
+                    helperText={
+                        errors.medicineId ||
+                        "Select the medicine for this batch."
+                    }
                 >
 
-                    {medicines.map((medicine) => (
+                    {medicines.map(
+                        medicine => (
 
-                        <MenuItem
-                            key={medicine.medicineId}
-                            value={medicine.medicineId}
-                        >
-                            {medicine.name}
-                        </MenuItem>
+                            <MenuItem
+                                key={
+                                    medicine.medicineId
+                                }
+                                value={
+                                    medicine.medicineId
+                                }
+                            >
+                                {medicine.name}
+                            </MenuItem>
 
-                    ))}
+                        )
+                    )}
 
                 </TextField>
 
             </Grid>
+
+
+            {/* BATCH NUMBER */}
 
             <Grid size={{ xs: 12 }}>
 
@@ -52,10 +71,16 @@ function InventoryForm({
                     value={formData.batchNumber}
                     onChange={onChange}
                     error={!!errors.batchNumber}
-                    helperText={errors.batchNumber}
+                    helperText={
+                        errors.batchNumber ||
+                        "Enter the batch number."
+                    }
                 />
 
             </Grid>
+
+
+            {/* QUANTITY */}
 
             <Grid size={{ xs: 12 }}>
 
@@ -67,12 +92,29 @@ function InventoryForm({
                     value={formData.quantity}
                     onChange={onChange}
                     error={!!errors.quantity}
-                    helperText={errors.quantity}
+                    helperText={
+                        errors.quantity ||
+                        "Enter the available quantity."
+                    }
+                    slotProps={{
+                        htmlInput: {
+                            min: 1,
+                            step: 1
+                        }
+                    }}
                 />
 
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+
+            {/* MANUFACTURING DATE */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 6
+                }}
+            >
 
                 <TextField
                     fullWidth
@@ -82,7 +124,10 @@ function InventoryForm({
                     value={formData.mfgDate}
                     onChange={onChange}
                     error={!!errors.mfgDate}
-                    helperText={errors.mfgDate}
+                    helperText={
+                        errors.mfgDate ||
+                        "Select the manufacturing date."
+                    }
                     slotProps={{
                         inputLabel: {
                             shrink: true
@@ -92,7 +137,15 @@ function InventoryForm({
 
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+
+            {/* EXPIRY DATE */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 6
+                }}
+            >
 
                 <TextField
                     fullWidth
@@ -102,7 +155,10 @@ function InventoryForm({
                     value={formData.expDate}
                     onChange={onChange}
                     error={!!errors.expDate}
-                    helperText={errors.expDate}
+                    helperText={
+                        errors.expDate ||
+                        "Select the expiry date."
+                    }
                     slotProps={{
                         inputLabel: {
                             shrink: true
@@ -117,5 +173,6 @@ function InventoryForm({
     );
 
 }
+
 
 export default InventoryForm;

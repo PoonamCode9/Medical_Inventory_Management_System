@@ -1,22 +1,89 @@
+html,
+body,
+#root {
+    margin: 0;
+    min-height: 100%;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f5f7fa;
+    background: #F6F8FB;
+    color: #1F2937;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.login-container {
-    width: 350px;
-    margin: 100px auto;
-    padding: 30px;
-    background: white;
+* {
+    box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+}
+
+::selection {
+    background: rgba(25, 118, 210, 0.16);
+    color: #1565C0;
+}
+
+
+/* Scrollbars */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
     border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+
+/* Legacy login compatibility */
+
+.login-container {
+    width: min(100% - 32px, 420px);
+    margin: 40px auto;
+    padding: 32px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.07);
 }
 
 .login-container h1 {
     text-align: center;
-    color: #1565c0;
+    color: #1976D2;
 }
 
 .login-container h2 {
@@ -28,24 +95,39 @@ body {
     flex-direction: column;
 }
 
-.login-container input {
-    margin: 10px 0;
+.login-container input,
+.login-container select {
+    width: 100%;
+    margin: 8px 0;
     padding: 12px;
     font-size: 16px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    outline: none;
+    background: #FFFFFF;
+}
+
+.login-container input:focus,
+.login-container select:focus {
+    border-color: #1976D2;
+    box-shadow:
+        0 0 0 3px rgba(25, 118, 210, 0.10);
 }
 
 .login-container button {
     margin-top: 20px;
     padding: 12px;
-    background: #1565c0;
-    color: white;
+    background: #1976D2;
+    color: #FFFFFF;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    font-weight: 600;
 }
 
 .login-container button:hover {
-    background: #0d47a1;
+    background: #1565C0;
 }
 
 .login-container p {
@@ -54,64 +136,100 @@ body {
 }
 
 
-
-/* ==========================
-   Dashboard Layout
-========================== */
+/* Legacy dashboard compatibility */
 
 .dashboard {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: #F6F8FB;
 }
 
 .navbar {
-    height: 70px;
-    background-color: #1565c0;
-    color: white;
-
+    min-height: 64px;
+    background: #FFFFFF;
+    color: #1F2937;
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    padding: 0 25px;
+    padding: 0 24px;
+    border-bottom: 1px solid #E2E8F0;
 }
 
 .dashboard-body {
     flex: 1;
     display: flex;
+    min-width: 0;
 }
 
 .sidebar {
     width: 240px;
-    background: #1e293b;
-    color: white;
+    background: #FFFFFF;
+    color: #1F2937;
     padding: 20px;
+    border-right: 1px solid #E2E8F0;
 }
 
 .sidebar h3 {
-    margin-bottom: 30px;
+    margin-bottom: 28px;
 }
 
 .sidebar a {
-    color: white;
+    color: #475569;
     text-decoration: none;
     display: block;
-    margin: 15px 0;
+    margin: 8px 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .sidebar a:hover {
-    color: #90caf9;
+    color: #1976D2;
+    background: #EFF6FF;
 }
 
 .dashboard-content {
     flex: 1;
-    padding: 30px;
-    background: #f5f7fa;
+    min-width: 0;
+    padding: 28px;
+    background: #F6F8FB;
 }
-.login-container select {
-    margin: 10px 0;
-    padding: 12px;
-    font-size: 16px;
-    width: 100%;
+
+
+/* Responsive legacy layout */
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        width: 200px;
+        padding: 16px;
+    }
+
+    .dashboard-content {
+        padding: 20px;
+    }
+
+    .navbar {
+        padding: 0 16px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .dashboard-body {
+        flex-direction: column;
+    }
+
+    .dashboard-content {
+        padding: 16px;
+    }
+
 }

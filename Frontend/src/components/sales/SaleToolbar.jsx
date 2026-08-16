@@ -4,11 +4,9 @@ import {
     TextField
 } from "@mui/material";
 
-import AddRoundedIcon
-    from "@mui/icons-material/AddRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
-
-function UserToolbar({
+function SaleToolbar({
     searchTerm,
     onSearchChange,
     onAdd
@@ -22,31 +20,24 @@ function UserToolbar({
                 alignItems: "center",
                 gap: 2,
                 mb: 3,
-                flexWrap: "wrap"
+                width: "100%"
             }}
         >
 
             <TextField
-                label="Search Users"
-                placeholder="Search by name, email or role..."
+                label="Search Sales"
+                placeholder="Search by medicine, batch or customer..."
                 variant="outlined"
                 size="small"
                 value={searchTerm}
-                onChange={event =>
-                    onSearchChange(
-                        event.target.value
-                    )
+                onChange={(event) =>
+                    onSearchChange(event.target.value)
                 }
                 sx={{
-                    flexGrow: 1,
-                    minWidth: {
-                        xs: "100%",
-                        sm: 300
-                    },
-                    maxWidth: 500
+                    flex: 1,
+                    minWidth: 300
                 }}
             />
-
 
             <Button
                 variant="contained"
@@ -55,16 +46,14 @@ function UserToolbar({
                 }
                 onClick={onAdd}
                 sx={{
-                    minHeight: 40,
-                    px: 2.5,
-                    borderRadius: 1,
-                    textTransform: "none",
-                    fontWeight: 600,
                     whiteSpace: "nowrap",
-                    flexShrink: 0
+                    borderRadius: 1,
+                    px: 2.5
                 }}
             >
-                Add User
+
+                Record Sale
+
             </Button>
 
         </Box>
@@ -73,5 +62,4 @@ function UserToolbar({
 
 }
 
-
-export default UserToolbar;
+export default SaleToolbar;

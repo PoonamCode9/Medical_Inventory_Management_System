@@ -4,6 +4,7 @@ import {
     TextField
 } from "@mui/material";
 
+
 function UserForm({
     formData,
     onChange,
@@ -17,10 +18,13 @@ function UserForm({
             spacing={2}
         >
 
+            {/* NAME */}
+
             <Grid size={{ xs: 12 }}>
 
                 <TextField
                     fullWidth
+                    size="small"
                     label="Full Name"
                     name="name"
                     value={formData.name}
@@ -30,10 +34,14 @@ function UserForm({
 
             </Grid>
 
+
+            {/* EMAIL */}
+
             <Grid size={{ xs: 12 }}>
 
                 <TextField
                     fullWidth
+                    size="small"
                     label="Email"
                     name="email"
                     type="email"
@@ -44,13 +52,17 @@ function UserForm({
 
             </Grid>
 
+
+            {/* PASSWORD */}
+
             <Grid size={{ xs: 12 }}>
 
                 <TextField
                     fullWidth
+                    size="small"
                     label={
                         isEdit
-                            ? "Password (Leave blank to keep current password)"
+                            ? "Password (leave blank to keep current)"
                             : "Password"
                     }
                     name="password"
@@ -62,11 +74,15 @@ function UserForm({
 
             </Grid>
 
+
+            {/* ROLE */}
+
             <Grid size={{ xs: 12 }}>
 
                 <TextField
                     select
                     fullWidth
+                    size="small"
                     label="Role"
                     name="roleId"
                     value={formData.roleId}
@@ -95,5 +111,6 @@ function UserForm({
     );
 
 }
+
 
 export default UserForm;

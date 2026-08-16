@@ -1,11 +1,12 @@
 import {
     Box,
     Button,
-    Stack,
     TextField
 } from "@mui/material";
 
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import AddRoundedIcon
+    from "@mui/icons-material/AddRounded";
+
 
 function InventoryToolbar({
     searchTerm,
@@ -15,50 +16,72 @@ function InventoryToolbar({
 
     return (
 
-        <Stack
-            direction={{
-                xs: "column",
-                sm: "row"
+        <Box
+            sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
+                mb: 3,
+                flexWrap: "wrap"
             }}
-            spacing={2}
-            justifyContent="space-between"
-            alignItems={{
-                xs: "stretch",
-                sm: "center"
-            }}
-            mb={3}
         >
 
+            {/* SEARCH */}
+
             <TextField
-                label="Search Medicine"
+                label="Search Inventory"
+                placeholder="Search by medicine or batch..."
                 variant="outlined"
                 size="small"
                 value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
+                onChange={event =>
+                    onSearchChange(
+                        event.target.value
+                    )
+                }
                 sx={{
                     minWidth: {
                         xs: "100%",
                         sm: 300
+                    },
+                    flexGrow: 1,
+                    maxWidth: 500,
+
+                    "& .MuiOutlinedInput-root": {
+                        backgroundColor:
+                            "background.paper"
                     }
                 }}
             />
 
-            <Box>
 
-                <Button
-                    variant="contained"
-                    startIcon={<AddRoundedIcon />}
-                    onClick={onAdd}
-                >
-                    Add Inventory
-                </Button>
+            {/* ADD INVENTORY */}
 
-            </Box>
+            <Button
+                variant="contained"
+                startIcon={
+                    <AddRoundedIcon />
+                }
+                onClick={onAdd}
+                sx={{
+                    minHeight: 40,
+                    px: 2.5,
+                    borderRadius: 1,
+                    whiteSpace: "nowrap",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    flexShrink: 0
+                }}
+            >
+                Add Inventory
+            </Button>
 
-        </Stack>
+        </Box>
 
     );
 
 }
+
 
 export default InventoryToolbar;

@@ -7,7 +7,9 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle
+    DialogTitle,
+    Divider,
+    Typography
 } from "@mui/material";
 
 import {
@@ -15,10 +17,17 @@ import {
     updatePurchaseOrder
 } from "../../services/purchaseOrderService";
 
-import { getMedicines } from "../../services/medicineService";
-import { getSuppliers } from "../../services/supplierService";
+import {
+    getMedicines
+} from "../../services/medicineService";
 
-import PurchaseOrderForm from "./PurchaseOrderForm";
+import {
+    getSuppliers
+} from "../../services/supplierService";
+
+import PurchaseOrderForm
+    from "./PurchaseOrderForm";
+
 
 const initialFormData = {
     supplierId: "",
@@ -28,6 +37,7 @@ const initialFormData = {
     status: "PENDING"
 };
 
+
 function PurchaseOrderDialog({
     open,
     purchaseOrder,
@@ -35,53 +45,74 @@ function PurchaseOrderDialog({
     loadPurchaseOrders
 }) {
 
-    const [formData, setFormData] = useState(initialFormData);
+    const [formData, setFormData] =
+        useState(initialFormData);
 
-    const [suppliers, setSuppliers] = useState([]);
+    const [suppliers, setSuppliers] =
+        useState([]);
 
-    const [medicines, setMedicines] = useState([]);
+    const [medicines, setMedicines] =
+        useState([]);
 
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] =
+        useState({});
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] =
+        useState(false);
 
-    const [apiError, setApiError] = useState("");
+    const [apiError, setApiError] =
+        useState("");
+
 
     async function loadSuppliers() {
 
         try {
 
-            const data = await getSuppliers();
+            const data =
+                await getSuppliers();
 
             setSuppliers(data);
 
         } catch (error) {
 
-            console.error("Load Suppliers Error:", error);
+            console.error(
+                "Load Suppliers Error:",
+                error
+            );
 
-            setApiError("Unable to load suppliers.");
+            setApiError(
+                "Unable to load suppliers."
+            );
 
         }
 
     }
+
 
     async function loadMedicines() {
 
         try {
 
-            const data = await getMedicines();
+            const data =
+                await getMedicines();
 
             setMedicines(data);
 
         } catch (error) {
 
-            console.error("Load Medicines Error:", error);
+            console.error(
+                "Load Medicines Error:",
+                error
+            );
 
-            setApiError("Unable to load medicines.");
+            setApiError(
+                "Unable to load medicines."
+            );
 
         }
 
     }
+
 
     useEffect(() => {
 
@@ -89,58 +120,71 @@ function PurchaseOrderDialog({
             return undefined;
         }
 
-        const timer = setTimeout(() => {
+        const timer =
+            setTimeout(() => {
 
-            loadSuppliers();
+                loadSuppliers();
+                loadMedicines();
 
-            loadMedicines();
+                if (purchaseOrder) {
 
-            if (purchaseOrder) {
+                    setFormData({
 
-                setFormData({
+                        supplierId:
+                            purchaseOrder.supplierId,
 
-                    supplierId: purchaseOrder.supplierId,
-                    medicineId: purchaseOrder.medicineId,
-                    quantity: purchaseOrder.quantity,
-                    expectedDeliveryDate:
-                        purchaseOrder.expectedDeliveryDate,
-                    status: purchaseOrder.status
+                        medicineId:
+                            purchaseOrder.medicineId,
 
-                });
+                        quantity:
+                            purchaseOrder.quantity,
 
-            } else {
+                        expectedDeliveryDate:
+                            purchaseOrder.expectedDeliveryDate,
 
-                setFormData(initialFormData);
+                        status:
+                            purchaseOrder.status
 
-            }
+                    });
 
-            setErrors({});
+                } else {
 
-            setApiError("");
+                    setFormData({
+                        ...initialFormData
+                    });
 
-        }, 0);
+                }
 
-        return () => clearTimeout(timer);
+                setErrors({});
+                setApiError("");
+
+            }, 0);
+
+        return () =>
+            clearTimeout(timer);
 
     }, [open, purchaseOrder]);
 
-    const handleChange = (event) => {
 
-        const { name, value } = event.target;
+    const handleChange = event => {
+
+        const {
+            name,
+            value
+        } = event.target;
 
         setFormData(previous => ({
-
             ...previous,
-
             [name]: value
-
         }));
 
     };
 
+
     const validate = () => {
 
         const validationErrors = {};
+
 
         if (!formData.supplierId) {
 
@@ -149,6 +193,7 @@ function PurchaseOrderDialog({
 
         }
 
+
         if (!formData.medicineId) {
 
             validationErrors.medicineId =
@@ -156,18 +201,17 @@ function PurchaseOrderDialog({
 
         }
 
+
         if (
-
             !formData.quantity ||
-
             Number(formData.quantity) <= 0
-
         ) {
 
             validationErrors.quantity =
                 "Quantity must be greater than zero.";
 
         }
+
 
         if (!formData.expectedDeliveryDate) {
 
@@ -176,6 +220,7 @@ function PurchaseOrderDialog({
 
         }
 
+
         if (!formData.status) {
 
             validationErrors.status =
@@ -183,94 +228,68 @@ function PurchaseOrderDialog({
 
         }
 
-        setErrors(validationErrors);
 
-        return Object.keys(validationErrors).length === 0;
+        setErrors(
+            validationErrors
+        );
+
+        return (
+            Object.keys(
+                validationErrors
+            ).length === 0
+        );
 
     };
+
 
     const handleSave = async () => {
 
         if (!validate()) {
-
             return;
-
         }
 
         setLoading(true);
-
         setApiError("");
 
         try {
 
-            console.log("Saving purchase order...");
-
             if (purchaseOrder) {
 
                 await updatePurchaseOrder(
-
                     purchaseOrder.orderId,
-
                     formData
-
                 );
 
             } else {
 
-                await addPurchaseOrder(formData);
+                await addPurchaseOrder(
+                    formData
+                );
 
             }
 
-            console.log("Purchase order saved.");
-
             await loadPurchaseOrders();
-
-            console.log("Purchase order list refreshed.");
 
             onClose();
 
         } catch (error) {
 
             console.error(
-
                 "Purchase Order Save Error:",
-
                 error
-
             );
 
             if (error.response) {
 
-                console.log(
-
-                    "Status:",
-
-                    error.response.status
-
-                );
-
-                console.log(
-
-                    "Response:",
-
-                    error.response.data
-
-                );
-
                 setApiError(
-
                     error.response.data?.message ||
-
                     `Request failed (${error.response.status})`
-
                 );
 
             } else {
 
                 setApiError(
-
                     "Unable to connect to the server."
-
                 );
 
             }
@@ -283,39 +302,86 @@ function PurchaseOrderDialog({
 
     };
 
+
+    const isEdit =
+        Boolean(purchaseOrder);
+
+
     return (
 
         <Dialog
             open={open}
-            onClose={loading ? undefined : onClose}
+            onClose={
+                loading
+                    ? undefined
+                    : onClose
+            }
             fullWidth
             maxWidth="sm"
+            PaperProps={{
+                sx: {
+                    borderRadius: 3,
+                    overflow: "hidden"
+                }
+            }}
         >
 
-            <DialogTitle>
+            <DialogTitle
+                sx={{
+                    px: 3,
+                    pt: 3,
+                    pb: 2
+                }}
+            >
 
-                {purchaseOrder
+                <Typography
+                    variant="h6"
+                    fontWeight={700}
+                >
+                    {isEdit
+                        ? "Edit Purchase Order"
+                        : "Add Purchase Order"}
+                </Typography>
 
-                    ? "Edit Purchase Order"
-
-                    : "Add Purchase Order"}
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        mt: 0.5
+                    }}
+                >
+                    {isEdit
+                        ? "Update the purchase order details below."
+                        : "Enter the details for the new purchase order."}
+                </Typography>
 
             </DialogTitle>
 
-            <DialogContent>
+
+            <Divider />
+
+
+            <DialogContent
+                sx={{
+                    px: 3,
+                    py: 3
+                }}
+            >
 
                 {apiError && (
 
                     <Alert
                         severity="error"
-                        sx={{ mb: 2 }}
+                        sx={{
+                            mb: 2.5,
+                            borderRadius: 2
+                        }}
                     >
-
                         {apiError}
-
                     </Alert>
 
                 )}
+
 
                 <PurchaseOrderForm
                     formData={formData}
@@ -327,36 +393,54 @@ function PurchaseOrderDialog({
 
             </DialogContent>
 
-            <DialogActions>
+
+            <Divider />
+
+
+            <DialogActions
+                sx={{
+                    px: 3,
+                    py: 2,
+                    gap: 1
+                }}
+            >
 
                 <Button
                     onClick={onClose}
                     disabled={loading}
+                    sx={{
+                        px: 2,
+                        textTransform: "none"
+                    }}
                 >
-
                     Cancel
-
                 </Button>
+
 
                 <Button
                     variant="contained"
                     onClick={handleSave}
                     disabled={loading}
+                    sx={{
+                        minWidth: 90,
+                        px: 2.5,
+                        borderRadius: 1,
+                        textTransform: "none",
+                        fontWeight: 600
+                    }}
                 >
 
                     {loading ? (
 
                         <CircularProgress
-                            size={22}
+                            size={21}
                             color="inherit"
                         />
 
                     ) : (
 
-                        purchaseOrder
-
+                        isEdit
                             ? "Update"
-
                             : "Save"
 
                     )}
@@ -370,5 +454,6 @@ function PurchaseOrderDialog({
     );
 
 }
+
 
 export default PurchaseOrderDialog;

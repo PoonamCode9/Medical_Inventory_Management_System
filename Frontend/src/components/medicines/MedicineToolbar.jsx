@@ -4,7 +4,9 @@ import {
     TextField
 } from "@mui/material";
 
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import AddRoundedIcon
+    from "@mui/icons-material/AddRounded";
+
 
 function MedicineToolbar({
     role,
@@ -18,9 +20,13 @@ function MedicineToolbar({
         <Box
             sx={{
                 display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 2,
+                alignItems: {
+                    xs: "stretch",
+                    sm: "center"
+                },
+                justifyContent:
+                    "space-between",
+                gap: 1.5,
                 mb: 3,
                 flexWrap: "wrap"
             }}
@@ -32,29 +38,51 @@ function MedicineToolbar({
                 variant="outlined"
                 size="small"
                 value={searchTerm}
-                onChange={(event) =>
-                    onSearchChange(event.target.value)
+                onChange={event =>
+                    onSearchChange(
+                        event.target.value
+                    )
                 }
+                fullWidth
                 sx={{
-                    minWidth: 300,
-                    flexGrow: 1,
-                    maxWidth: 500
+                    flex: 1,
+                    minWidth: {
+                        xs: "100%",
+                        sm: 280
+                    },
+                    maxWidth: {
+                        xs: "100%",
+                        sm: 500
+                    }
+                }}
+                slotProps={{
+                    input: {
+                        sx: {
+                            backgroundColor:
+                                "background.paper"
+                        }
+                    }
                 }}
             />
 
-            {(role === "ADMIN" || role === "PHARMACIST") && (
+
+            {(role === "ADMIN" ||
+                role === "PHARMACIST") && (
 
                 <Button
                     variant="contained"
-                    startIcon={<AddRoundedIcon />}
+                    startIcon={
+                        <AddRoundedIcon />
+                    }
                     onClick={onAdd}
                     sx={{
-                        whiteSpace: "nowrap"
+                        minHeight: 40,
+                        px: 2.5,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0
                     }}
                 >
-
                     Add Medicine
-
                 </Button>
 
             )}
@@ -64,5 +92,6 @@ function MedicineToolbar({
     );
 
 }
+
 
 export default MedicineToolbar;

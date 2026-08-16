@@ -3,34 +3,54 @@ import { useEffect, useState } from "react";
 import {
     Alert,
     Box,
-    CircularProgress,
-    Typography
+    CircularProgress
 } from "@mui/material";
 
 import {
     getAllInventory
 } from "../../services/inventoryService";
 
-import InventoryToolbar from "../../components/inventory/InventoryToolbar";
-import InventoryTable from "../../components/inventory/InventoryTable";
-import InventoryDialog from "../../components/inventory/InventoryDialog";
-import DeleteInventoryDialog from "../../components/inventory/DeleteInventoryDialog";
+import InventoryToolbar
+    from "../../components/inventory/InventoryToolbar";
+
+import InventoryTable
+    from "../../components/inventory/InventoryTable";
+
+import InventoryDialog
+    from "../../components/inventory/InventoryDialog";
+
+import DeleteInventoryDialog
+    from "../../components/inventory/DeleteInventoryDialog";
+
 
 function InventoryList() {
 
-    const [inventory, setInventory] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [inventory, setInventory] =
+        useState([]);
 
-    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] =
+        useState(true);
 
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [error, setError] =
+        useState("");
 
-    const [selectedInventory, setSelectedInventory] = useState(null);
+    const [searchTerm, setSearchTerm] =
+        useState("");
+
+    const [dialogOpen, setDialogOpen] =
+        useState(false);
+
+    const [deleteOpen, setDeleteOpen] =
+        useState(false);
+
+    const [selectedInventory, setSelectedInventory] =
+        useState(null);
+
 
     // Logged-in user's role
-    const role = localStorage.getItem("role");
+    const role =
+        localStorage.getItem("role");
+
 
     const loadInventory = async () => {
 
@@ -38,7 +58,8 @@ function InventoryList() {
 
             setLoading(true);
 
-            const data = await getAllInventory();
+            const data =
+                await getAllInventory();
 
             setInventory(data);
 
@@ -48,7 +69,9 @@ function InventoryList() {
 
             console.error(err);
 
-            setError("Unable to load inventory.");
+            setError(
+                "Unable to load inventory."
+            );
 
         } finally {
 
@@ -58,83 +81,109 @@ function InventoryList() {
 
     };
 
+
     useEffect(() => {
 
-        const timer = setTimeout(() => {
-            loadInventory();
-        }, 0);
+        const timer =
+            setTimeout(() => {
+                loadInventory();
+            }, 0);
 
-        return () => clearTimeout(timer);
+        return () =>
+            clearTimeout(timer);
 
     }, []);
 
-    const filteredInventory = inventory.filter((item) =>
-        item.medicineName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-    );
+
+    const filteredInventory =
+        inventory.filter(item =>
+            item.medicineName
+                .toLowerCase()
+                .includes(
+                    searchTerm.toLowerCase()
+                )
+        );
+
 
     return (
 
         <Box>
 
-            <Typography
-                variant="h4"
-                fontWeight="bold"
-                mb={3}
-            >
-                Inventory Management
-            </Typography>
+            {/* ERROR */}
 
             {error && (
 
                 <Alert
                     severity="error"
-                    sx={{ mb: 3 }}
+                    sx={{
+                        mb: 3,
+                        borderRadius: 2
+                    }}
                 >
                     {error}
                 </Alert>
 
             )}
 
+
+            {/* TOOLBAR */}
+
             <InventoryToolbar
                 role={role}
                 searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
+                onSearchChange={
+                    setSearchTerm
+                }
                 onAdd={() => {
 
-                    setSelectedInventory(null);
+                    setSelectedInventory(
+                        null
+                    );
 
                     setDialogOpen(true);
 
                 }}
             />
 
+
+            {/* TABLE / LOADING */}
+
             {loading ? (
 
                 <Box
-                    display="flex"
-                    justifyContent="center"
-                    mt={5}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 220
+                    }}
                 >
+
                     <CircularProgress />
+
                 </Box>
 
             ) : (
 
                 <InventoryTable
                     role={role}
-                    inventory={filteredInventory}
-                    onEdit={(item) => {
+                    inventory={
+                        filteredInventory
+                    }
+                    onEdit={item => {
 
-                        setSelectedInventory(item);
+                        setSelectedInventory(
+                            item
+                        );
 
                         setDialogOpen(true);
 
                     }}
-                    onDelete={(item) => {
+                    onDelete={item => {
 
-                        setSelectedInventory(item);
+                        setSelectedInventory(
+                            item
+                        );
 
                         setDeleteOpen(true);
 
@@ -143,18 +192,36 @@ function InventoryList() {
 
             )}
 
+
+            {/* ADD / EDIT DIALOG */}
+
             <InventoryDialog
                 open={dialogOpen}
-                inventory={selectedInventory}
-                onClose={() => setDialogOpen(false)}
-                refreshInventory={loadInventory}
+                inventory={
+                    selectedInventory
+                }
+                onClose={() =>
+                    setDialogOpen(false)
+                }
+                refreshInventory={
+                    loadInventory
+                }
             />
+
+
+            {/* DELETE DIALOG */}
 
             <DeleteInventoryDialog
                 open={deleteOpen}
-                inventory={selectedInventory}
-                onClose={() => setDeleteOpen(false)}
-                refreshInventory={loadInventory}
+                inventory={
+                    selectedInventory
+                }
+                onClose={() =>
+                    setDeleteOpen(false)
+                }
+                refreshInventory={
+                    loadInventory
+                }
             />
 
         </Box>
@@ -162,5 +229,6 @@ function InventoryList() {
     );
 
 }
+
 
 export default InventoryList;

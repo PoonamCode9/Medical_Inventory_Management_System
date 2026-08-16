@@ -31,6 +31,8 @@ public class DashboardResponse {
 
     private UserAnalyticsResponse users;
 
+    private SalesAnalyticsResponse sales;
+
 
     /*
      |--------------------------------------------------------------------------
@@ -49,6 +51,8 @@ public class DashboardResponse {
     private List<NotificationResponse> notificationRecords;
 
     private List<UserResponse> userRecords;
+
+    private List<SaleResponse> salesRecords;
 
 
     /*
@@ -219,6 +223,27 @@ public class DashboardResponse {
 
     /*
      |--------------------------------------------------------------------------
+     | Sales Analytics
+     |--------------------------------------------------------------------------
+     */
+
+    public SalesAnalyticsResponse getSales() {
+
+        return sales;
+
+    }
+
+    public void setSales(
+            SalesAnalyticsResponse sales
+    ) {
+
+        this.sales = sales;
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
      | Detailed Medicine Records
      |--------------------------------------------------------------------------
      */
@@ -339,6 +364,27 @@ public class DashboardResponse {
     ) {
 
         this.userRecords = userRecords;
+
+    }
+
+
+    /*
+     |--------------------------------------------------------------------------
+     | Detailed Sales Records
+     |--------------------------------------------------------------------------
+     */
+
+    public List<SaleResponse> getSalesRecords() {
+
+        return salesRecords;
+
+    }
+
+    public void setSalesRecords(
+            List<SaleResponse> salesRecords
+    ) {
+
+        this.salesRecords = salesRecords;
 
     }
 

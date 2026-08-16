@@ -8,10 +8,11 @@ import {
     TextField
 } from "@mui/material";
 
-import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import RefreshRoundedIcon
+    from "@mui/icons-material/RefreshRounded";
+
 
 function NotificationToolbar({
-
     searchTerm,
     onSearchChange,
 
@@ -31,27 +32,45 @@ function NotificationToolbar({
         <Box
             sx={{
                 display: "flex",
+                alignItems: "center",
                 gap: 2,
                 mb: 3,
-                flexWrap: "wrap",
-                alignItems: "center"
+                flexWrap: "wrap"
             }}
         >
 
+            {/* SEARCH */}
+
             <TextField
-                label="Search"
-                placeholder="Medicine, Batch or Category"
+                label="Search Notifications"
+                placeholder="Medicine, batch or category..."
+                variant="outlined"
+                size="small"
                 value={searchTerm}
-                onChange={(event) =>
-                    onSearchChange(event.target.value)
+                onChange={event =>
+                    onSearchChange(
+                        event.target.value
+                    )
                 }
                 sx={{
-                    minWidth: 260,
-                    flex: 1
+                    flexGrow: 1,
+                    minWidth: {
+                        xs: "100%",
+                        sm: 260
+                    },
+                    maxWidth: 420
                 }}
             />
 
-            <FormControl sx={{ minWidth: 180 }}>
+
+            {/* ALERT TYPE */}
+
+            <FormControl
+                size="small"
+                sx={{
+                    minWidth: 170
+                }}
+            >
 
                 <InputLabel>
                     Alert Type
@@ -60,8 +79,10 @@ function NotificationToolbar({
                 <Select
                     label="Alert Type"
                     value={selectedAlertType}
-                    onChange={(event) =>
-                        onAlertTypeChange(event.target.value)
+                    onChange={event =>
+                        onAlertTypeChange(
+                            event.target.value
+                        )
                     }
                 >
 
@@ -85,7 +106,15 @@ function NotificationToolbar({
 
             </FormControl>
 
-            <FormControl sx={{ minWidth: 180 }}>
+
+            {/* STATUS */}
+
+            <FormControl
+                size="small"
+                sx={{
+                    minWidth: 150
+                }}
+            >
 
                 <InputLabel>
                     Status
@@ -94,8 +123,10 @@ function NotificationToolbar({
                 <Select
                     label="Status"
                     value={selectedStatus}
-                    onChange={(event) =>
-                        onStatusChange(event.target.value)
+                    onChange={event =>
+                        onStatusChange(
+                            event.target.value
+                        )
                     }
                 >
 
@@ -119,30 +150,37 @@ function NotificationToolbar({
 
             </FormControl>
 
-            {
-                showRunCheck
-                &&
-                (
-                    <Button
-                        variant="contained"
-                        startIcon={<RefreshRoundedIcon />}
-                        onClick={onRunCheck}
-                        sx={{
-                            height: 56,
-                            px: 3
-                        }}
-                    >
 
-                        Run Check
+            {/* RUN CHECK */}
 
-                    </Button>
-                )
-            }
+            {showRunCheck && (
+
+                <Button
+                    variant="contained"
+                    startIcon={
+                        <RefreshRoundedIcon />
+                    }
+                    onClick={onRunCheck}
+                    sx={{
+                        minHeight: 40,
+                        px: 2.5,
+                        borderRadius: 1,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0
+                    }}
+                >
+                    Run Check
+                </Button>
+
+            )}
 
         </Box>
 
     );
 
 }
+
 
 export default NotificationToolbar;

@@ -3,34 +3,54 @@ import { useEffect, useState } from "react";
 import {
     Alert,
     Box,
-    CircularProgress,
-    Typography
+    CircularProgress
 } from "@mui/material";
 
 import {
     getMedicines
 } from "../../services/medicineService";
 
-import MedicineToolbar from "../../components/medicines/MedicineToolbar";
-import MedicineTable from "../../components/medicines/MedicineTable";
-import MedicineDialog from "../../components/medicines/MedicineDialog";
-import DeleteMedicineDialog from "../../components/medicines/DeleteMedicineDialog";
+import MedicineToolbar
+    from "../../components/medicines/MedicineToolbar";
+
+import MedicineTable
+    from "../../components/medicines/MedicineTable";
+
+import MedicineDialog
+    from "../../components/medicines/MedicineDialog";
+
+import DeleteMedicineDialog
+    from "../../components/medicines/DeleteMedicineDialog";
+
 
 function MedicineList() {
 
-    const [medicines, setMedicines] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [medicines, setMedicines] =
+        useState([]);
 
-    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] =
+        useState(true);
 
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [error, setError] =
+        useState("");
 
-    const [selectedMedicine, setSelectedMedicine] = useState(null);
+    const [searchTerm, setSearchTerm] =
+        useState("");
+
+    const [dialogOpen, setDialogOpen] =
+        useState(false);
+
+    const [deleteOpen, setDeleteOpen] =
+        useState(false);
+
+    const [selectedMedicine, setSelectedMedicine] =
+        useState(null);
+
 
     // Logged-in user's role
-    const role = localStorage.getItem("role");
+    const role =
+        localStorage.getItem("role");
+
 
     const loadMedicines = async () => {
 
@@ -38,7 +58,8 @@ function MedicineList() {
 
             setLoading(true);
 
-            const data = await getMedicines();
+            const data =
+                await getMedicines();
 
             setMedicines(data);
 
@@ -48,7 +69,9 @@ function MedicineList() {
 
             console.error(err);
 
-            setError("Unable to load medicines.");
+            setError(
+                "Unable to load medicines."
+            );
 
         } finally {
 
@@ -58,66 +81,84 @@ function MedicineList() {
 
     };
 
+
     useEffect(() => {
 
-        const timer = setTimeout(() => {
+        const timer =
+            setTimeout(() => {
 
-            loadMedicines();
+                loadMedicines();
 
-        }, 0);
+            }, 0);
 
-        return () => clearTimeout(timer);
+        return () =>
+            clearTimeout(timer);
 
     }, []);
 
-    const filteredMedicines = medicines.filter((medicine) =>
-        medicine.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-    );
+
+    const filteredMedicines =
+        medicines.filter(medicine =>
+            medicine.name
+                .toLowerCase()
+                .includes(
+                    searchTerm.toLowerCase()
+                )
+        );
+
 
     return (
 
         <Box>
 
-            <Typography
-                variant="h4"
-                fontWeight="bold"
-                mb={3}
-            >
-                Medicine Management
-            </Typography>
+            {/* ERROR */}
 
             {error && (
 
                 <Alert
                     severity="error"
-                    sx={{ mb: 3 }}
+                    sx={{
+                        mb: 3,
+                        borderRadius: 2
+                    }}
                 >
                     {error}
                 </Alert>
 
             )}
 
+
+            {/* TOOLBAR */}
+
             <MedicineToolbar
                 role={role}
                 searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
+                onSearchChange={
+                    setSearchTerm
+                }
                 onAdd={() => {
 
-                    setSelectedMedicine(null);
+                    setSelectedMedicine(
+                        null
+                    );
 
                     setDialogOpen(true);
 
                 }}
             />
 
+
+            {/* TABLE / LOADING */}
+
             {loading ? (
 
                 <Box
-                    display="flex"
-                    justifyContent="center"
-                    mt={5}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 220
+                    }}
                 >
 
                     <CircularProgress />
@@ -128,17 +169,23 @@ function MedicineList() {
 
                 <MedicineTable
                     role={role}
-                    medicines={filteredMedicines}
-                    onEdit={(medicine) => {
+                    medicines={
+                        filteredMedicines
+                    }
+                    onEdit={medicine => {
 
-                        setSelectedMedicine(medicine);
+                        setSelectedMedicine(
+                            medicine
+                        );
 
                         setDialogOpen(true);
 
                     }}
-                    onDelete={(medicine) => {
+                    onDelete={medicine => {
 
-                        setSelectedMedicine(medicine);
+                        setSelectedMedicine(
+                            medicine
+                        );
 
                         setDeleteOpen(true);
 
@@ -147,18 +194,36 @@ function MedicineList() {
 
             )}
 
+
+            {/* ADD / EDIT DIALOG */}
+
             <MedicineDialog
                 open={dialogOpen}
-                medicine={selectedMedicine}
-                onClose={() => setDialogOpen(false)}
-                refreshMedicines={loadMedicines}
+                medicine={
+                    selectedMedicine
+                }
+                onClose={() =>
+                    setDialogOpen(false)
+                }
+                refreshMedicines={
+                    loadMedicines
+                }
             />
+
+
+            {/* DELETE DIALOG */}
 
             <DeleteMedicineDialog
                 open={deleteOpen}
-                medicine={selectedMedicine}
-                onClose={() => setDeleteOpen(false)}
-                refreshMedicines={loadMedicines}
+                medicine={
+                    selectedMedicine
+                }
+                onClose={() =>
+                    setDeleteOpen(false)
+                }
+                refreshMedicines={
+                    loadMedicines
+                }
             />
 
         </Box>
@@ -166,5 +231,6 @@ function MedicineList() {
     );
 
 }
+
 
 export default MedicineList;

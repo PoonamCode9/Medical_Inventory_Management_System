@@ -16,18 +16,31 @@ import UserTable from "./UserTable";
 import UserDialog from "./UserDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 
+
 function UserList() {
 
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [users, setUsers] =
+        useState([]);
 
-    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] =
+        useState(true);
 
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [error, setError] =
+        useState("");
 
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [searchTerm, setSearchTerm] =
+        useState("");
+
+
+    const [dialogOpen, setDialogOpen] =
+        useState(false);
+
+    const [deleteOpen, setDeleteOpen] =
+        useState(false);
+
+    const [selectedUser, setSelectedUser] =
+        useState(null);
+
 
     const loadUsers = async () => {
 
@@ -35,23 +48,27 @@ function UserList() {
 
             setLoading(true);
 
-            const data = await getUsers();
+            const data =
+                await getUsers();
 
-            setUsers(data);
+            setUsers(
+                data || []
+            );
 
             setError("");
 
-        }
+        } catch (err) {
 
-        catch (err) {
+            console.error(
+                "Load Users Error:",
+                err
+            );
 
-            console.error(err);
+            setError(
+                "Unable to load users."
+            );
 
-            setError("Unable to load users.");
-
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
@@ -59,91 +76,150 @@ function UserList() {
 
     };
 
+
     useEffect(() => {
 
-        const timer = setTimeout(() => {
+        const timer =
+            setTimeout(
+                loadUsers,
+                0
+            );
 
-            loadUsers();
-
-        }, 0);
-
-        return () => clearTimeout(timer);
+        return () =>
+            clearTimeout(timer);
 
     }, []);
 
-    const filteredUsers = users.filter((user) => {
 
-        const search = searchTerm.toLowerCase();
+    const filteredUsers =
+        users.filter(user => {
 
-        return (
+            const search =
+                searchTerm
+                    .trim()
+                    .toLowerCase();
 
-            user.name
-                .toLowerCase()
-                .includes(search)
+            return (
 
-            ||
+                user.name
+                    ?.toLowerCase()
+                    .includes(search)
 
-            user.email
-                .toLowerCase()
-                .includes(search)
+                ||
 
-            ||
+                user.email
+                    ?.toLowerCase()
+                    .includes(search)
 
-            user.roleName
-                .toLowerCase()
-                .includes(search)
+                ||
 
-        );
+                user.roleName
+                    ?.toLowerCase()
+                    .includes(search)
 
-    });
+            );
+
+        });
+
+
+    const handleAdd = () => {
+
+        setSelectedUser(null);
+        setDialogOpen(true);
+
+    };
+
+
+    const handleEdit = user => {
+
+        setSelectedUser(user);
+        setDialogOpen(true);
+
+    };
+
+
+    const handleDelete = user => {
+
+        setSelectedUser(user);
+        setDeleteOpen(true);
+
+    };
+
 
     return (
 
         <Box>
 
-            <Typography
-                variant="h4"
-                fontWeight="bold"
-                mb={3}
+            {/* Page Header */}
+
+            <Box
+                sx={{
+                    mb: 3
+                }}
             >
-                User Management
-            </Typography>
+
+                <Typography
+                    variant="h4"
+                    fontWeight={700}
+                    sx={{
+                        letterSpacing: "-0.5px"
+                    }}
+                >
+                    Users
+                </Typography>
+
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        mt: 0.5
+                    }}
+                >
+                    Manage system users and their assigned roles.
+                </Typography>
+
+            </Box>
+
+
+            {/* Error */}
 
             {error && (
 
                 <Alert
                     severity="error"
-                    sx={{ mb: 3 }}
+                    sx={{
+                        mb: 3,
+                        borderRadius: 2
+                    }}
                 >
-
                     {error}
-
                 </Alert>
 
             )}
 
+
+            {/* Toolbar */}
+
             <UserToolbar
-
                 searchTerm={searchTerm}
-
-                onSearchChange={setSearchTerm}
-
-                onAdd={() => {
-
-                    setSelectedUser(null);
-
-                    setDialogOpen(true);
-
-                }}
-
+                onSearchChange={
+                    setSearchTerm
+                }
+                onAdd={handleAdd}
             />
+
+
+            {/* Users */}
 
             {loading ? (
 
                 <Box
-                    display="flex"
-                    justifyContent="center"
-                    mt={5}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 220
+                    }}
                 >
 
                     <CircularProgress />
@@ -153,51 +229,39 @@ function UserList() {
             ) : (
 
                 <UserTable
-
                     users={filteredUsers}
-
-                    onEdit={(user) => {
-
-                        setSelectedUser(user);
-
-                        setDialogOpen(true);
-
-                    }}
-
-                    onDelete={(user) => {
-
-                        setSelectedUser(user);
-
-                        setDeleteOpen(true);
-
-                    }}
-
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                 />
 
             )}
 
+
+            {/* Add / Edit */}
+
             <UserDialog
-
                 open={dialogOpen}
-
                 user={selectedUser}
-
-                onClose={() => setDialogOpen(false)}
-
-                refreshUsers={loadUsers}
-
+                onClose={() =>
+                    setDialogOpen(false)
+                }
+                refreshUsers={
+                    loadUsers
+                }
             />
 
+
+            {/* Delete */}
+
             <DeleteUserDialog
-
                 open={deleteOpen}
-
                 user={selectedUser}
-
-                onClose={() => setDeleteOpen(false)}
-
-                refreshUsers={loadUsers}
-
+                onClose={() =>
+                    setDeleteOpen(false)
+                }
+                refreshUsers={
+                    loadUsers
+                }
             />
 
         </Box>
@@ -205,5 +269,6 @@ function UserList() {
     );
 
 }
+
 
 export default UserList;

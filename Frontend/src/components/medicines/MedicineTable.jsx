@@ -10,8 +10,12 @@ import {
     Typography
 } from "@mui/material";
 
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import EditRoundedIcon
+    from "@mui/icons-material/EditRounded";
+
+import DeleteRoundedIcon
+    from "@mui/icons-material/DeleteRounded";
+
 
 function MedicineTable({
     medicines,
@@ -19,7 +23,9 @@ function MedicineTable({
     onDelete
 }) {
 
-    const showActions = onEdit || onDelete;
+    const showActions =
+        onEdit || onDelete;
+
 
     if (medicines.length === 0) {
 
@@ -29,11 +35,14 @@ function MedicineTable({
                 elevation={2}
                 sx={{
                     p: 4,
-                    textAlign: "center"
+                    textAlign: "center",
+                    borderRadius: 2
                 }}
             >
 
-                <Typography color="text.secondary">
+                <Typography
+                    color="text.secondary"
+                >
                     No medicines found.
                 </Typography>
 
@@ -43,39 +52,105 @@ function MedicineTable({
 
     }
 
+
     return (
 
         <TableContainer
             component={Paper}
             elevation={3}
+            sx={{
+                borderRadius: 2,
+                overflowX: "auto"
+            }}
         >
 
-            <Table>
+            <Table
+                size="small"
+                sx={{
+                    minWidth: 700,
+
+                    "& .MuiTableCell-root": {
+                        py: 1.25
+                    }
+                }}
+            >
 
                 <TableHead>
 
-                    <TableRow>
+                    <TableRow
+                        sx={{
+                            backgroundColor:
+                                "action.hover"
+                        }}
+                    >
 
-                        <TableCell>
-                            <strong>Name</strong>
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Name
                         </TableCell>
 
-                        <TableCell>
-                            <strong>Category</strong>
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Category
                         </TableCell>
 
-                        <TableCell align="right">
-                            <strong>Price</strong>
+
+                        <TableCell
+                            align="right"
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Price
                         </TableCell>
 
-                        <TableCell>
-                            <strong>Supplier</strong>
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Supplier
                         </TableCell>
+
 
                         {showActions && (
 
-                            <TableCell align="center">
-                                <strong>Actions</strong>
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontWeight: 700,
+                                    color:
+                                        "text.secondary",
+                                    whiteSpace:
+                                        "nowrap",
+                                    width: 110
+                                }}
+                            >
+                                Actions
                             </TableCell>
 
                         )}
@@ -84,68 +159,160 @@ function MedicineTable({
 
                 </TableHead>
 
+
                 <TableBody>
 
-                    {medicines.map((medicine) => (
+                    {medicines.map(
+                        medicine => (
 
-                        <TableRow
-                            key={medicine.medicineId}
-                            hover
-                        >
+                            <TableRow
+                                key={
+                                    medicine.medicineId
+                                }
+                                hover
+                                sx={{
+                                    "&:last-child td": {
+                                        borderBottom: 0
+                                    }
+                                }}
+                            >
 
-                            <TableCell>
-                                {medicine.name}
-                            </TableCell>
+                                <TableCell>
 
-                            <TableCell>
-                                {medicine.category}
-                            </TableCell>
-
-                            <TableCell align="right">
-                                ₹{Number(medicine.price).toFixed(2)}
-                            </TableCell>
-
-                            <TableCell>
-                                {medicine.supplierName}
-                            </TableCell>
-
-                            {showActions && (
-
-                                <TableCell align="center">
-
-                                    {onEdit && (
-
-                                        <IconButton
-                                            color="primary"
-                                            onClick={() => onEdit(medicine)}
-                                        >
-
-                                            <EditRoundedIcon />
-
-                                        </IconButton>
-
-                                    )}
-
-                                    {onDelete && (
-
-                                        <IconButton
-                                            color="error"
-                                            onClick={() => onDelete(medicine)}
-                                        >
-
-                                            <DeleteRoundedIcon />
-
-                                        </IconButton>
-
-                                    )}
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        {
+                                            medicine.name
+                                        }
+                                    </Typography>
 
                                 </TableCell>
 
-                            )}
 
-                        </TableRow>
+                                <TableCell>
 
-                    ))}
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        {
+                                            medicine.category
+                                        }
+                                    </Typography>
+
+                                </TableCell>
+
+
+                                <TableCell
+                                    align="right"
+                                >
+
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={500}
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        ₹
+                                        {Number(
+                                            medicine.price
+                                        ).toFixed(2)}
+                                    </Typography>
+
+                                </TableCell>
+
+
+                                <TableCell>
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        {
+                                            medicine.supplierName ||
+                                            "-"
+                                        }
+                                    </Typography>
+
+                                </TableCell>
+
+
+                                {showActions && (
+
+                                    <TableCell
+                                        align="center"
+                                    >
+
+                                        {onEdit && (
+
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                aria-label="Edit medicine"
+                                                onClick={() =>
+                                                    onEdit(
+                                                        medicine
+                                                    )
+                                                }
+                                                sx={{
+                                                    mr: 0.5
+                                                }}
+                                            >
+
+                                                <EditRoundedIcon
+                                                    fontSize="small"
+                                                />
+
+                                            </IconButton>
+
+                                        )}
+
+
+                                        {onDelete && (
+
+                                            <IconButton
+                                                size="small"
+                                                color="error"
+                                                aria-label="Delete medicine"
+                                                onClick={() =>
+                                                    onDelete(
+                                                        medicine
+                                                    )
+                                                }
+                                            >
+
+                                                <DeleteRoundedIcon
+                                                    fontSize="small"
+                                                />
+
+                                            </IconButton>
+
+                                        )}
+
+                                    </TableCell>
+
+                                )}
+
+                            </TableRow>
+
+                        )
+                    )}
 
                 </TableBody>
 
@@ -156,5 +323,6 @@ function MedicineTable({
     );
 
 }
+
 
 export default MedicineTable;

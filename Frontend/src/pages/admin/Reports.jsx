@@ -13,94 +13,55 @@ import {
     IconButton,
     Tab,
     Tabs,
+    TextField,
     Typography
 } from "@mui/material";
 
-import CloseRoundedIcon
-    from "@mui/icons-material/CloseRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
+import FilterAltRoundedIcon from "@mui/icons-material/FilterAltRounded";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 
-import AnalyticsRoundedIcon
-    from "@mui/icons-material/AnalyticsRounded";
+import reportService from "../../services/reportService";
 
-import reportService
-    from "../../services/reportService";
+import ReportToolbar from "../../components/reports/ReportToolbar";
+import SummaryCards from "../../components/reports/SummaryCards";
+import AnalyticsSection from "../../components/reports/AnalyticsSection";
+import ReportCharts from "../../components/reports/ReportCharts";
 
-import {
-    generatePdfReport,
-    generateCsvReport,
-    printReport,
-    downloadBlob
-} from "../../utils/reportExport";
-
-import ReportToolbar
-    from "../../components/reports/ReportToolbar";
-
-import SummaryCards
-    from "../../components/reports/SummaryCards";
-
-import AnalyticsSection
-    from "../../components/reports/AnalyticsSection";
-
-import MedicineReportTable
-    from "../../components/reports/MedicineReportTable";
-
-import InventoryReportTable
-    from "../../components/reports/InventoryReportTable";
-
-import SupplierReportTable
-    from "../../components/reports/SupplierReportTable";
-
-import PurchaseOrderReportTable
-    from "../../components/reports/PurchaseOrderReportTable";
-
-import NotificationReportTable
-    from "../../components/reports/NotificationReportTable";
-
-import UserReportTable
-    from "../../components/reports/UserReportTable";
-
-import ActivityTable
-    from "../../components/reports/ActivityTable";
-
-import ActivityDetailsDialog
-    from "../../components/reports/ActivityDetailsDialog";
-
-
-const tabs = [
-    "Overview",
-    "Medicines",
-    "Inventory",
-    "Suppliers",
-    "Purchases",
-    "Notifications",
-    "Users",
-    "Activity History"
-];
+import MedicineReportTable from "../../components/reports/MedicineReportTable";
+import InventoryReportTable from "../../components/reports/InventoryReportTable";
+import SupplierReportTable from "../../components/reports/SupplierReportTable";
+import PurchaseOrderReportTable from "../../components/reports/PurchaseOrderReportTable";
+import SalesReportTable from "../../components/reports/SalesReportTable";
+import NotificationReportTable from "../../components/reports/NotificationReportTable";
+import UserReportTable from "../../components/reports/UserReportTable";
+import ActivityTable from "../../components/reports/ActivityTable";
+import ActivityDetailsDialog from "../../components/reports/ActivityDetailsDialog";
 
 
 function Reports() {
 
-    const [reportData, setReportData] =
-        useState(null);
+    const [reportData, setReportData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const [loading, setLoading] =
-        useState(true);
+    const [analyticsOpen, setAnalyticsOpen] = useState(false);
+    const [selectedTab, setSelectedTab] = useState(0);
 
-    const [error, setError] =
-        useState("");
+    const [selectedActivity, setSelectedActivity] = useState(null);
+    const [activityDialogOpen, setActivityDialogOpen] = useState(false);
 
-    const [analyticsOpen, setAnalyticsOpen] =
-        useState(false);
+    const [salesStartDate, setSalesStartDate] = useState("");
+    const [salesEndDate, setSalesEndDate] = useState("");
+    const [filteredSales, setFilteredSales] = useState(null);
+    const [salesLoading, setSalesLoading] = useState(false);
+    const [salesError, setSalesError] = useState("");
 
-    const [selectedTab, setSelectedTab] =
-        useState(0);
 
-    const [selectedActivity, setSelectedActivity] =
-        useState(null);
-
-    const [activityDialogOpen, setActivityDialogOpen] =
-        useState(false);
-
+    /* =========================================================
+       LOAD REPORT
+       ========================================================= */
 
     const loadDashboard = async () => {
 
@@ -109,17 +70,21 @@ function Reports() {
             setLoading(true);
 
             const data =
-                await reportService
-                    .getDashboardReport();
+                await reportService.getDashboardReport();
 
             setReportData(data);
             setError("");
 
-        } catch (error) {
+            setFilteredSales(null);
+            setSalesStartDate("");
+            setSalesEndDate("");
+            setSalesError("");
+
+        } catch (err) {
 
             console.error(
                 "Reports Dashboard Error:",
-                error
+                err
             );
 
             setError(
@@ -140,55 +105,132 @@ function Reports() {
     }, []);
 
 
-    const handleDownload = options => {
+    /* =========================================================
+       SALES FILTER
+       ========================================================= */
 
-        if (!reportData) return;
+    const handleSalesFilter = async () => {
+
+        setSalesError("");
+
+        if (!salesStartDate || !salesEndDate) {
+
+            setSalesError(
+                "Please select both a start date and an end date."
+            );
+
+            return;
+
+        }
+
+        if (salesStartDate > salesEndDate) {
+
+            setSalesError(
+                "Start date cannot be after the end date."
+            );
+
+            return;
+
+        }
 
         try {
 
-            if (options.format === "PRINT") {
+            setSalesLoading(true);
 
-                printReport(
-                    reportData,
-                    options
+            const sales =
+                await reportService.getSalesBetweenDates(
+                    salesStartDate,
+                    salesEndDate
                 );
 
-                return;
-            }
+            setFilteredSales(sales || []);
+
+        } catch (err) {
+
+            console.error(
+                "Sales Filter Error:",
+                err
+            );
+
+            setSalesError(
+                "Failed to load sales for the selected date range."
+            );
+
+            setFilteredSales(null);
+
+        } finally {
+
+            setSalesLoading(false);
+
+        }
+
+    };
 
 
-            const blob =
-                options.format === "PDF"
-                    ? generatePdfReport(
-                        reportData,
-                        options
-                    )
-                    : generateCsvReport(
+    const handleResetSalesFilter = () => {
+
+        setSalesStartDate("");
+        setSalesEndDate("");
+        setFilteredSales(null);
+        setSalesError("");
+
+    };
+
+
+    /* =========================================================
+       EXPORT
+       ========================================================= */
+
+    const handleDownload = options => {
+
+        try {
+
+            switch (options.format) {
+
+                case "PDF":
+                    reportService.downloadPdfReport(
                         reportData,
                         options
                     );
+                    break;
 
+                case "XLSX":
+                    reportService.downloadExcelReport(
+                        reportData,
+                        options
+                    );
+                    break;
 
-            const extension =
-                options.format === "PDF"
-                    ? "pdf"
-                    : "csv";
+                case "CSV":
+                    reportService.downloadCsvReport(
+                        reportData,
+                        options
+                    );
+                    break;
 
+                case "PRINT":
+                    reportService.printReport(
+                        reportData,
+                        options
+                    );
+                    break;
 
-            downloadBlob(
-                blob,
-                `MediStock_Report_${options.period}.${extension}`
-            );
+                default:
+                    throw new Error(
+                        "Unsupported report format."
+                    );
 
-        } catch (error) {
+            }
+
+        } catch (err) {
 
             console.error(
                 "Report export failed:",
-                error
+                err
             );
 
-            alert(
-                "Failed to generate the report."
+            window.alert(
+                "Failed to generate the selected report."
             );
 
         }
@@ -196,36 +238,46 @@ function Reports() {
     };
 
 
-    const openAnalytics = () => {
+    /* =========================================================
+       ANALYTICS
+       ========================================================= */
 
+    const handleOpenAnalytics = () => {
         setSelectedTab(0);
         setAnalyticsOpen(true);
-
     };
 
-
-    const closeAnalytics = () => {
-
+    const handleCloseAnalytics = () => {
         setAnalyticsOpen(false);
+    };
 
+    const handleTabChange = (_, value) => {
+        setSelectedTab(value);
     };
 
 
-    const viewActivity = activity => {
+    /* =========================================================
+       ACTIVITY
+       ========================================================= */
+
+    const handleViewActivity = activity => {
 
         setSelectedActivity(activity);
         setActivityDialogOpen(true);
 
     };
 
+    const handleCloseActivityDialog = () => {
 
-    const closeActivity = () => {
-
-        setSelectedActivity(null);
         setActivityDialogOpen(false);
+        setSelectedActivity(null);
 
     };
 
+
+    /* =========================================================
+       LOADING / ERROR
+       ========================================================= */
 
     if (loading) {
 
@@ -246,10 +298,7 @@ function Reports() {
     if (error) {
 
         return (
-            <Container
-                maxWidth="xl"
-                sx={{ py: 4 }}
-            >
+            <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Alert severity="error">
                     {error}
                 </Alert>
@@ -262,10 +311,7 @@ function Reports() {
     if (!reportData) {
 
         return (
-            <Container
-                maxWidth="xl"
-                sx={{ py: 4 }}
-            >
+            <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Alert severity="warning">
                     No report data available.
                 </Alert>
@@ -275,55 +321,86 @@ function Reports() {
     }
 
 
-    const tableContent = [
+    /* =========================================================
+       SALES DATA
+       ========================================================= */
 
-        <MedicineReportTable
-            records={
-                reportData.medicineRecords || []
-            }
-        />,
-
-        <InventoryReportTable
-            records={
-                reportData.inventoryRecords || []
-            }
-        />,
-
-        <SupplierReportTable
-            records={
-                reportData.supplierRecords || []
-            }
-        />,
-
-        <PurchaseOrderReportTable
-            records={
-                reportData.purchaseOrderRecords || []
-            }
-        />,
-
-        <NotificationReportTable
-            records={
-                reportData.notificationRecords || []
-            }
-        />,
-
-        <UserReportTable
-            records={
-                reportData.userRecords || []
-            }
-        />
-
-    ];
+    const salesRecords =
+        filteredSales !== null
+            ? filteredSales
+            : reportData.salesRecords || [];
 
 
-    const analytics = [
-        ["Medicine Analytics", reportData.medicines],
-        ["Inventory Analytics", reportData.inventory],
-        ["Supplier Analytics", reportData.suppliers],
-        ["Purchase Analytics", reportData.purchaseOrders],
-        ["Notification Analytics", reportData.notifications],
-        ["User Analytics", reportData.users]
-    ];
+    const salesAnalytics = (() => {
+
+        if (filteredSales === null) {
+            return reportData.sales;
+        }
+
+        const totalTransactions =
+            salesRecords.length;
+
+        const totalUnitsSold =
+            salesRecords.reduce(
+                (total, sale) =>
+                    total + Number(sale.quantity || 0),
+                0
+            );
+
+        const totalRevenue =
+            salesRecords.reduce(
+                (total, sale) =>
+                    total + Number(sale.totalAmount || 0),
+                0
+            );
+
+        return {
+            totalSales: totalTransactions,
+            totalUnitsSold,
+            totalRevenue,
+            averageSaleValue:
+                totalTransactions
+                    ? totalRevenue / totalTransactions
+                    : 0
+        };
+
+    })();
+
+
+    /* =========================================================
+       COMMON DATE FIELD STYLE
+       ========================================================= */
+
+    const dateFieldSx = {
+        width: {
+            xs: "100%",
+            sm: 190
+        },
+        flex: {
+            xs: "1 1 100%",
+            sm: "0 1 190px"
+        },
+        minWidth: 0,
+
+        "& .MuiInputBase-root": {
+            height: 42
+        },
+
+        "& .MuiInputBase-input": {
+            minWidth: 0,
+            boxSizing: "border-box",
+            fontSize: "0.9rem"
+        },
+
+        "& input::-webkit-date-and-time-value": {
+            textAlign: "left"
+        },
+
+        "& input::-webkit-calendar-picker-indicator": {
+            marginLeft: 4,
+            cursor: "pointer"
+        }
+    };
 
 
     return (
@@ -333,7 +410,9 @@ function Reports() {
             sx={{ py: 4 }}
         >
 
-            {/* HEADER */}
+            {/* =====================================================
+                PAGE HEADER
+                ===================================================== */}
 
             <Box
                 sx={{
@@ -357,6 +436,7 @@ function Reports() {
                     </Typography>
 
                     <Typography
+                        variant="body1"
                         color="text.secondary"
                     >
                         Medical Inventory Management Platform
@@ -364,18 +444,14 @@ function Reports() {
 
                 </Box>
 
-
                 <Button
                     variant="outlined"
-                    startIcon={
-                        <AnalyticsRoundedIcon />
-                    }
-                    onClick={openAnalytics}
+                    startIcon={<AnalyticsRoundedIcon />}
+                    onClick={handleOpenAnalytics}
                     sx={{
                         mt: 1,
                         borderRadius: 2,
-                        textTransform: "none",
-                        fontWeight: 600
+                        whiteSpace: "nowrap"
                     }}
                 >
                     View Analytics
@@ -384,9 +460,11 @@ function Reports() {
             </Box>
 
 
-            {/* TOOLBAR */}
+            {/* =====================================================
+                TOOLBAR
+                ===================================================== */}
 
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ mt: 3, mb: 3 }}>
 
                 <ReportToolbar
                     onRefresh={loadDashboard}
@@ -396,27 +474,22 @@ function Reports() {
             </Box>
 
 
-            {/* SUMMARY */}
+            {/* =====================================================
+                SUMMARY
+                ===================================================== */}
 
             <SummaryCards
                 summary={reportData.summary}
-                inventory={reportData.inventory}
-                suppliers={reportData.suppliers}
-                purchaseOrders={
-                    reportData.purchaseOrders
-                }
-                notifications={
-                    reportData.notifications
-                }
-                users={reportData.users}
             />
 
 
-            {/* ANALYTICS */}
+            {/* =====================================================
+                ANALYTICS DIALOG
+                ===================================================== */}
 
             <Dialog
                 open={analyticsOpen}
-                onClose={closeAnalytics}
+                onClose={handleCloseAnalytics}
                 fullWidth
                 maxWidth="xl"
                 scroll="paper"
@@ -425,9 +498,10 @@ function Reports() {
                 <DialogTitle
                     sx={{
                         display: "flex",
+                        alignItems: "center",
                         justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        gap: 2
+                        gap: 2,
+                        pb: 1
                     }}
                 >
 
@@ -443,22 +517,27 @@ function Reports() {
                         <Typography
                             variant="body2"
                             color="text.secondary"
+                            sx={{ mt: 0.5 }}
                         >
-                            Detailed MediStock analytics
-                            and database records.
+                            Review detailed MediStock
+                            analytics and database records.
                         </Typography>
 
                     </Box>
 
-
                     <IconButton
-                        onClick={closeAnalytics}
+                        onClick={handleCloseAnalytics}
+                        aria-label="Close analytics"
                     >
                         <CloseRoundedIcon />
                     </IconButton>
 
                 </DialogTitle>
 
+
+                {/* =================================================
+                    TABS
+                    ================================================= */}
 
                 <Box
                     sx={{
@@ -470,104 +549,435 @@ function Reports() {
 
                     <Tabs
                         value={selectedTab}
-                        onChange={(_, value) =>
-                            setSelectedTab(value)
-                        }
+                        onChange={handleTabChange}
                         variant="scrollable"
                         scrollButtons="auto"
                     >
 
-                        {tabs.map(tab => (
-                            <Tab
-                                key={tab}
-                                label={tab}
-                            />
-                        ))}
+                        <Tab label="Overview" />
+                        <Tab label="Medicines" />
+                        <Tab label="Inventory" />
+                        <Tab label="Suppliers" />
+                        <Tab label="Purchases" />
+                        <Tab label="Sales" />
+                        <Tab label="Notifications" />
+                        <Tab label="Users" />
+                        <Tab label="Activity History" />
 
                     </Tabs>
 
                 </Box>
 
 
+                {/* =================================================
+                    CONTENT
+                    ================================================= */}
+
                 <DialogContent
                     dividers
                     sx={{ p: 3 }}
                 >
 
-                    {/* OVERVIEW */}
+                    {/* =================================================
+                        OVERVIEW
+                        ================================================= */}
 
                     {selectedTab === 0 && (
 
                         <>
 
                             <SummaryCards
-                                summary={
-                                    reportData.summary
+                                summary={reportData.summary}
+                            />
+
+                            <ReportCharts
+                                medicineRecords={
+                                    reportData.medicineRecords || []
                                 }
-                                inventory={
-                                    reportData.inventory
+                                inventoryRecords={
+                                    reportData.inventoryRecords || []
                                 }
-                                suppliers={
-                                    reportData.suppliers
+                                purchaseOrderRecords={
+                                    reportData.purchaseOrderRecords || []
                                 }
-                                purchaseOrders={
-                                    reportData.purchaseOrders
-                                }
-                                notifications={
-                                    reportData.notifications
-                                }
-                                users={
-                                    reportData.users
+                                notificationRecords={
+                                    reportData.notificationRecords || []
                                 }
                             />
 
-                            {analytics.map(
-                                ([title, data]) => (
-                                    <AnalyticsSection
-                                        key={title}
-                                        title={title}
-                                        analytics={data}
-                                    />
-                                )
-                            )}
+                            <AnalyticsSection
+                                title="Medicine Analytics"
+                                analytics={reportData.medicines}
+                            />
+
+                            <AnalyticsSection
+                                title="Inventory Analytics"
+                                analytics={reportData.inventory}
+                            />
+
+                            <AnalyticsSection
+                                title="Supplier Analytics"
+                                analytics={reportData.suppliers}
+                            />
+
+                            <AnalyticsSection
+                                title="Purchase Analytics"
+                                analytics={reportData.purchaseOrders}
+                            />
+
+                            <AnalyticsSection
+                                title="Sales Analytics"
+                                analytics={reportData.sales}
+                            />
+
+                            <AnalyticsSection
+                                title="Notification Analytics"
+                                analytics={reportData.notifications}
+                            />
+
+                            <AnalyticsSection
+                                title="User Analytics"
+                                analytics={reportData.users}
+                            />
 
                         </>
 
                     )}
 
 
-                    {/* TABLE REPORTS */}
+                    {/* =================================================
+                        MEDICINES
+                        ================================================= */}
 
-                    {selectedTab >= 1 &&
-                        selectedTab <= 6 && (
+                    {selectedTab === 1 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="Medicine Analytics"
+                                analytics={reportData.medicines}
+                            />
+
+                            <MedicineReportTable
+                                records={
+                                    reportData.medicineRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        INVENTORY
+                        ================================================= */}
+
+                    {selectedTab === 2 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="Inventory Analytics"
+                                analytics={reportData.inventory}
+                            />
+
+                            <InventoryReportTable
+                                records={
+                                    reportData.inventoryRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        SUPPLIERS
+                        ================================================= */}
+
+                    {selectedTab === 3 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="Supplier Analytics"
+                                analytics={reportData.suppliers}
+                            />
+
+                            <SupplierReportTable
+                                records={
+                                    reportData.supplierRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        PURCHASE ORDERS
+                        ================================================= */}
+
+                    {selectedTab === 4 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="Purchase Analytics"
+                                analytics={reportData.purchaseOrders}
+                            />
+
+                            <PurchaseOrderReportTable
+                                records={
+                                    reportData.purchaseOrderRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        SALES
+                        ================================================= */}
+
+                    {selectedTab === 5 && (
 
                         <>
 
                             <AnalyticsSection
-                                title={
-                                    analytics[
-                                        selectedTab - 1
-                                    ][0]
-                                }
-                                analytics={
-                                    analytics[
-                                        selectedTab - 1
-                                    ][1]
-                                }
+                                title="Sales Analytics"
+                                analytics={salesAnalytics}
                             />
 
-                            {tableContent[
-                                selectedTab - 1
-                            ]}
+
+                            {/* SALES FILTER */}
+
+                            <Box
+                                sx={{
+                                    mb: 3,
+                                    p: 2.5,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    borderRadius: 2,
+                                    backgroundColor: "background.paper"
+                                }}
+                            >
+
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        mb: 2
+                                    }}
+                                >
+
+                                    <FilterAltRoundedIcon
+                                        color="primary"
+                                    />
+
+                                    <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                    >
+                                        Filter Sales
+                                    </Typography>
+
+                                </Box>
+
+
+                                {/* DATE CONTROLS */}
+
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        flexWrap: "wrap",
+                                        width: "100%"
+                                    }}
+                                >
+
+                                    <TextField
+                                        label="Start Date"
+                                        type="date"
+                                        value={salesStartDate}
+                                        onChange={e =>
+                                            setSalesStartDate(
+                                                e.target.value
+                                            )
+                                        }
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
+                                        size="small"
+                                        sx={dateFieldSx}
+                                    />
+
+
+                                    <TextField
+                                        label="End Date"
+                                        type="date"
+                                        value={salesEndDate}
+                                        onChange={e =>
+                                            setSalesEndDate(
+                                                e.target.value
+                                            )
+                                        }
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
+                                        size="small"
+                                        sx={dateFieldSx}
+                                    />
+
+
+                                    <Button
+                                        variant="contained"
+                                        startIcon={
+                                            salesLoading
+                                                ? (
+                                                    <CircularProgress
+                                                        size={18}
+                                                        color="inherit"
+                                                    />
+                                                )
+                                                : (
+                                                    <FilterAltRoundedIcon />
+                                                )
+                                        }
+                                        onClick={handleSalesFilter}
+                                        disabled={salesLoading}
+                                        sx={{
+                                            borderRadius: 2,
+                                            minWidth: 130,
+                                            height: 42,
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        {salesLoading
+                                            ? "Filtering..."
+                                            : "Apply Filter"}
+                                    </Button>
+
+
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={
+                                            <RefreshRoundedIcon />
+                                        }
+                                        onClick={handleResetSalesFilter}
+                                        disabled={salesLoading}
+                                        sx={{
+                                            borderRadius: 2,
+                                            minWidth: 90,
+                                            height: 42,
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        Reset
+                                    </Button>
+
+                                </Box>
+
+
+                                {salesError && (
+
+                                    <Alert
+                                        severity="error"
+                                        sx={{ mt: 2 }}
+                                    >
+                                        {salesError}
+                                    </Alert>
+
+                                )}
+
+
+                                {filteredSales !== null && (
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ mt: 2 }}
+                                    >
+                                        Showing{" "}
+                                        <strong>
+                                            {salesRecords.length}
+                                        </strong>{" "}
+                                        sales record
+                                        {salesRecords.length !== 1
+                                            ? "s"
+                                            : ""}{" "}
+                                        from{" "}
+                                        <strong>
+                                            {salesStartDate}
+                                        </strong>{" "}
+                                        to{" "}
+                                        <strong>
+                                            {salesEndDate}
+                                        </strong>.
+                                    </Typography>
+
+                                )}
+
+                            </Box>
+
+
+                            <SalesReportTable
+                                records={salesRecords}
+                            />
 
                         </>
 
                     )}
 
 
-                    {/* ACTIVITY */}
+                    {/* =================================================
+                        NOTIFICATIONS
+                        ================================================= */}
+
+                    {selectedTab === 6 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="Notification Analytics"
+                                analytics={reportData.notifications}
+                            />
+
+                            <NotificationReportTable
+                                records={
+                                    reportData.notificationRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        USERS
+                        ================================================= */}
 
                     {selectedTab === 7 && (
+
+                        <>
+                            <AnalyticsSection
+                                title="User Analytics"
+                                analytics={reportData.users}
+                            />
+
+                            <UserReportTable
+                                records={
+                                    reportData.userRecords || []
+                                }
+                            />
+                        </>
+
+                    )}
+
+
+                    {/* =================================================
+                        ACTIVITY HISTORY
+                        ================================================= */}
+
+                    {selectedTab === 8 && (
 
                         <Box>
 
@@ -585,15 +995,14 @@ function Reports() {
                                 sx={{ mb: 3 }}
                             >
                                 Complete history of actions
-                                performed across MediStock.
+                                performed across the MediStock system.
                             </Typography>
 
                             <ActivityTable
                                 activities={
-                                    reportData
-                                        .activityLogs || []
+                                    reportData.activityLogs || []
                                 }
-                                onView={viewActivity}
+                                onView={handleViewActivity}
                             />
 
                         </Box>
@@ -610,12 +1019,7 @@ function Reports() {
                     }}
                 >
 
-                    <Button
-                        onClick={closeAnalytics}
-                        sx={{
-                            textTransform: "none"
-                        }}
-                    >
+                    <Button onClick={handleCloseAnalytics}>
                         Close
                     </Button>
 
@@ -624,12 +1028,14 @@ function Reports() {
             </Dialog>
 
 
-            {/* ACTIVITY DETAILS */}
+            {/* =========================================================
+                ACTIVITY DETAILS
+                ========================================================= */}
 
             <ActivityDetailsDialog
                 open={activityDialogOpen}
                 activity={selectedActivity}
-                onClose={closeActivity}
+                onClose={handleCloseActivityDialog}
             />
 
         </Container>
@@ -637,5 +1043,6 @@ function Reports() {
     );
 
 }
+
 
 export default Reports;

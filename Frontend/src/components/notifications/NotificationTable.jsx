@@ -12,7 +12,56 @@ import {
     Typography
 } from "@mui/material";
 
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import DeleteOutlineRoundedIcon
+    from "@mui/icons-material/DeleteOutlineRounded";
+
+
+const getAlertColor = alertType => {
+
+    switch (alertType) {
+
+        case "LOW_STOCK":
+            return "primary";
+
+        case "EXPIRING_SOON":
+            return "warning";
+
+        case "EXPIRED":
+            return "error";
+
+        default:
+            return "default";
+
+    }
+
+};
+
+
+const getStatusColor = status => {
+
+    switch (status) {
+
+        case "ACTIVE":
+            return "error";
+
+        case "REVIEWED":
+            return "warning";
+
+        case "RESOLVED":
+            return "success";
+
+        default:
+            return "default";
+
+    }
+
+};
+
+
+const formatAlertType = alertType =>
+    alertType
+        ?.replaceAll("_", " ") || "-";
+
 
 function NotificationTable({
     notifications,
@@ -22,46 +71,6 @@ function NotificationTable({
     onDelete
 }) {
 
-    const getAlertColor = (alertType) => {
-
-        switch (alertType) {
-
-            case "LOW_STOCK":
-                return "primary";
-
-            case "EXPIRING_SOON":
-                return "warning";
-
-            case "EXPIRED":
-                return "error";
-
-            default:
-                return "default";
-
-        }
-
-    };
-
-    const getStatusColor = (status) => {
-
-        switch (status) {
-
-            case "ACTIVE":
-                return "error";
-
-            case "REVIEWED":
-                return "warning";
-
-            case "RESOLVED":
-                return "success";
-
-            default:
-                return "default";
-
-        }
-
-    };
-
     if (notifications.length === 0) {
 
         return (
@@ -69,15 +78,16 @@ function NotificationTable({
             <Paper
                 elevation={2}
                 sx={{
-                    p: 5,
-                    textAlign: "center"
+                    p: 4,
+                    textAlign: "center",
+                    borderRadius: 2
                 }}
             >
 
-                <Typography color="text.secondary">
-
+                <Typography
+                    color="text.secondary"
+                >
                     No notifications found.
-
                 </Typography>
 
             </Paper>
@@ -86,16 +96,10 @@ function NotificationTable({
 
     }
 
-    /*
-     * Admin can:
-     * - Review ACTIVE notifications
-     * - Delete RESOLVED notifications
-     *
-     * Pharmacist can:
-     * - Review ACTIVE notifications
-     */
+
     const showActionColumn =
         canManage || canDelete;
+
 
     return (
 
@@ -103,73 +107,156 @@ function NotificationTable({
             component={Paper}
             elevation={3}
             sx={{
-                borderRadius: 3,
+                borderRadius: 2,
                 overflowX: "auto"
             }}
         >
 
-            <Table>
+            <Table
+                size="small"
+                sx={{
+                    minWidth: 1050,
+
+                    "& .MuiTableCell-root": {
+                        py: 1.25
+                    }
+                }}
+            >
 
                 <TableHead>
 
-                    <TableRow>
-
-                        <TableCell>
-                            <strong>Medicine</strong>
-                        </TableCell>
+                    <TableRow
+                        sx={{
+                            backgroundColor:
+                                "action.hover"
+                        }}
+                    >
 
                         <TableCell
                             sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Medicine
+                        </TableCell>
+
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap",
                                 minWidth: 105
                             }}
                         >
-                            <strong>Batch</strong>
+                            Batch
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Quantity</strong>
+
+                        <TableCell
+                            align="center"
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Quantity
                         </TableCell>
+
 
                         <TableCell
                             sx={{
-                                minWidth: 130
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap",
+                                minWidth: 120
                             }}
                         >
-                            <strong>Expiry</strong>
+                            Expiry
                         </TableCell>
 
-                        <TableCell align="center">
-                            <strong>Days Left</strong>
+
+                        <TableCell
+                            align="center"
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Days Left
                         </TableCell>
 
-                        <TableCell>
-                            <strong>Alert</strong>
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Alert
                         </TableCell>
 
-                        <TableCell>
-                            <strong>Status</strong>
+
+                        <TableCell
+                            sx={{
+                                fontWeight: 700,
+                                color:
+                                    "text.secondary",
+                                whiteSpace:
+                                    "nowrap"
+                            }}
+                        >
+                            Status
                         </TableCell>
 
-                        {/*
-                         * Review remarks are displayed
-                         * to Admin only.
-                         */}
+
                         {canDelete && (
 
                             <TableCell
                                 sx={{
+                                    fontWeight: 700,
+                                    color:
+                                        "text.secondary",
                                     minWidth: 220
                                 }}
                             >
-                                <strong>Remarks</strong>
+                                Remarks
                             </TableCell>
 
                         )}
 
+
                         {showActionColumn && (
 
-                            <TableCell align="center">
-                                <strong>Action</strong>
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontWeight: 700,
+                                    color:
+                                        "text.secondary",
+                                    whiteSpace:
+                                        "nowrap",
+                                    minWidth: 120
+                                }}
+                            >
+                                Actions
                             </TableCell>
 
                         )}
@@ -178,107 +265,178 @@ function NotificationTable({
 
                 </TableHead>
 
+
                 <TableBody>
 
                     {notifications.map(
-                        (notification) => (
+                        notification => (
 
                             <TableRow
                                 hover
                                 key={
                                     notification.notificationId
                                 }
+                                sx={{
+                                    "&:last-child td": {
+                                        borderBottom: 0
+                                    }
+                                }}
                             >
+
+                                {/* MEDICINE */}
 
                                 <TableCell>
 
                                     <Typography
+                                        variant="body2"
                                         fontWeight={600}
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
                                     >
-
                                         {
-                                            notification
-                                                .medicineName
+                                            notification.medicineName ||
+                                            "-"
                                         }
-
                                     </Typography>
 
                                 </TableCell>
 
+
+                                {/* BATCH */}
+
+                                <TableCell>
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        {
+                                            notification.batchNumber ||
+                                            "-"
+                                        }
+                                    </Typography>
+
+                                </TableCell>
+
+
+                                {/* QUANTITY */}
+
                                 <TableCell
-                                    sx={{
-                                        minWidth: 105
-                                    }}
+                                    align="center"
                                 >
 
-                                    {notification.batchNumber}
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={500}
+                                    >
+                                        {
+                                            notification.quantity ??
+                                            "-"
+                                        }
+                                    </Typography>
 
                                 </TableCell>
 
-                                <TableCell align="center">
 
-                                    {notification.quantity}
+                                {/* EXPIRY */}
+
+                                <TableCell>
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
+                                    >
+                                        {
+                                            notification.expDate ||
+                                            "-"
+                                        }
+                                    </Typography>
 
                                 </TableCell>
+
+
+                                {/* DAYS LEFT */}
 
                                 <TableCell
-                                    sx={{
-                                        minWidth: 130
-                                    }}
+                                    align="center"
                                 >
 
-                                    {notification.expDate}
+                                    <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                    >
+                                        {
+                                            notification.daysRemaining ??
+                                            "-"
+                                        }
+                                    </Typography>
 
                                 </TableCell>
 
-                                <TableCell align="center">
 
-                                    {notification.daysRemaining}
-
-                                </TableCell>
+                                {/* ALERT */}
 
                                 <TableCell>
 
                                     <Chip
                                         label={
-                                            notification
-                                                .alertType
-                                                .replaceAll(
-                                                    "_",
-                                                    " "
-                                                )
+                                            formatAlertType(
+                                                notification.alertType
+                                            )
                                         }
                                         color={
                                             getAlertColor(
-                                                notification
-                                                    .alertType
+                                                notification.alertType
                                             )
                                         }
                                         size="small"
+                                        sx={{
+                                            fontWeight: 600,
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
                                     />
 
                                 </TableCell>
+
+
+                                {/* STATUS */}
 
                                 <TableCell>
 
                                     <Chip
                                         label={
-                                            notification.status
+                                            notification.status ||
+                                            "-"
                                         }
                                         color={
                                             getStatusColor(
-                                                notification
-                                                    .status
+                                                notification.status
                                             )
                                         }
                                         size="small"
+                                        sx={{
+                                            fontWeight: 600,
+                                            whiteSpace:
+                                                "nowrap"
+                                        }}
                                     />
 
                                 </TableCell>
 
-                                {/*
-                                 * Admin can see review remarks.
-                                 */}
+
+                                {/* REMARKS - ADMIN */}
+
                                 {canDelete && (
 
                                     <TableCell
@@ -299,12 +457,9 @@ function NotificationTable({
                                                         "break-word"
                                                 }}
                                             >
-
                                                 {
-                                                    notification
-                                                        .remarks
+                                                    notification.remarks
                                                 }
-
                                             </Typography>
 
                                         ) : (
@@ -313,9 +468,7 @@ function NotificationTable({
                                                 variant="body2"
                                                 color="text.secondary"
                                             >
-
                                                 No remarks
-
                                             </Typography>
 
                                         )}
@@ -324,29 +477,31 @@ function NotificationTable({
 
                                 )}
 
+
+                                {/* ACTIONS */}
+
                                 {showActionColumn && (
 
-                                    <TableCell align="center">
+                                    <TableCell
+                                        align="center"
+                                    >
 
                                         <Box
                                             sx={{
                                                 display: "flex",
                                                 justifyContent:
                                                     "center",
+                                                alignItems:
+                                                    "center",
                                                 gap: 1,
-                                                flexWrap: "wrap"
+                                                flexWrap:
+                                                    "wrap"
                                             }}
                                         >
 
-                                            {/*
-                                             * ACTIVE notifications
-                                             * can be reviewed by
-                                             * Admin or Pharmacist.
-                                             */}
                                             {canManage &&
-
                                                 notification.status ===
-                                                "ACTIVE" && (
+                                                    "ACTIVE" && (
 
                                                     <Button
                                                         variant="outlined"
@@ -356,40 +511,47 @@ function NotificationTable({
                                                                 notification
                                                             )
                                                         }
+                                                        sx={{
+                                                            borderRadius: 1,
+                                                            textTransform:
+                                                                "none",
+                                                            fontWeight:
+                                                                600
+                                                        }}
                                                     >
-
                                                         Review
-
                                                     </Button>
 
                                                 )}
 
-                                            {/*
-                                             * Only Admin can delete
-                                             * automatically resolved
-                                             * notifications.
-                                             */}
-                                            {canDelete &&
 
+                                            {canDelete &&
                                                 notification.status ===
-                                                "RESOLVED" && (
+                                                    "RESOLVED" && (
 
                                                     <Button
                                                         variant="outlined"
                                                         color="error"
                                                         size="small"
                                                         startIcon={
-                                                            <DeleteOutlineRoundedIcon />
+                                                            <DeleteOutlineRoundedIcon
+                                                                fontSize="small"
+                                                            />
                                                         }
                                                         onClick={() =>
                                                             onDelete(
                                                                 notification
                                                             )
                                                         }
+                                                        sx={{
+                                                            borderRadius: 1,
+                                                            textTransform:
+                                                                "none",
+                                                            fontWeight:
+                                                                600
+                                                        }}
                                                     >
-
                                                         Delete
-
                                                     </Button>
 
                                                 )}
@@ -414,5 +576,6 @@ function NotificationTable({
     );
 
 }
+
 
 export default NotificationTable;

@@ -5,6 +5,7 @@ import {
     Typography
 } from "@mui/material";
 
+
 function PurchaseOrderForm({
     formData,
     suppliers,
@@ -18,13 +19,24 @@ function PurchaseOrderForm({
         <Grid
             container
             spacing={2}
-            sx={{ mt: 1 }}
+            sx={{
+                mt: 0.5
+            }}
         >
 
-            <Grid size={{ xs: 12 }}>
+            {/* SUPPLIER */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6
+                }}
+            >
+
                 <TextField
                     select
                     fullWidth
+                    size="small"
                     label="Supplier"
                     name="supplierId"
                     value={formData.supplierId}
@@ -32,21 +44,42 @@ function PurchaseOrderForm({
                     error={!!errors.supplierId}
                     helperText={errors.supplierId}
                 >
-                    {suppliers.map((supplier) => (
-                        <MenuItem
-                            key={supplier.supplierId}
-                            value={supplier.supplierId}
-                        >
-                            {supplier.name}
-                        </MenuItem>
-                    ))}
+
+                    {suppliers.map(
+                        supplier => (
+
+                            <MenuItem
+                                key={
+                                    supplier.supplierId
+                                }
+                                value={
+                                    supplier.supplierId
+                                }
+                            >
+                                {supplier.name}
+                            </MenuItem>
+
+                        )
+                    )}
+
                 </TextField>
+
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+
+            {/* MEDICINE */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6
+                }}
+            >
+
                 <TextField
                     select
                     fullWidth
+                    size="small"
                     label="Medicine"
                     name="medicineId"
                     value={formData.medicineId}
@@ -54,38 +87,75 @@ function PurchaseOrderForm({
                     error={!!errors.medicineId}
                     helperText={errors.medicineId}
                 >
-                    {medicines.map((medicine) => (
-                        <MenuItem
-                            key={medicine.medicineId}
-                            value={medicine.medicineId}
-                        >
-                            {medicine.name}
-                        </MenuItem>
-                    ))}
+
+                    {medicines.map(
+                        medicine => (
+
+                            <MenuItem
+                                key={
+                                    medicine.medicineId
+                                }
+                                value={
+                                    medicine.medicineId
+                                }
+                            >
+                                {medicine.name}
+                            </MenuItem>
+
+                        )
+                    )}
+
                 </TextField>
+
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+
+            {/* QUANTITY */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6
+                }}
+            >
+
                 <TextField
                     fullWidth
+                    size="small"
                     type="number"
                     label="Quantity"
                     name="quantity"
                     value={formData.quantity}
                     onChange={onChange}
                     error={!!errors.quantity}
-                    helperText={errors.quantity}
+                    helperText={
+                        errors.quantity ||
+                        "Enter the number of units to order."
+                    }
+                    inputProps={{
+                        min: 1
+                    }}
                 />
+
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+
+            {/* EXPECTED DELIVERY */}
+
+            <Grid
+                size={{
+                    xs: 12,
+                    sm: 6
+                }}
+            >
 
                 <Typography
-                    variant="body2"
+                    variant="caption"
                     sx={{
-                        mb: 1,
+                        display: "block",
+                        mb: 0.5,
                         color: "text.secondary",
-                        fontWeight: 500
+                        fontWeight: 600
                     }}
                 >
                     Expected Delivery
@@ -93,20 +163,39 @@ function PurchaseOrderForm({
 
                 <TextField
                     fullWidth
+                    size="small"
                     type="date"
                     name="expectedDeliveryDate"
-                    value={formData.expectedDeliveryDate}
+                    value={
+                        formData.expectedDeliveryDate
+                    }
                     onChange={onChange}
-                    error={!!errors.expectedDeliveryDate}
-                    helperText={errors.expectedDeliveryDate}
+                    error={
+                        !!errors.expectedDeliveryDate
+                    }
+                    helperText={
+                        errors.expectedDeliveryDate
+                    }
+                    InputLabelProps={{
+                        shrink: true
+                    }}
                 />
 
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+
+            {/* STATUS */}
+
+            <Grid
+                size={{
+                    xs: 12
+                }}
+            >
+
                 <TextField
                     select
                     fullWidth
+                    size="small"
                     label="Status"
                     name="status"
                     value={formData.status}
@@ -114,6 +203,7 @@ function PurchaseOrderForm({
                     error={!!errors.status}
                     helperText={errors.status}
                 >
+
                     <MenuItem value="PENDING">
                         Pending
                     </MenuItem>
@@ -129,7 +219,9 @@ function PurchaseOrderForm({
                     <MenuItem value="CANCELLED">
                         Cancelled
                     </MenuItem>
+
                 </TextField>
+
             </Grid>
 
         </Grid>
@@ -137,5 +229,6 @@ function PurchaseOrderForm({
     );
 
 }
+
 
 export default PurchaseOrderForm;
