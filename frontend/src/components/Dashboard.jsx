@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 import { Tooltip } from 'react-tooltip'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView, ExpiryView } from './DashboardViews';
+import { API_BASE } from '../config';
 
 const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
 
@@ -34,7 +35,7 @@ const ROLE_CONFIG = {
     label: 'Administrator',
 //     title: 'Admin Dashboard',
 //     subtitle: 'Live inventory and system overview',
-    api: 'http://localhost:8080/api/admin/dashboard/stats',
+    api: `${API_BASE}/api/admin/dashboard/stats`,
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
       { label: 'Users', icon: '/total.png', view: 'users' },
@@ -55,7 +56,7 @@ const ROLE_CONFIG = {
     label: 'Pharmacist',
 //     title: 'Pharmacist Dashboard',
 //     subtitle: 'Stock and transaction overview',
-    api: 'http://localhost:8080/api/pharmacy/dashboard/stats',
+    api: `${API_BASE}/api/pharmacy/dashboard/stats`,
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
       { label: 'Medicine', icon: '/medicines.png', view: 'medicine' },
@@ -75,7 +76,7 @@ const ROLE_CONFIG = {
     label: 'Staff',
 //     title: 'Staff Dashboard',
 //     subtitle: 'View inventory and medicines',
-    api: 'http://localhost:8080/api/pharmacy/dashboard/stats',
+    api: `${API_BASE}/api/pharmacy/dashboard/stats`,
     nav: [
       { label: 'Home', icon: '/icon.png', view: 'home' },
       { label: 'Medicine', icon: '/medicines.png', view: 'medicine' },

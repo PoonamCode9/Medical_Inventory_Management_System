@@ -3,8 +3,8 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Tooltip } from 'react-tooltip';
 import Swal from 'sweetalert2';
+import { API_BASE as API } from '../config';
 
-const API = 'http://localhost:8080';
 const token = () => localStorage.getItem('om_token');
 const auth = () => ({ Authorization: `Bearer ${token()}` });
 const jsonHeaders = () => ({ 'Content-Type': 'application/json', ...auth() });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView } from './DashboardViews';
+import { API_BASE } from '../config';
 
 const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
 
@@ -31,7 +32,7 @@ export default function AdminDashboard({ user, onLogout }) {
       return;
     }
 
-    fetch('http://localhost:8080/api/admin/dashboard/stats', {
+    fetch(`${API_BASE}/api/admin/dashboard/stats`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

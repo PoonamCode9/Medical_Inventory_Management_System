@@ -6,8 +6,9 @@ import { Tooltip } from 'react-tooltip'
 import './App.css'
 import LoginHelp from './components/LoginHelp'
 import Dashboard from './components/Dashboard'
+import { API_BASE as SERVER_URL } from './config'
 
-const API_BASE = 'http://localhost:8080/api/auth';
+const API_BASE = `${SERVER_URL}/api/auth`;
 
 const parseJwt = (token) => {
   try {
@@ -179,7 +180,7 @@ function App() {
   const testSecureApi = async () => {
     setTestResult('Testing...');
     try {
-      const response = await fetch('http://localhost:8080/api/test/secured', {
+      const response = await fetch(`${SERVER_URL}/api/test/secured`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 403) {
