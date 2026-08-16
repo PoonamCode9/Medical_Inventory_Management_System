@@ -179,7 +179,7 @@ function Login() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full border py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition duration-300 cursor-pointer flex justify-center items-center gap-3"
+            className="w-full border py-3 rounded-lg font-semibold bg-blue-200 hover:bg-blue-600 hover:text-white transition duration-300 cursor-pointer flex justify-center items-center gap-3"
           >
             <img src="/google-logo.png" alt="googleLogo" className="w-5" />
             Login with Google

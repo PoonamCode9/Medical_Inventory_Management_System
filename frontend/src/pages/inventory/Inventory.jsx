@@ -12,6 +12,9 @@ import {
   Package,
   CheckCircle2,
   XCircle,
+  Boxes,
+  TrendingDown,
+  Layers,
 } from "lucide-react";
 
 const Inventory = () => {
@@ -135,8 +138,8 @@ const Inventory = () => {
     try {
       await API.post(
         `/inventory/${selectedInventory.inventoryId}/damaged?quantity=${damagedQty}&reason=${encodeURIComponent(
-          reason,
-        )}`,
+          reason
+        )}`
       );
       setShowDamagedModal(false);
       fetchInventoryAndSettings();
@@ -150,22 +153,22 @@ const Inventory = () => {
     if (quantity === 0) {
       return {
         label: "Out of Stock",
-        badgeClass: "bg-red-100 text-red-700 border-red-200",
-        stockBadge: "bg-red-50 text-red-700 border-red-200",
+        badgeClass: "bg-rose-100/70 text-rose-700 border-rose-200",
+        stockBadge: "bg-rose-50 text-rose-700 border-rose-200/80",
         Icon: XCircle,
       };
     } else if (quantity <= threshold) {
       return {
         label: "Low Stock",
-        badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
-        stockBadge: "bg-amber-50 text-amber-700 border-amber-200",
+        badgeClass: "bg-amber-100/70 text-amber-800 border-amber-200",
+        stockBadge: "bg-amber-50 text-amber-700 border-amber-200/80",
         Icon: AlertTriangle,
       };
     } else {
       return {
         label: "In Stock",
-        badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
-        stockBadge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        badgeClass: "bg-emerald-100/70 text-emerald-800 border-emerald-200",
+        stockBadge: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
         Icon: CheckCircle2,
       };
     }
@@ -195,245 +198,271 @@ const Inventory = () => {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-slate-500 font-medium">
-        Loading inventory...
+      <div className="p-8 text-center text-slate-500 font-medium flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm">Loading inventory details...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
-            <Package className="w-7 h-7 text-indigo-600" />
-            Inventory Stock
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm">
-            Manage medicine stock levels, filter low stock, and report damaged
-            items
-          </p>
+    <div className="w-full pb-10 min-h-screen bg-slate-50/60">
+      <div className="mx-6 mt-6 mb-6 bg-gradient-to-r from-white via-white to-blue-50/40 p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-md shadow-blue-500/20 ring-4 ring-blue-50">
+              <Package className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                Inventory Stock
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Manage medicine stock levels, filter low stock, and report damaged items
+              </p>
+            </div>
+          </div>
         </div>
 
         {(role === "Admin" || role === "Pharmacist") && (
           <button
             onClick={() => navigate("/dashboard/inventory/add")}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow transition-colors cursor-pointer"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl transition cursor-pointer shadow-sm shadow-blue-600/20 active:scale-98"
           >
-            <Plus className="w-4 h-4" /> Add Inventory
+            <Plus size={16} /> Add Inventory
           </button>
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-6">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-          <input
-            type="text"
-            placeholder="Search by medicine name or batch..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
-          />
+      <div className="px-6 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+          {/* Search Bar */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-blue-500 absolute left-3.5 top-3" />
+            <input
+              type="text"
+              placeholder="Search by medicine name or batch..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50/50 text-slate-900 placeholder-slate-400"
+            />
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-xl text-xs font-medium text-slate-600 overflow-x-auto border border-slate-200/50">
+            <button
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                statusFilter === "ALL"
+                  ? "bg-white text-slate-900 font-semibold shadow-xs border border-slate-200/60"
+                  : "hover:text-slate-900 hover:bg-slate-200/50"
+              }`}
+            >
+              All Stock
+            </button>
+            <button
+              onClick={() => setStatusFilter("LOW_STOCK")}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                statusFilter === "LOW_STOCK"
+                  ? "bg-amber-500 text-white font-semibold shadow-xs"
+                  : "hover:text-amber-600 hover:bg-amber-50"
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Low Stock (&le; {threshold})
+            </button>
+            <button
+              onClick={() => setStatusFilter("OUT_OF_STOCK")}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                statusFilter === "OUT_OF_STOCK"
+                  ? "bg-rose-600 text-white font-semibold shadow-xs"
+                  : "hover:text-rose-600 hover:bg-rose-50"
+              }`}
+            >
+              <TrendingDown className="w-3.5 h-3.5" />
+              Out of Stock
+            </button>
+            <button
+              onClick={() => setStatusFilter("IN_STOCK")}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                statusFilter === "IN_STOCK"
+                  ? "bg-emerald-600 text-white font-semibold shadow-xs"
+                  : "hover:text-emerald-600 hover:bg-emerald-50"
+              }`}
+            >
+              Adequate Stock
+            </button>
+          </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl overflow-x-auto text-xs font-semibold text-slate-600">
-          <button
-            onClick={() => setStatusFilter("ALL")}
-            className={`px-3 py-2 rounded-lg transition-all cursor-pointer ${
-              statusFilter === "ALL"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "hover:text-slate-900"
-            }`}
-          >
-            All Stock
-          </button>
-          <button
-            onClick={() => setStatusFilter("LOW_STOCK")}
-            className={`px-3 py-2 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
-              statusFilter === "LOW_STOCK"
-                ? "bg-amber-500 text-white shadow-xs"
-                : "hover:text-amber-600"
-            }`}
-          >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Low Stock (&le; {threshold})
-          </button>
-          <button
-            onClick={() => setStatusFilter("OUT_OF_STOCK")}
-            className={`px-3 py-2 rounded-lg transition-all cursor-pointer ${
-              statusFilter === "OUT_OF_STOCK"
-                ? "bg-red-600 text-white shadow-xs"
-                : "hover:text-red-600"
-            }`}
-          >
-            Out of Stock
-          </button>
-          <button
-            onClick={() => setStatusFilter("IN_STOCK")}
-            className={`px-3 py-2 rounded-lg transition-all cursor-pointer ${
-              statusFilter === "IN_STOCK"
-                ? "bg-emerald-600 text-white shadow-xs"
-                : "hover:text-emerald-600"
-            }`}
-          >
-            Adequate Stock
-          </button>
-        </div>
-      </div>
+        {/* Inventory Table */}
+        <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50/90 border-b border-slate-200/80 text-slate-700 uppercase font-bold tracking-wider text-[11px]">
+                <tr>
+                  <th className="py-3.5 px-5">Medicine</th>
+                  <th className="py-3.5 px-5">Batch No</th>
+                  <th className="py-3.5 px-5 text-center">Stock Level</th>
+                  <th className="py-3.5 px-5 text-center">Status</th>
+                  <th className="py-3.5 px-5 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredInventory.length > 0 ? (
+                  filteredInventory.map((item) => {
+                    const status = getStockStatus(item.quantity);
+                    const IconComponent = status.Icon;
 
-      {/* Inventory Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
-            <tr>
-              <th className="p-4">Medicine</th>
-              <th className="p-4">Batch No</th>
-              <th className="p-4 text-center">Stock Level</th>
-              <th className="p-4 text-center">Status</th>
-              <th className="p-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredInventory.length > 0 ? (
-              filteredInventory.map((item) => {
-                const status = getStockStatus(item.quantity);
-                const IconComponent = status.Icon;
+                    const isHighlighted =
+                      highlightedId !== null &&
+                      highlightedId !== undefined &&
+                      String(item.inventoryId) === String(highlightedId);
 
-                const isHighlighted =
-                  highlightedId !== null &&
-                  highlightedId !== undefined &&
-                  String(item.inventoryId) === String(highlightedId);
-
-                return (
-                  <tr
-                    key={item.inventoryId}
-                    id={`inventory-row-${item.inventoryId}`}
-                    className={`transition-all duration-700 ease-in-out ${
-                      isHighlighted
-                        ? "bg-blue-50/90 border-l-4 border-l-blue-600 shadow-sm font-semibold"
-                        : "hover:bg-slate-50/50 border-l-4 border-l-transparent"
-                    }`}
-                  >
-                    <td className="p-4 font-semibold text-slate-800">
-                      {item.medicine?.medicineName || "N/A"}
-                    </td>
-                    <td className="p-4 text-slate-500 font-mono text-xs">
-                      {item.medicine?.batchNo || item.batchNo || "N/A"}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md border font-semibold text-xs ${status.stockBadge}`}
+                    return (
+                      <tr
+                        key={item.inventoryId}
+                        id={`inventory-row-${item.inventoryId}`}
+                        className={`transition-all duration-300 ${
+                          isHighlighted
+                            ? "bg-blue-50/90 border-l-4 border-l-blue-600 font-semibold"
+                            : "hover:bg-blue-50/30 border-l-4 border-l-transparent"
+                        }`}
                       >
-                        <IconComponent className="w-3.5 h-3.5" />
-                        {item.quantity} Units
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${status.badgeClass}`}
-                      >
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        {/* Report Damaged Button */}
-                        {(() => {
-                          const isAllowed =
-                            role === "Admin" || role === "Pharmacist";
-                          const isOutOfStock = item.quantity === 0;
-                          const isDisabled = !isAllowed || isOutOfStock;
+                        <td className="py-3.5 px-5 font-semibold text-slate-800">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100/80 shrink-0">
+                              <Boxes className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="text-slate-900">{item.medicine?.medicineName || "N/A"}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <span className="px-2 py-1 bg-slate-100/80 text-slate-600 font-mono text-[11px] font-medium rounded-md border border-slate-200/60">
+                            {item.medicine?.batchNo || item.batchNo || "N/A"}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-5 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold text-[11px] ${status.stockBadge}`}
+                          >
+                            <IconComponent className="w-3.5 h-3.5" />
+                            {item.quantity} Units
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-5 text-center">
+                          <span
+                            className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold border ${status.badgeClass}`}
+                          >
+                            {status.label}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-5">
+                          <div className="flex items-center justify-center gap-2">
+                            {/* Report Damaged Button */}
+                            {(() => {
+                              const isAllowed =
+                                role === "Admin" || role === "Pharmacist";
+                              const isOutOfStock = item.quantity === 0;
+                              const isDisabled = !isAllowed || isOutOfStock;
 
-                          let tooltipText = "Report Damaged Stock";
-                          if (!isAllowed) {
-                            tooltipText =
-                              "Only Admin & Pharmacist can report damaged stock";
-                          } else if (isOutOfStock) {
-                            tooltipText = "Stock is empty";
-                          }
-
-                          return (
-                            <button
-                              onClick={() =>
-                                isAllowed && handleOpenDamagedModal(item)
+                              let tooltipText = "Report Damaged Stock";
+                              if (!isAllowed) {
+                                tooltipText =
+                                  "Only Admin & Pharmacist can report damaged stock";
+                              } else if (isOutOfStock) {
+                                tooltipText = "Stock is empty";
                               }
-                              disabled={isDisabled}
-                              className="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-50 cursor-pointer"
-                              title={tooltipText}
-                            >
-                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                              Report Damaged
-                            </button>
-                          );
-                        })()}
 
-                        {/* Edit Button */}
-                        {(role === "Admin" || role === "Pharmacist") && (
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/dashboard/inventory/edit/${item.inventoryId}`,
-                              )
-                            }
-                            className="p-1.5 text-slate-500 hover:text-blue-600 border border-slate-200 rounded-lg hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Edit Inventory"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        )}
+                              return (
+                                <button
+                                  onClick={() =>
+                                    isAllowed && handleOpenDamagedModal(item)
+                                  }
+                                  disabled={isDisabled}
+                                  className="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                                  title={tooltipText}
+                                >
+                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>Report Damaged</span>
+                                </button>
+                              );
+                            })()}
 
-                        {/* Delete Button */}
-                        {role === "Admin" && (
-                          <button
-                            onClick={() => handleDelete(item.inventoryId)}
-                            className="p-1.5 text-slate-500 hover:text-red-600 border border-slate-200 rounded-lg hover:border-red-200 hover:bg-red-50 transition-colors cursor-pointer"
-                            title="Delete Inventory"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                            {/* Edit Button */}
+                            {(role === "Admin" || role === "Pharmacist") && (
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `/dashboard/inventory/edit/${item.inventoryId}`
+                                  )
+                                }
+                                className="p-1.5 text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/70 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Inventory"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            {/* Delete Button */}
+                            {role === "Admin" && (
+                              <button
+                                onClick={() => handleDelete(item.inventoryId)}
+                                className="p-1.5 text-rose-600 hover:text-rose-700 bg-rose-50/80 hover:bg-rose-100/80 border border-rose-200/70 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Inventory"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-12 text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="p-3 bg-slate-100 rounded-full">
+                          <Package className="w-6 h-6 text-slate-400" />
+                        </div>
+                        <p className="text-xs font-medium text-slate-500">
+                          No inventory records match your search or filter criteria.
+                        </p>
                       </div>
                     </td>
                   </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center py-10 text-slate-400">
-                  No inventory records match your search/filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Report Damaged Modal */}
       {showDamagedModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
             <button
               onClick={() => setShowDamagedModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
-              <AlertTriangle className="text-amber-500 w-5 h-5" /> Report
-              Damaged Stock
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-1">
+              <div className="p-1.5 bg-amber-100 text-amber-700 rounded-lg">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              Report Damaged Stock
             </h3>
-            <p className="text-xs text-slate-500 mb-5">
+            <p className="text-xs text-slate-500 mb-5 pl-8">
               Medicine:{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-800">
                 {selectedInventory?.medicine?.medicineName}
               </span>{" "}
               (Available:{" "}
-              <span className="font-bold text-slate-800">
+              <span className="font-bold text-blue-600">
                 {selectedInventory?.quantity}
               </span>
               )
@@ -451,7 +480,7 @@ const Inventory = () => {
                   value={damagedQty}
                   onChange={(e) => setDamagedQty(e.target.value)}
                   placeholder="Enter quantity"
-                  className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-slate-50/50"
                   required
                 />
               </div>
@@ -465,7 +494,7 @@ const Inventory = () => {
                   placeholder="e.g., Broken bottle, Expired package"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-slate-50/50"
                   required
                 />
               </div>
@@ -474,13 +503,13 @@ const Inventory = () => {
                 <button
                   type="button"
                   onClick={() => setShowDamagedModal(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2.5 rounded-lg transition-colors cursor-pointer"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   Deduct & Log
                 </button>

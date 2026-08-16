@@ -221,7 +221,7 @@ function Register() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full border border-slate-200 py-2 rounded-lg font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer flex justify-center items-center gap-2 text-sm shadow-2xs"
+            className="w-full border border-slate-200 py-2 rounded-lg font-bold text-slate-700 bg-blue-200 hover:bg-blue-600 hover:text-white transition cursor-pointer flex justify-center items-center gap-2 text-sm shadow-2xs"
           >
             <img src="/google-logo.png" alt="googleLogo" className="w-4 h-4" />
             Signup with Google

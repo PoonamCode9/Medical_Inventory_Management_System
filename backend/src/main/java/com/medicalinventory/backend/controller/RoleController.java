@@ -13,8 +13,6 @@ import com.medicalinventory.backend.entity.Role;
 import com.medicalinventory.backend.service.RoleService;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
-
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {

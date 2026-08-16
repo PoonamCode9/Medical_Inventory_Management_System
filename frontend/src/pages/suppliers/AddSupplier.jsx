@@ -1,7 +1,15 @@
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/Api";
+import { 
+    ArrowLeft, 
+    Truck, 
+    User, 
+    Phone, 
+    Mail, 
+    MapPin, 
+    PlusCircle 
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 function AddSupplier() {
@@ -22,7 +30,7 @@ function AddSupplier() {
     const handleSubmit = async(e) => {
         e.preventDefault();
 
-        if(!supplier.supplierName.trim() || !supplier.contactPerson.trim() || !supplier.phone.trim() || !supplier.email || !supplier.address.trim()) {
+        if(!supplier.supplierName.trim() || !supplier.contactPerson.trim() || !supplier.phone.trim() || !supplier.email.trim() || !supplier.address.trim()) {
             toast.error("Please fill in all fields");
             return;
         }
@@ -35,7 +43,7 @@ function AddSupplier() {
         catch(error) {
             console.log(error);
             if(error.response) {
-                toast.error(error.response.data);
+                toast.error(typeof error.response.data === "string" ? error.response.data : "Failed to add supplier");
             }
             else {
                 toast.error("Something went wrong");
@@ -44,50 +52,126 @@ function AddSupplier() {
     };
 
     return (
-        <div className="p-6">
+        <div className="w-full pb-10 min-h-screen bg-slate-50/60 p-6 font-sans antialiased">
             <div>
-                <button onClick={() => navigate("/dashboard/suppliers")} className="flex items-center gap-2 text-blue-600 mb-3 border px-3 py-2 rounded-lg hover:bg-blue-600 hover:text-white cursor-pointer transition">
-                    <ArrowLeft/>
+                <button 
+                    onClick={() => navigate("/dashboard/suppliers")} 
+                    className="flex items-center gap-2 text-xs font-semibold text-blue-600 mb-4 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition shadow-xs"
+                >
+                    <ArrowLeft className="w-4 h-4" />
                     Back
                 </button>
-                <div>
-                    <h1 className="text-3xl font-bold">Add Supplier</h1>
-                    <p className="text-gray-500">Add a new supplier to the inventory</p>
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
+                        <Truck className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Add Supplier</h1>
+                        <p className="text-sm text-slate-500 mt-0.5">Add a new supplier to the inventory</p>
+                    </div>
                 </div>
             </div>
-            <div className="mt-8">
+
+            {/* Form Card */}
+            <div className="mt-6 w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-md">
                 <form onSubmit={handleSubmit}>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
                         <div>
-                            <label htmlFor="supplierName" className="block w-max mb-2 font-medium">Supplier Name</label>
-                            <input type="text" placeholder="Enter supplier name" id="supplierName" className="w-full border rounded-lg p-3" name="supplierName" value={supplier.supplierName} onChange={handleValueChange}/>
+                            <label htmlFor="supplierName" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                                <Truck className="w-4 h-4 text-blue-600" />
+                                Supplier Name
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter supplier name" 
+                                id="supplierName" 
+                                className="w-full text-sm border border-slate-300 rounded-xl p-3 bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" 
+                                name="supplierName" 
+                                value={supplier.supplierName} 
+                                onChange={handleValueChange}
+                            />
                         </div>
+
                         <div>
-                            <label htmlFor="contactPerson" className="block w-max mb-2 font-medium">Contact Person</label>
-                            <input type="text" placeholder="Enter contact-person name" id="contactPerson" className="w-full border rounded-lg p-3" name="contactPerson" value={supplier.contactPerson} onChange={handleValueChange}/>
+                            <label htmlFor="contactPerson" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                                <User className="w-4 h-4 text-blue-600" />
+                                Contact Person
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter contact person name" 
+                                id="contactPerson" 
+                                className="w-full text-sm border border-slate-300 rounded-xl p-3 bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" 
+                                name="contactPerson" 
+                                value={supplier.contactPerson} 
+                                onChange={handleValueChange}
+                            />
                         </div>
+
                         <div>
-                            <label htmlFor="PhoneNo" className="block w-max mb-2 font-medium">Phone Number</label>
-                            <input type="text" placeholder="Enter phone number" id="PhoneNo" className="w-full border rounded-lg p-3" name="phone" value={supplier.phone} onChange={handleValueChange}/>
+                            <label htmlFor="PhoneNo" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                                <Phone className="w-4 h-4 text-blue-600" />
+                                Phone Number
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter phone number" 
+                                id="PhoneNo" 
+                                className="w-full text-sm border border-slate-300 rounded-xl p-3 bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" 
+                                name="phone" 
+                                value={supplier.phone} 
+                                onChange={handleValueChange}
+                            />
                         </div>
+
                         <div>
-                            <label htmlFor="email" className="block w-max mb-2 font-medium">Email</label>
-                            <input type="email" placeholder="Enter email" id="email" className="w-full border rounded-lg p-3" name="email" value={supplier.email} onChange={handleValueChange}/>
+                            <label htmlFor="email" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                                <Mail className="w-4 h-4 text-blue-600" />
+                                Email Address
+                            </label>
+                            <input 
+                                type="email" 
+                                placeholder="Enter email address" 
+                                id="email" 
+                                className="w-full text-sm border border-slate-300 rounded-xl p-3 bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" 
+                                name="email" 
+                                value={supplier.email} 
+                                onChange={handleValueChange}
+                            />
                         </div>
-                        <div>
-                            <label htmlFor="address" className="block w-max mb-2 font-medium">Address</label>
-                            <input type="text" placeholder="Enter address" id="address" className="w-full border rounded-lg p-3" name="address" value={supplier.address} onChange={handleValueChange}/>
+
+                        <div className="md:col-span-2">
+                            <label htmlFor="address" className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                                <MapPin className="w-4 h-4 text-blue-600" />
+                                Address
+                            </label>
+                            <input 
+                                type="text" 
+                                placeholder="Enter full address" 
+                                id="address" 
+                                className="w-full text-sm border border-slate-300 rounded-xl p-3 bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" 
+                                name="address" 
+                                value={supplier.address} 
+                                onChange={handleValueChange}
+                            />
                         </div>
-                        <div className="flex justify-end pt-2">
-                            <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 cursor-pointer transition" >
-                                Save Supplier
-                            </button>
-                        </div>
+
+                    </div>
+
+                    <div className="flex justify-end pt-6">
+                        <button 
+                            type="submit" 
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-98 cursor-pointer transition shadow-sm shadow-blue-500/20"
+                        >
+                            <PlusCircle className="w-4 h-4" />
+                            Save Supplier
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
 export default AddSupplier;

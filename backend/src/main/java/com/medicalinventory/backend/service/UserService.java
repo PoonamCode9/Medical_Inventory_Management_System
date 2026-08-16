@@ -37,8 +37,14 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            boolean isAlreadyEncoded = user.getPassword().startsWith("$2a$") ||
+                    user.getPassword().startsWith("$2b$") ||
+                    user.getPassword().startsWith("$2y$");
+
+            if (!isAlreadyEncoded) {
+                user.setPassword(passwordEncoder.encode(user.getPassword().trim()));
+            }
         }
         return userRepository.save(user);
     }

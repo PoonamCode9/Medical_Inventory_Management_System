@@ -10,20 +10,24 @@ import org.springframework.transaction.annotation.Transactional;
 import com.medicalinventory.backend.dto.NotificationDTO;
 import com.medicalinventory.backend.entity.Medicine;
 import com.medicalinventory.backend.entity.Notification;
+import com.medicalinventory.backend.entity.SystemSettings;
 import com.medicalinventory.backend.mapper.NotificationMapper;
 import com.medicalinventory.backend.repository.NotificationRepository;
+import com.medicalinventory.backend.repository.SystemSettingsRepository;
 
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final SystemSettingsRepository systemSettingsRepository;
 
     @Value("${app.notification.admin-email:${spring.mail.username:admin@pharmacy.com}}")
     private String adminEmail;
 
-    public NotificationService(NotificationRepository notificationRepository, EmailService emailService) {
+    public NotificationService(NotificationRepository notificationRepository, EmailService emailService, SystemSettingsRepository systemSettingsRepository) {
         this.notificationRepository = notificationRepository;
         this.emailService = emailService;
+        this.systemSettingsRepository = systemSettingsRepository;
     }
 
     @Transactional
@@ -102,11 +106,12 @@ public class NotificationService {
     }
 
     public void checkAndTriggerLowStockNotification(Medicine medicine, int currentQuantity) {
-        int LOW_STOCK_THRESHOLD = 20;
+        int threshold = systemSettingsRepository.findById(1L)
+            .map(SystemSettings::getLowStockThreshold)
+            .orElse(10);
 
-        if (currentQuantity <= LOW_STOCK_THRESHOLD && currentQuantity >= 0) {
-            String message = medicine.getMedicineName() + " stock is running low! Remaining quantity: "
-                    + currentQuantity;
+        if (currentQuantity <= threshold && currentQuantity >= 0) {
+            String message = medicine.getMedicineName() + " stock is running low! Remaining quantity: " + currentQuantity;
             createNotification(medicine, "LOW_STOCK", message, "Both");
         }
     }

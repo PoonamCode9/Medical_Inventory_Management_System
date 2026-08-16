@@ -15,7 +15,7 @@ public class SystemSettingsService {
         this.settingsRepository = settingsRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public SystemSettings getSettings() {
         return settingsRepository.findById(1L).orElseGet(() -> {
             SystemSettings defaultSettings = new SystemSettings();

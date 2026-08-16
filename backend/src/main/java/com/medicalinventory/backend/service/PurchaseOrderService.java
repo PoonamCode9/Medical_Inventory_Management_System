@@ -134,6 +134,8 @@ public class PurchaseOrderService {
         order.setDamagedQuantity(finalDamQty);
         order.setRemarks(dto.getRemarks());
 
+        int finalUpdatedQty = 0;
+
         if (goodQty > 0) {
             Inventory inventory = inventoryRepository.findByMedicine(order.getMedicine())
                     .orElseGet(() -> {
@@ -144,9 +146,9 @@ public class PurchaseOrderService {
                     });
 
             int beforeQty = inventory.getQuantity() != null ? inventory.getQuantity() : 0;
-            int afterQty = beforeQty + goodQty;
+            finalUpdatedQty = beforeQty + goodQty; 
 
-            inventory.setQuantity(afterQty);
+            inventory.setQuantity(finalUpdatedQty);
             inventoryRepository.save(inventory);
 
             String supplierName = (order.getSupplier() != null) ? order.getSupplier().getSupplierName() : "Supplier";
@@ -162,8 +164,12 @@ public class PurchaseOrderService {
                     "PURCHASE_RECEIVED",
                     remarks,
                     beforeQty,
-                    afterQty,
+                    finalUpdatedQty,
                     getPerformedBy());
+        } else {
+            finalUpdatedQty = inventoryRepository.findByMedicine(order.getMedicine())
+                    .map(inv -> inv.getQuantity() != null ? inv.getQuantity() : 0)
+                    .orElse(0);
         }
 
         PurchaseOrder savedOrder = purchaseOrderRepository.save(order);
@@ -182,6 +188,8 @@ public class PurchaseOrderService {
                 "ORDER_" + savedOrder.getStatus(),
                 notifMessage,
                 "Both");
+
+        notificationService.checkAndTriggerLowStockNotification(savedOrder.getMedicine(), finalUpdatedQty);
 
         return savedOrder;
     }

@@ -1,7 +1,7 @@
-import { Bell, Boxes, FileText, History, LayoutDashboard, LogOut, Pill, Settings, ShoppingBag, ShoppingCart, TriangleAlert, Truck, Users } from "lucide-react";
+import { Bell, Boxes, FileText, History, LayoutDashboard, LogOut, Pill, Settings, ShoppingBag, ShoppingCart, TriangleAlert, Truck, Users, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-function Sidebar() {
+function Sidebar({ onClose }) {
     const menuItems = [
         {
             name: "Dashboard",
@@ -100,10 +100,18 @@ function Sidebar() {
                     <h1 className="text-3xl font-bold text-gray-900 leading-none">
                         Medi<span className="text-blue-600">stock</span>
                     </h1>
-                    <span className="text-[12px] text-gray-400 font-medium tracking-wide">
+                    <span className="text-[10px] text-gray-400 font-medium tracking-wide">
                         INVENTORY MANAGEMENT
                     </span>
                 </div>
+
+                <button
+                    onClick={onClose}
+                    className="lg:hidden p-1.5 ml-2 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                    title="Close Sidebar"
+                    >
+                    <X size={20} />
+                </button>
             </div>
 
             {/* Navigation Links */}
@@ -114,7 +122,7 @@ function Sidebar() {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 ${
                                 isActive
                                     ? "bg-blue-100 text-blue-700 font-bold"
                                     : "text-slate-800 hover:bg-blue-50/60 hover:text-blue-600"

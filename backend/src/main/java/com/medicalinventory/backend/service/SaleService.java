@@ -66,14 +66,7 @@ public class SaleService {
             "Push"
         );
 
-        if (afterQty <= 20) {
-            notificationService.createNotification(
-                medicine, 
-                "LOW_STOCK", 
-                medicine.getMedicineName() + " stock is running low", 
-                "Push"
-            );
-        }
+        notificationService.checkAndTriggerLowStockNotification(medicine, afterQty);
 
         return updatedInventory;
     }
