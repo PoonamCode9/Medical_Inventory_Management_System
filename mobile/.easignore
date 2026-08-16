@@ -1,0 +1,11 @@
+# exclude everything outside the mobile app
+../backend
+../frontend
+../.idea
+../.git
+../*.md
+
+# app-level ignores
+node_modules
+.expo
+dist
