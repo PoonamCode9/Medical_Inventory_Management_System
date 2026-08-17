@@ -113,15 +113,15 @@ const Profile = () => {
     <div className="max-w-5xl mx-auto p-6 space-y-6 bg-slate-50/50 min-h-screen">
       <div className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xl shadow-inner">
+          <div className="h-14 w-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-xl shadow-inner shrink-0">
             {fullName ? fullName.charAt(0).toUpperCase() : "U"}
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-800">
               {fullName || "User Profile"}
             </h1>
-            <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
-              <span className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 mt-1">
+              <span className="flex items-center gap-1.5 min-w-0 break-all">
                 <Mail size={14} /> {profile.email}
               </span>
               <span>•</span>

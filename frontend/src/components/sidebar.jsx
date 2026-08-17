@@ -91,7 +91,7 @@ function Sidebar({ onClose }) {
     };
 
     return (
-        <aside className="w-67 bg-white border-r border-gray-100 h-screen flex flex-col justify-between shadow-lg shrink-0 select-none">
+        <aside className="w-67 bg-white border-r border-gray-100 h-screen flex flex-col justify-between shadow-lg shrink-0 select-none fixed inset-y-0 left-0 z-50 xl:static xl:h-full">
             <div className="p-5 border-b border-gray-100 flex items-center gap-2.5">
                 <div className="p-2 bg-blue-600 rounded-xl text-white">
                     <Pill size={22} />
@@ -107,7 +107,7 @@ function Sidebar({ onClose }) {
 
                 <button
                     onClick={onClose}
-                    className="lg:hidden p-1.5 ml-2 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                    className="xl:hidden p-1.5 ml-2 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
                     title="Close Sidebar"
                     >
                     <X size={20} />

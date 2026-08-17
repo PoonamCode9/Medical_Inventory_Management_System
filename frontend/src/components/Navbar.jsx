@@ -160,7 +160,7 @@ function Navbar({ isSidebarOpen, onToggleSidebar }) {
         {!isSidebarOpen && (
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
+            className="xl:hidden p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition cursor-pointer"
             title="Expand Sidebar"
           >
             <Menu size={22} />
@@ -170,7 +170,7 @@ function Navbar({ isSidebarOpen, onToggleSidebar }) {
 
       {/* Search */}
       <div className="relative w-80 sm:w-96" ref={searchRef}>
-        <div className="flex items-center bg-slate-100/70 border border-slate-200/80 rounded-xl px-3.5 py-2 w-full focus-within:bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-200">
+        <div className="flex items-center bg-slate-100/70 border border-slate-200/80 rounded-xl px-2.5 px-1.5 sm:px-3.5 py-2 w-full focus-within:bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all duration-200">
           <Search size={17} className="text-slate-400 shrink-0" />
           <input
             type="text"
@@ -286,7 +286,7 @@ function Navbar({ isSidebarOpen, onToggleSidebar }) {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-88 rounded-2xl shadow-xl border border-slate-200/90 z-50 bg-white overflow-hidden">
+            <div className="absolute -right-8 sm:right-0 mt-3 w-60 sm:w-88 rounded-2xl shadow-xl border border-slate-200/90 z-50 bg-white overflow-hidden">
               <div className="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                 <div>
                   <h3 className="font-bold text-xs text-slate-900">

@@ -4,14 +4,14 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/sidebar";
 
 function DashboardLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
       <div
         className={`h-full ${
-          isSidebarOpen ? "block" : "hidden lg:block"
+          isSidebarOpen ? "block" : "hidden xl:block"
         }`}
       >
         <Sidebar onClose={toggleSidebar} />
@@ -25,7 +25,7 @@ function DashboardLayout() {
           />
         </div>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-1 sm:p-5">
           <Outlet />
         </main>
       </div>

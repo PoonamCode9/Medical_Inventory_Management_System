@@ -75,7 +75,7 @@ function SuppliersCard() {
 
                 {sup.email && (
                   <div className="text-right">
-                    <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 bg-white border border-slate-200/60 px-2 py-1 rounded-lg">
+                    <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1 bg-white border border-slate-200/60 px-2 py-1 rounded-lg min-w-0 break-all">
                       <Mail size={10} className="text-slate-400" />
                       {sup.email}
                     </p>
