@@ -26,8 +26,13 @@ const DispenseSale = () => {
   const handleSale = async (e) => {
     e.preventDefault();
 
-    if (!selectedMedicineId || !quantity || quantity <= 0) {
-      toast.error('Please select a valid medicine and quantity.');
+    if (!selectedMedicineId) {
+      toast.error('Please select a medicine!');
+      return;
+    }
+
+    if (!quantity || Number(quantity) <= 0) {
+      toast.error('Please enter a valid quantity!');
       return;
     }
 
@@ -65,7 +70,6 @@ const DispenseSale = () => {
               className="w-full border border-gray-300 bg-white rounded-md px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               value={selectedMedicineId}
               onChange={(e) => setSelectedMedicineId(e.target.value)}
-              required
             >
               <option value="">-- Choose Medicine --</option>
               {medicines.map((m) => (
@@ -87,7 +91,6 @@ const DispenseSale = () => {
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-gray-400"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              required
             />
           </div>
 

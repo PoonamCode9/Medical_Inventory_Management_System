@@ -16,6 +16,21 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!otp.trim()) {
+      toast.error("Please enter the 6-digit OTP.");
+      return;
+    }
+
+    if (!newPassword) {
+      toast.error("Please enter a new password.");
+      return;
+    }
+
+    if (!confirmPassword) {
+      toast.error("Please confirm your new password.");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       toast.error('New password and Confirm password do not match.');
       return;
@@ -38,8 +53,8 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 m-5">
+      <div className="w-full max-w-md p-5 sm:p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-800">Reset Password</h2>
         <p className="text-sm text-center text-gray-600">
           Enter the 6-digit OTP sent to your email and set a new password.
@@ -50,7 +65,6 @@ const ResetPassword = () => {
             <label className="block text-sm font-medium text-gray-700">6-Digit OTP</label>
             <input
               type="text"
-              required
               maxLength={6}
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
@@ -64,7 +78,6 @@ const ResetPassword = () => {
             <div className="relative">
               <input
                 type={showNewPass ? "text" : "password"}
-                required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="w-full px-3 py-2 pr-10 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -85,7 +98,6 @@ const ResetPassword = () => {
             <div className="relative">
               <input
                 type={showConfirmPass ? "text" : "password"}
-                required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 pr-10 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -70,6 +70,12 @@ const Settings = () => {
   // Tab 1 Specific Save Handler
   const handleSaveGeneral = async (e) => {
     e.preventDefault();
+
+    if (!settings.pharmacyName.trim()) {
+      toast.error("Please enter the Pharmacy / Store Name.");
+      return;
+    }
+
     setSavingGeneral(true);
 
     const generalPayload = {
@@ -239,7 +245,6 @@ const Settings = () => {
                   </label>
                   <input
                     type="text"
-                    required
                     disabled={!isAdmin}
                     value={settings.pharmacyName}
                     onChange={(e) =>

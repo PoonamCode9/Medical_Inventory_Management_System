@@ -146,6 +146,21 @@ const Users = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
 
+    if (!newUser.fullName.trim()) {
+      toast.error("Please enter full name!");
+      return;
+    }
+
+    if (!newUser.email.trim()) {
+      toast.error("Please enter email address!");
+      return;
+    }
+
+    if (!newUser.password) {
+      toast.error("Please enter a password!");
+      return;
+    }
+
     try {
       const payload = {
         fullName: newUser.fullName.trim(),
@@ -540,7 +555,6 @@ const Users = () => {
                 </label>
                 <input
                   type="text"
-                  required
                   value={newUser.fullName}
                   onChange={(e) =>
                     setNewUser({ ...newUser, fullName: e.target.value })
@@ -556,7 +570,6 @@ const Users = () => {
                 </label>
                 <input
                   type="email"
-                  required
                   value={newUser.email}
                   onChange={(e) =>
                     setNewUser({ ...newUser, email: e.target.value })
@@ -588,7 +601,6 @@ const Users = () => {
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    required
                     value={newUser.password}
                     onChange={(e) =>
                       setNewUser({ ...newUser, password: e.target.value })

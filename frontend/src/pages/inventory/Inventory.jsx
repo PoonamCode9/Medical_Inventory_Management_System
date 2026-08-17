@@ -126,12 +126,17 @@ const Inventory = () => {
     e.preventDefault();
 
     if (!damagedQty || Number(damagedQty) <= 0) {
-      toast.error("Please enter a valid quantity.");
+      toast.error("Please enter a valid quantity!");
       return;
     }
 
     if (Number(damagedQty) > selectedInventory?.quantity) {
-      toast.error("Damaged quantity cannot exceed available stock.");
+      toast.error("Damaged quantity cannot exceed available stock!");
+      return;
+    }
+
+    if (!reason.trim()) {
+      toast.error("Please enter a reason or remarks!");
       return;
     }
 
@@ -475,13 +480,10 @@ const Inventory = () => {
                 </label>
                 <input
                   type="number"
-                  max={selectedInventory?.quantity}
-                  min="1"
                   value={damagedQty}
                   onChange={(e) => setDamagedQty(e.target.value)}
                   placeholder="Enter quantity"
                   className="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-slate-50/50"
-                  required
                 />
               </div>
 
@@ -495,7 +497,6 @@ const Inventory = () => {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-slate-50/50"
-                  required
                 />
               </div>
 

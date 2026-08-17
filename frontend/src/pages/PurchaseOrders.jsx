@@ -175,6 +175,22 @@ function PurchaseOrders() {
   // Create Purchase Order
   const handleCreateOrderSubmit = async (e) => {
     e.preventDefault();
+
+    if (!newOrder.medicineId) {
+      toast.error("Please select a medicine.");
+      return;
+    }
+
+    if (!newOrder.supplierId) {
+      toast.error("Please select a supplier.");
+      return;
+    }
+
+    if (!newOrder.quantity || parseInt(newOrder.quantity) < 1) {
+      toast.error("Order quantity must be at least 1.");
+      return;
+    }
+
     try {
       const payload = {
         medicine: { medicineId: parseInt(newOrder.medicineId) },
@@ -596,7 +612,6 @@ function PurchaseOrders() {
                   Select Medicine <span className="text-rose-500">*</span>
                 </label>
                 <select
-                  required
                   className="w-full border border-slate-200/80 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                   value={newOrder.medicineId}
                   onChange={(e) =>
@@ -617,7 +632,6 @@ function PurchaseOrders() {
                   Select Supplier <span className="text-rose-500">*</span>
                 </label>
                 <select
-                  required
                   className="w-full border border-slate-200/80 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
                   value={newOrder.supplierId}
                   onChange={(e) =>
@@ -640,7 +654,6 @@ function PurchaseOrders() {
                 <input
                   type="number"
                   min="1"
-                  required
                   className="w-full border border-slate-200/80 rounded-xl p-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   value={newOrder.quantity}
                   onChange={(e) =>

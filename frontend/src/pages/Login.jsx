@@ -61,7 +61,7 @@ function Login() {
   return (
     <div className="flex items-center justify-center h-screen overflow-hidden">
       {/* Left side */}
-      <div className="w-1/2 relative">
+      <div className="w-1/2 relative hidden md:block">
         <img
           src="/medicine.jpg"
           alt="medicineImg"
@@ -86,12 +86,12 @@ function Login() {
       </div>
 
       {/* Right side */}
-      <div className="flex w-1/2 flex-col justify-center bg-white p-13 text-center">
-        <h1 className="text-5xl font-extrabold text-blue-700">MediStock</h1>
+      <div className="flex w-full md:w-1/2 flex-col justify-center bg-white px-8 sm:px-16 py-4 text-center h-screen overflow-y-auto">
+        <h1 className="text-4xl lg:text-5xl font-extrabold text-blue-700">MediStock</h1>
         <p className="text-gray-500 mt-2">
           Medical Inventory Management Platform
         </p>
-        <h2 className="text-3xl font-semibold mt-5">Welcome Back!👋</h2>
+        <h2 className="text-2xl lg:text-3xl font-semibold mt-5">Welcome Back!👋</h2>
         <p className="text-gray-500 mt-2">Please sign in to your account</p>
 
         <form className="mt-10 space-y-5" onSubmit={handleLogin}>
