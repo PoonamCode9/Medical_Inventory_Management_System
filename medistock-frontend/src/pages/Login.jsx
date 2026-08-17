@@ -1,66 +1,178 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("admin@medistock.com");
+    const [password, setPassword] = useState("admin123");
+    const [error, setError] = useState("");
 
-  const login = (e) => {
-    e.preventDefault();
-    navigate("/dashboard");
-  };
+    const handleLogin = async (e) => {
 
-  return (
-    <div className="container mt-5">
+        e.preventDefault();
 
-      <div className="row justify-content-center">
+        setError("");
 
-        <div className="col-md-5">
+        try {
 
-          <div className="card shadow">
+            const response = await axios.post(
+                "http://localhost:8081/auth/login",
+                {
+                    email: email,
+                    password: password
+                }
+            );
 
-            <div className="card-body">
+            console.log("Login response:", response.data);
 
-              <h2 className="text-center mb-4">
-                MediStock Login
-              </h2>
+            // Save JWT
+            if (response.data.token) {
 
-              <form onSubmit={login}>
+                localStorage.setItem(
+                    "token",
+                    response.data.token
+                );
 
-                <input
-                  className="form-control mb-3"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e)=>setEmail(e.target.value)}
-                />
+            }
 
-                <input
-                  type="password"
-                  className="form-control mb-3"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e)=>setPassword(e.target.value)}
-                />
+            // Save user information if returned
+            if (response.data.user) {
 
-                <button className="btn btn-primary w-100">
-                  Login
-                </button>
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(response.data.user)
+                );
 
-              </form>
+            }
+
+            navigate("/dashboard");
+
+        } catch (err) {
+
+            console.error("Login error:", err);
+
+            if (err.response) {
+
+                setError(
+                    err.response.data?.message ||
+                    err.response.data ||
+                    "Invalid email or password"
+                );
+
+            } else {
+
+                setError(
+                    "Unable to connect to server"
+                );
+
+            }
+        }
+    };
+
+    return (
+
+        <div
+            className="min-vh-100 d-flex align-items-center justify-content-center"
+            style={{
+                background:
+                    "linear-gradient(135deg,#2563eb,#06b6d4)"
+            }}
+        >
+
+            <div
+                className="card shadow-lg border-0"
+                style={{
+                    width: "430px",
+                    borderRadius: "20px"
+                }}
+            >
+
+                <div className="card-body p-5">
+
+                    <div className="text-center mb-4">
+
+                        <div
+                            style={{
+                                fontSize: "60px"
+                            }}
+                        >
+                            💊
+                        </div>
+
+                        <h1 className="fw-bold">
+                            MediStock
+                        </h1>
+
+                        <p className="text-muted">
+                            Medical Inventory Management
+                        </p>
+
+                    </div>
+
+                    {error && (
+
+                        <div className="alert alert-danger">
+                            {error}
+                        </div>
+
+                    )}
+
+                    <form onSubmit={handleLogin}>
+
+                        <div className="mb-3">
+
+                            <label className="form-label fw-bold">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                className="form-control form-control-lg"
+                                value={email}
+                                onChange={(e) =>
+                                    setEmail(e.target.value)
+                                }
+                                required
+                            />
+
+                        </div>
+
+                        <div className="mb-4">
+
+                            <label className="form-label fw-bold">
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                className="form-control form-control-lg"
+                                value={password}
+                                onChange={(e) =>
+                                    setPassword(e.target.value)
+                                }
+                                required
+                            />
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-lg w-100"
+                        >
+                            Login
+                        </button>
+
+                    </form>
+
+                </div>
 
             </div>
 
-          </div>
-
         </div>
-
-      </div>
-
-    </div>
-  );
+    );
 }
 
 export default Login;

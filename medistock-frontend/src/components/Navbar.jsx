@@ -1,80 +1,162 @@
 import { Link, useNavigate } from "react-router-dom";
+import { logoutUser, getUser } from "../services/authService";
 
 function Navbar() {
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const user = getUser();
 
-  const handleLogout = () => {
-    // If you store login data later, clear it here
-    // localStorage.removeItem("token");
+    const handleLogout = () => {
 
-    alert("Logged Out Successfully");
-    navigate("/");
-  };
+        logoutUser();
 
-  return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+        navigate("/login");
 
-      <div className="container">
+    };
 
-        <Link className="navbar-brand fw-bold" to="/dashboard">
-          MediStock
-        </Link>
+    return (
 
-        <div className="navbar-nav me-auto">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow">
 
-          <Link className="nav-link" to="/dashboard">
-            Dashboard
-          </Link>
+            <div className="container">
 
-          <Link className="nav-link" to="/medicines">
-            Medicines
-          </Link>
+                {/* Brand */}
+                <Link
+                    className="navbar-brand fw-bold"
+                    to="/dashboard"
+                >
+                    💊 MediStock
+                </Link>
 
-          <Link className="nav-link" to="/suppliers">
-            Suppliers
-          </Link>
-          <Link className="nav-link" to="/low-stock">
-            Low Stock
-        </Link>
-        <Link className="nav-link" to="/out-of-stock">
-          Out Of Stock
-      </Link>
-      <Link className="nav-link" to="/near-expiry">
-          Near Expiry
-      </Link>
-      <Link className="nav-link" to="/expired">
-          Expired
-      </Link>
+                {/* Mobile Menu Button */}
+                <button
+                    className="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarContent"
+                    aria-controls="navbarContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span className="navbar-toggler-icon"></span>
+                </button>
 
-      <Link
-className="nav-link"
-to="/history">
+                {/* Navigation */}
+                <div
+                    className="collapse navbar-collapse"
+                    id="navbarContent"
+                >
 
-History
+                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
 
-</Link>
-<Link
-className="nav-link"
-to="/purchases">
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/dashboard"
+                            >
+                                Dashboard
+                            </Link>
+                        </li>
 
-Purchases
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/medicines"
+                            >
+                                Medicines
+                            </Link>
+                        </li>
 
-</Link>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/suppliers"
+                            >
+                                Suppliers
+                            </Link>
+                        </li>
 
-        </div>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/low-stock"
+                            >
+                                Low Stock
+                            </Link>
+                        </li>
 
-        <button
-          className="btn btn-danger"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/out-of-stock"
+                            >
+                                Out Of Stock
+                            </Link>
+                        </li>
 
-      </div>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/near-expiry"
+                            >
+                                Near Expiry
+                            </Link>
+                        </li>
 
-    </nav>
-  );
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/expired"
+                            >
+                                Expired
+                            </Link>
+                        </li>
+
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/history"
+                            >
+                                History
+                            </Link>
+                        </li>
+
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/purchases"
+                            >
+                                Purchases
+                            </Link>
+                        </li>
+
+                    </ul>
+
+                    {/* Right Side */}
+                    <div className="d-flex align-items-center gap-3">
+
+                        {user && (
+                            <span className="text-white">
+                                👤 {user.name}
+                            </span>
+                        )}
+
+                        <button
+                            className="btn btn-danger btn-sm"
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    );
 }
 
 export default Navbar;
