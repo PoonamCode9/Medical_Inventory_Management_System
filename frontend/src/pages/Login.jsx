@@ -55,7 +55,8 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://medistock-backend-ljqa.onrender.com/oauth2/authorization/google";
+    const oauthBaseUrl = import.meta.env.VITE_BACKEND_OAUTH_URL || "http://localhost:8080";
+    window.location.href = `${oauthBaseUrl}/oauth2/authorization/google`;
   };
 
   return (
