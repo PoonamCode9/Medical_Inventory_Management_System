@@ -8,6 +8,8 @@ import com.medicalinventory.backend.security.jwt.JwtUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -21,6 +23,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     public OAuth2SuccessHandler(JwtUtil jwtUtil, UserRepository userRepository, RoleRepository roleRepository) {
         this.jwtUtil = jwtUtil;
@@ -49,7 +54,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.generateToken(user.getEmail());
         String role = user.getRole().getRoleName();
 
-        String targetUrl = "https://medistock-frontend-2888.onrender.com/oauth2/redirect?token=" + token + "&role=" + role;
+        String targetUrl = frontendUrl + "/oauth2/redirect?token=" + token + "&role=" + role;
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }
