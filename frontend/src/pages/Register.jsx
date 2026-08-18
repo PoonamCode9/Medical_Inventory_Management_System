@@ -64,7 +64,7 @@ function Register() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    window.location.href = "https://medistock-backend-ljqa.onrender.com/oauth2/authorization/google";
   };
 
   return (

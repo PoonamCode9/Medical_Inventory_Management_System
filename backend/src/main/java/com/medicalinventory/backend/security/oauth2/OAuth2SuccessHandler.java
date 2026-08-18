@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.generateToken(user.getEmail());
         String role = user.getRole().getRoleName();
 
-        String targetUrl = "http://localhost:5173/oauth2/redirect?token=" + token + "&role=" + role;
+        String targetUrl = "https://medistock-frontend-2888.onrender.com/oauth2/redirect?token=" + token + "&role=" + role;
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }
