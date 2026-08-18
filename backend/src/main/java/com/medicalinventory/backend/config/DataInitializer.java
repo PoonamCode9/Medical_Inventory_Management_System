@@ -29,7 +29,9 @@ public class DataInitializer implements CommandLineRunner {
         createRoleIfNotFound("Pharmacist");
         createRoleIfNotFound("Staff");
 
-        if (userRepository.findByEmail("admin@gmail.com").isEmpty()) {
+        boolean hasAdmin = userRepository.existsByRole_RoleName("Admin");
+
+        if (!hasAdmin) {
             User admin = new User();
             admin.setFullName("Super Admin");
             admin.setEmail("admin@gmail.com");
