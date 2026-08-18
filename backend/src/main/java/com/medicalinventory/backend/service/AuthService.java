@@ -93,8 +93,7 @@ public class AuthService {
                     + "This OTP is valid for 15 minutes. If you did not request this, please ignore this email.");
             mailSender.send(message);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Mail Error: " + e.getMessage());
+            throw new RuntimeException("Failed to send email!");
         }
 
         return "Password reset OTP sent successfully to your email.";
