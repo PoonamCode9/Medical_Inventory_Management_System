@@ -122,6 +122,7 @@ function Sidebar({ onClose }) {
                         <Link
                             key={item.path}
                             to={item.path}
+                            onClick={onClose}
                             className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 ${
                                 isActive
                                     ? "bg-blue-100 text-blue-700 font-bold"

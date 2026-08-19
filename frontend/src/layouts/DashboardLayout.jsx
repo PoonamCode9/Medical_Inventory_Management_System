@@ -9,6 +9,14 @@ function DashboardLayout() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
+
+      {isSidebarOpen && (
+        <div
+          onClick={toggleSidebar}
+          className="fixed inset-0 bg-slate-900/5 backdrop-blur-xs z-40 xl:hidden transition-opacity duration-200"
+        />
+      )}
+
       <div
         className={`h-full ${
           isSidebarOpen ? "block" : "hidden xl:block"

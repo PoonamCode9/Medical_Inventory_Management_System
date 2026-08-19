@@ -4,6 +4,8 @@
 
 ---
 
+🌐 **Live Application:** : https://medistock-frontend-2888.onrender.com
+
 ## ✨ Core Features
 
 * 🔒 **Authentication & Authorization:** Secure JWT authentication, BCrypt password encryption, Google OAuth2 integration, OTP-based password reset, and fine-grained Role-Based Access Control (RBAC).
@@ -21,7 +23,7 @@
 ## 🛠 Tech Stack
 
 ### Backend
-* **Language & Framework:** Java 26, Spring Boot 4.1.0
+* **Language & Framework:** Java 17, Spring Boot 4.1.0
 * **Security:** Spring Security, JWT, Google OAuth2
 * **Database & Persistence:** PostgreSQL, Spring Data JPA, Hibernate
 * **Reporting Engines:** iText (PDF Generation), Apache POI (Excel Generation)
@@ -120,7 +122,7 @@ MediStock/
 
 Make sure you have the following installed on your system:
 
-- **Java Development Kit (JDK):** JDK 26
+- **Java Development Kit (JDK):** JDK 17 or higher (JDK 17+)
 - **Node.js:** v24.13.0 (or higher)
 - **npm:** 11.6.2 (or higher)
 - **Maven:** Maven Wrapper bundled in `backend/` (`./mvnw`), separate installation not required
@@ -164,7 +166,14 @@ The React web application will start at http://localhost:5173.
 
 ## ⚙️ Environment Variables
 
-The backend application uses environment variables for security configurations, database connections, SMTP mailers, and Google OAuth2 credentials.
+### 🔹 Frontend (The frontend uses environment variables for api)
+
+| Variable | Required | Default / Example Value | Description |
+| :--- | :---: | :--- | :--- |
+| `VITE_API_BASE_URL` | Yes | `http://localhost:8080/api` | Base URL for Spring Boot REST API endpoints |
+| `VITE_BACKEND_OAUTH_URL` | Yes | `http://localhost:8080` | Root URL of backend for Google OAuth2 login redirect |
+
+### ⚙️ Backend Configuration (The backend uses environment variables for security configurations, database connections, SMTP mailers, and Google OAuth2 credentials.)
 
 | Variable | Required | Default / Example Value | Description |
 | :--- | :---: | :--- | :--- |
@@ -177,6 +186,7 @@ The backend application uses environment variables for security configurations, 
 | `ADMIN_EMAIL` | Optional | Defaults to `${MAIL_USERNAME}` | Admin recipient email for urgent inventory alerts |
 | `GOOGLE_CLIENT_ID` | Optional | `your_google_client_id` | Google OAuth2 Client ID for social login |
 | `GOOGLE_CLIENT_SECRET` | Optional | `your_google_client_secret` | Google OAuth2 Client Secret |
+| `FRONTEND_URL` | Optional | `http://localhost:5173` | Allowed CORS origin and Web Frontend URL |
 
 ---
 
