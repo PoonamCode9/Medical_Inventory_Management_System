@@ -4,6 +4,9 @@ import com.medicalinventory.backend.entity.Role;
 import com.medicalinventory.backend.entity.User;
 import com.medicalinventory.backend.repository.RoleRepository;
 import com.medicalinventory.backend.repository.UserRepository;
+
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,14 @@ public class DataInitializer implements CommandLineRunner {
         createRoleIfNotFound("Admin");
         createRoleIfNotFound("Pharmacist");
         createRoleIfNotFound("Staff");
+
+        List<User> allUsers = userRepository.findAll();
+        for (User user : allUsers) {
+            if (!user.isEnabled()) {
+                user.setEnabled(true);
+                userRepository.save(user);
+            }
+        }
 
         boolean hasAdmin = userRepository.existsByRole_RoleName("Admin");
 
