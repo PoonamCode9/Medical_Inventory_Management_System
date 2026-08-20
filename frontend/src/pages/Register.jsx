@@ -45,7 +45,28 @@ function Register() {
 
     try {
       const response = await API.post("/auth/register", userData);
-      toast.success("Account created successfully! Please login.");
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-1 p-1">
+            <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
+              <span>⏳ Registration Successful!</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Your account has been created. Please wait for Admin approval before logging in.
+            </p>
+          </div>
+        ),
+        {
+          duration: 6000,
+          position: "top-center",
+          style: {
+            border: "1px solid #fcd34d",
+            background: "#fffbeb",
+            padding: "12px",
+            borderRadius: "12px",
+          },
+        }
+      );
       navigate("/");
     } catch (error) {
       console.error(error);

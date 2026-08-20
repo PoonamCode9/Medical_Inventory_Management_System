@@ -45,11 +45,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             newUser.setEmail(email);
             newUser.setFullName(name != null ? name : "Google User");
             newUser.setPassword("");
+            newUser.setEnabled(false);
             Role staffRole = roleRepository.findByRoleName("Staff")
                     .orElseThrow(() -> new RuntimeException("Default role 'Staff' not found in database"));
             newUser.setRole(staffRole);
             return userRepository.save(newUser);
         });
+
+        if (!user.isEnabled()) {
+            String pendingUrl = frontendUrl + "/oauth2/redirect?error=pending";
+            getRedirectStrategy().sendRedirect(request, response, pendingUrl);
+            return;
+        }
 
         String token = jwtUtil.generateToken(user.getEmail());
         String role = user.getRole().getRoleName();

@@ -42,6 +42,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**", "/login/oauth2/**", "/oauth2/**").permitAll()
             .requestMatchers("/api/users/profile", "/api/users/change-password").hasAnyRole("Admin", "Pharmacist", "Staff")
+            .requestMatchers("/api/users/**").hasRole("Admin")
             .requestMatchers(HttpMethod.GET, "/api/medicines/**", "/api/suppliers/**", "/api/dashboard", "/api/inventory/**", "/api/stock-logs/**", "/api/notifications/**", "/api/expiry-alerts/**", "/api/purchase-orders/**").hasAnyRole("Admin", "Pharmacist", "Staff")
             .requestMatchers(HttpMethod.GET, "/api/settings").hasAnyRole("Admin", "Pharmacist", "Staff")
             .requestMatchers(HttpMethod.POST, "/api/medicines/**", "/api/suppliers/**", "/api/inventory/**", "/api/reports/**", "/api/purchase-orders/**").hasAnyRole("Admin", "Pharmacist")

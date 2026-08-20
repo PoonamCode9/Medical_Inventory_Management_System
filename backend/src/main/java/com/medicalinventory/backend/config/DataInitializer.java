@@ -37,6 +37,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admin@gmail.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setPhone("9876543210");
+            admin.setEnabled(true);
             
             Role adminRole = roleRepository.findByRoleName("Admin")
                     .orElseThrow(() -> new RuntimeException("Admin role not found"));

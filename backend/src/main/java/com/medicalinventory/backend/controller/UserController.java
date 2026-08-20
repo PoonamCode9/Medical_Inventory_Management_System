@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medicalinventory.backend.dto.ChangePasswordRequestDTO;
@@ -101,6 +102,17 @@ public class UserController {
     public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.changePassword(authentication.getName(), request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Approve User and Assign Role
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<?> approveUser(@PathVariable Long id, @RequestParam String role) {
+        try {
+            User approvedUser = userService.approveUser(id, role);
+            return ResponseEntity.ok(approvedUser);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

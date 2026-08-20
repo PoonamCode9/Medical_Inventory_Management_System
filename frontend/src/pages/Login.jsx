@@ -44,14 +44,38 @@ function Login() {
       toast.success("Login Successful!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Login Error:", error);
-      const errorMsg =
-        error.response?.data?.message ||
-        (typeof error.response?.data === "string" ? error.response?.data : "") ||
-        "Something went wrong. Please try again.";
+        const errorMsg =
+          error.response?.data?.message ||
+          (typeof error.response?.data === "string" ? error.response?.data : "") ||
+          "Something went wrong. Please try again.";
 
-      toast.error(errorMsg);
-    }
+          if (errorMsg.toLowerCase().includes("pending admin approval") || errorMsg.toLowerCase().includes("pending")) {
+            toast(
+              (t) => (
+                <div className="flex flex-col gap-1 p-1">
+                  <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
+                    <span>⏳ Account Pending Approval</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Your account is currently waiting for Admin approval. Please contact your Admin to activate your access.
+                  </p>
+                </div>
+              ),
+              {
+                duration: 6000,
+                position: "top-center",
+                style: {
+                  border: "1px solid #fcd34d",
+                  background: "#fffbeb",
+                  padding: "12px",
+                  borderRadius: "12px",
+                },
+              }
+            );
+          } else {
+            toast.error(errorMsg);
+          }
+      }
   };
 
   const handleGoogleLogin = () => {

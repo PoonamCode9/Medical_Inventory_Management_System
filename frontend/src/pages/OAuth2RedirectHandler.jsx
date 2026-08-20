@@ -1,22 +1,59 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 
 function OAuth2RedirectHandler() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    if (hasProcessed.current) return;
+
     const token = searchParams.get("token");
     const role = searchParams.get("role");
+    const error = searchParams.get("error");
+
+    if (error === "pending") {
+      hasProcessed.current = true;
+      
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-1 p-1">
+            <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
+              <span>⏳ Account Pending Approval</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Your Google account was registered successfully! Please wait for the Admin to approve your account.
+            </p>
+          </div>
+        ),
+        {
+          duration: 6000,
+          position: "top-center",
+          style: {
+            border: "1px solid #fcd34d",
+            background: "#fffbeb",
+            padding: "12px",
+            borderRadius: "12px",
+          },
+        }
+      );
+
+      navigate("/", { replace: true });
+      return;
+    }
 
     if (token && role) {
+      hasProcessed.current = true;
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
-      navigate("/dashboard");
-    } else {
-      toast.error("Google Login Failed. Please try again.");
-      navigate("/");
+      toast.success("Welcome! Logged in successfully.");
+      navigate("/dashboard", { replace: true });
+    } else if (error) {
+      hasProcessed.current = true;
+      toast.error("Google Login failed. Please try again.");
+      navigate("/", { replace: true });
     }
   }, [searchParams, navigate]);
 

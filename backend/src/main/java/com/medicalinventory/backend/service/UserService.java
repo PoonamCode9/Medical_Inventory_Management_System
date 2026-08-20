@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.medicalinventory.backend.dto.ChangePasswordRequestDTO;
 import com.medicalinventory.backend.dto.UserProfileDTO;
+import com.medicalinventory.backend.entity.Role;
 import com.medicalinventory.backend.entity.User;
+import com.medicalinventory.backend.repository.RoleRepository;
 import com.medicalinventory.backend.repository.UserRepository;
 
 @Service
@@ -19,13 +21,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
+    private final RoleRepository roleRepository;
 
     public UserService(UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            NotificationService notificationService) {
+            NotificationService notificationService, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.notificationService = notificationService;
+        this.roleRepository = roleRepository;
     }
 
     public List<User> getAllUsers() {
@@ -178,5 +182,27 @@ public class UserService {
                 "Push");
 
         return "Password changed successfully.";
+    }
+
+    @Transactional
+    public User approveUser(Long userId, String roleName) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new RuntimeException("Role '" + roleName + "' not found"));
+
+        user.setRole(role);
+        user.setEnabled(true);
+
+        User updatedUser = userRepository.save(user);
+
+        notificationService.createNotification(
+                null,
+                "USER_APPROVED",
+                "User account approved: " + updatedUser.getEmail() + " as " + roleName,
+                "Push");
+
+        return updatedUser;
     }
 }

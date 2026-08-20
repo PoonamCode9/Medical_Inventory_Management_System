@@ -13,6 +13,8 @@ import {
   X,
   Eye,
   EyeOff,
+  CheckCircle, 
+  Clock
 } from "lucide-react";
 
 // Role Mappings
@@ -108,15 +110,17 @@ const Users = () => {
     let admins = 0;
     let pharmacists = 0;
     let staff = 0;
+    let pending = 0;
 
     users.forEach((u) => {
+      if (u.enabled === false) pending++;
       const r = String(getUserRoleName(u)).toUpperCase();
       if (r === "ADMIN") admins++;
       else if (r === "PHARMACIST") pharmacists++;
       else staff++;
     });
 
-    return { total, admins, pharmacists, staff };
+    return { total, admins, pharmacists, staff, pending };
   }, [users]);
 
   const handleOpenEditModal = (user) => {
@@ -265,6 +269,24 @@ const Users = () => {
     }
   };
 
+  // Approve User Handler
+  const handleApproveUser = async (userId, roleName = "Staff") => {
+    try {
+      await API.put(`/users/${userId}/approve?role=${roleName}`);
+      toast.success("User approved successfully!");
+      fetchUsers();
+    } catch (err) {
+      console.error("Approve user error:", err);
+      toast.error(
+        err.response?.data?.message ||
+          (typeof err.response?.data === "string"
+            ? err.response?.data
+            : "") ||
+          "Failed to approve user."
+      );
+    }
+  };
+
   const filteredUsers = users.filter((u) => {
     const query = searchTerm.toLowerCase();
     const matchesSearch =
@@ -275,7 +297,7 @@ const Users = () => {
     const userRole = getUserRoleName(u);
     const matchesRole =
       roleFilter === "ALL" ||
-      userRole.toUpperCase() === roleFilter.toUpperCase();
+      (roleFilter === "PENDING" ? u.enabled === false : userRole.toUpperCase() === roleFilter.toUpperCase());
 
     return matchesSearch && matchesRole;
   });
@@ -409,6 +431,27 @@ const Users = () => {
                 {roleCounts.staff}
               </span>
             </button>
+
+            {/* Pending Filter Button */}
+            <button
+              onClick={() => setRoleFilter("PENDING")}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                roleFilter === "PENDING"
+                  ? "bg-amber-600 text-white font-semibold shadow-xs"
+                  : "hover:text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              Pending
+              <span
+                className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                  roleFilter === "PENDING"
+                    ? "bg-amber-700 text-white"
+                    : "bg-amber-100 text-amber-700 font-semibold"
+                }`}
+              >
+                {roleCounts.pending}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -421,6 +464,7 @@ const Users = () => {
                   <th className="py-3.5 px-5">User</th>
                   <th className="py-3.5 px-5">Contact</th>
                   <th className="py-3.5 px-5">Role</th>
+                  <th className="py-3.5 px-5">Status</th>
                   <th className="py-3.5 px-5 text-center">Actions</th>
                 </tr>
               </thead>
@@ -475,6 +519,18 @@ const Users = () => {
                           </span>
                         </td>
 
+                        <td className="py-3.5 px-5">
+                          {user.enabled !== false ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                              <CheckCircle size={12} /> Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+                              <Clock size={12} /> Pending Approval
+                            </span>
+                          )}
+                        </td>
+
                         <td className="py-3.5 px-5 text-center">
                           {user.email === currentUserEmail ? (
                             <span className="text-[11px] text-slate-400 italic font-medium px-2.5 py-1 bg-slate-100 rounded-lg border border-slate-200/60">
@@ -482,6 +538,16 @@ const Users = () => {
                             </span>
                           ) : (
                             <div className="flex items-center justify-center gap-2">
+                              {user.enabled === false && (
+                                <button
+                                  onClick={() => handleApproveUser(userId, currentRole)}
+                                  className="px-2.5 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                                  title="Approve User"
+                                >
+                                  <CheckCircle size={13} /> Approve
+                                </button>
+                              )}
+
                               <button
                                 onClick={() => handleOpenEditModal(user)}
                                 className="p-1.5 text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/70 rounded-lg transition-colors cursor-pointer"
@@ -507,7 +573,7 @@ const Users = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="text-center py-12 text-slate-400"
                     >
                       <div className="flex flex-col items-center gap-2">

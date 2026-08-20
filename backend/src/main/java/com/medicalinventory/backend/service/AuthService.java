@@ -43,15 +43,19 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!user.isEnabled()) {
+            throw new RuntimeException("Your account is pending Admin approval. Please contact Admin.");
+        }
+
         try {
             authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (Exception e) {
             throw new RuntimeException("Invalid email or password");
         }
-
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtUtil.generateToken(user.getEmail());
         return new LoginResponse(token, user.getRole().getRoleName());
@@ -65,10 +69,11 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role role = roleRepository.findByRoleName("Staff").orElseThrow(() -> new RuntimeException("Role not found"));
         user.setRole(role);
+        user.setEnabled(false);
         User savedUser = userRepository.save(user);
 
         notificationService.createNotification(null, "USER_REGISTERED",
-                "New " + savedUser.getRole().getRoleName() + " account created.", "Push");
+                "New user registered: " + savedUser.getEmail() + ". Pending admin approval.", "Push");
 
         return savedUser;
     }
