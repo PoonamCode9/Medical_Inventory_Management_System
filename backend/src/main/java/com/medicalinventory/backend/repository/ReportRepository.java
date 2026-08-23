@@ -18,6 +18,6 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     // ReportRepository.java में जोड़ें:
     @Modifying
     @Transactional
-    @Query("UPDATE Report r SET r.generatedBy = null WHERE r.generatedBy = :user")
+    @Query("DELETE FROM Report r WHERE r.generatedBy = :user")
     void unlinkUserFromReports(@Param("user") User user);
 }
