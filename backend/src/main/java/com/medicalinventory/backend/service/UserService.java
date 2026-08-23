@@ -12,6 +12,7 @@ import com.medicalinventory.backend.dto.ChangePasswordRequestDTO;
 import com.medicalinventory.backend.dto.UserProfileDTO;
 import com.medicalinventory.backend.entity.Role;
 import com.medicalinventory.backend.entity.User;
+import com.medicalinventory.backend.repository.ReportRepository;
 import com.medicalinventory.backend.repository.RoleRepository;
 import com.medicalinventory.backend.repository.UserRepository;
 
@@ -22,14 +23,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
     private final RoleRepository roleRepository;
+    private final ReportRepository reportRepository;
 
     public UserService(UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            NotificationService notificationService, RoleRepository roleRepository) {
+            NotificationService notificationService, RoleRepository roleRepository, ReportRepository reportRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.notificationService = notificationService;
         this.roleRepository = roleRepository;
+        this.reportRepository = reportRepository;
     }
 
     public List<User> getAllUsers() {
@@ -97,6 +100,8 @@ public class UserService {
         }
 
         String userEmail = userToDelete.getEmail();
+
+        reportRepository.unlinkUserFromReports(userToDelete);
         userRepository.delete(userToDelete);
 
         notificationService.createNotification(

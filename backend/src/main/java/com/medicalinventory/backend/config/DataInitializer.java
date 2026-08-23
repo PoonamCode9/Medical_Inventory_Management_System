@@ -5,8 +5,6 @@ import com.medicalinventory.backend.entity.User;
 import com.medicalinventory.backend.repository.RoleRepository;
 import com.medicalinventory.backend.repository.UserRepository;
 
-import java.util.List;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

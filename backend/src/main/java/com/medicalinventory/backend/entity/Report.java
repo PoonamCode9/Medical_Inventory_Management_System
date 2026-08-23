@@ -22,7 +22,7 @@ public class Report {
     private String reportFormat;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "generated_by", nullable = false)
+    @JoinColumn(name = "generated_by", nullable = true)
     private User generatedBy;
 
     @Column(name = "generated_date", nullable = false)
