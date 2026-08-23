@@ -32,14 +32,6 @@ public class DataInitializer implements CommandLineRunner {
         createRoleIfNotFound("Pharmacist");
         createRoleIfNotFound("Staff");
 
-        List<User> allUsers = userRepository.findAll();
-        for (User user : allUsers) {
-            if (!user.isEnabled()) {
-                user.setEnabled(true);
-                userRepository.save(user);
-            }
-        }
-
         boolean hasAdmin = userRepository.existsByRole_RoleName("Admin");
 
         if (!hasAdmin) {
